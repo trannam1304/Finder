@@ -45,6 +45,9 @@ echo Dang import seed_categories.sql...
 echo Dang import seed_restaurants.sql...
 "%MYSQL_BIN%" --default-character-set=utf8mb4 -u root food_finder < "%~dp0database\seed_restaurants.sql"
 
+echo Dang import seed_places_expansion.sql...
+"%MYSQL_BIN%" --default-character-set=utf8mb4 -u root food_finder < "%~dp0database\seed_places_expansion.sql"
+
 echo.
 echo ========================================================
 echo   IMPORT DATABASE THANH CONG!

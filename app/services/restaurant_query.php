@@ -18,6 +18,10 @@ function restaurant_rows(PDO $pdo, array $filters, bool $paginate = true): array
         ':radius' => $filters['radius'],
     ];
     if ($filters['category_id'] !== null) { $where[] = 'r.category_id = :category_id'; $bind[':category_id'] = $filters['category_id']; }
+    if (!empty($filters['type']) && $filters['type'] !== 'all') {
+        $where[] = 'r.place_type = :place_type';
+        $bind[':place_type'] = $filters['type'];
+    }
     if ($filters['price_level'] !== null) { $where[] = 'r.price_level = :price_level'; $bind[':price_level'] = $filters['price_level']; }
     if ($filters['min_rating'] > 0) { $where[] = 'r.rating >= :min_rating'; $bind[':min_rating'] = $filters['min_rating']; }
     if ($filters['open_now']) {
@@ -32,9 +36,10 @@ function restaurant_rows(PDO $pdo, array $filters, bool $paginate = true): array
         'price' => 'r.price_min ASC, distance_km ASC',
         default => 'distance_km ASC',
     };
-    $sql = "SELECT r.id, r.name, r.address, r.phone, r.latitude AS lat, r.longitude AS lng,
-        r.price_min, r.price_max, r.price_level, r.rating, r.rating_count, r.image_url,
-        r.open_time, r.close_time, r.is_24h, c.id AS category_id, c.name AS category_name,
+    $sql = "SELECT r.id, r.place_type, r.name, r.address, r.phone, r.latitude AS lat, r.longitude AS lng,
+        r.price_min, r.price_max, r.ticket_price, r.estimated_duration, r.best_time_slot,
+        r.price_level, r.rating, r.rating_count, r.image_url,
+        r.open_time, r.close_time, r.is_24h, c.id AS category_id, c.type_group, c.name AS category_name,
         c.slug AS category_slug, c.icon AS category_icon, {$distance} AS distance_km
         FROM restaurants r JOIN categories c ON c.id = r.category_id
         WHERE " . implode(' AND ', $where) . " HAVING distance_km <= :radius ORDER BY {$order}";
@@ -51,12 +56,23 @@ function restaurant_rows(PDO $pdo, array $filters, bool $paginate = true): array
     $rows = $stmt->fetchAll();
     return array_map(static function (array $r): array {
         $r['id'] = (int) $r['id']; $r['lat'] = (float) $r['lat']; $r['lng'] = (float) $r['lng'];
-        $r['price_min'] = (int) $r['price_min']; $r['price_max'] = (int) $r['price_max']; $r['price_level'] = (int) $r['price_level'];
+        $r['price_min'] = (int) $r['price_min']; $r['price_max'] = (int) $r['price_max'];
+        $r['ticket_price'] = (int) ($r['ticket_price'] ?? 0);
+        $r['estimated_duration'] = (int) ($r['estimated_duration'] ?? 60);
+        $r['best_time_slot'] = $r['best_time_slot'] ?? 'any';
+        $r['place_type'] = $r['place_type'] ?? 'food';
+        $r['price_level'] = (int) $r['price_level'];
         $r['rating'] = (float) $r['rating']; $r['rating_count'] = (int) $r['rating_count'];
         $r['distance_km'] = round((float) $r['distance_km'], 4); $r['is_24h'] = (bool) $r['is_24h'];
         $r['is_open_now'] = is_open_now($r);
-        $r['category'] = ['id' => (int) $r['category_id'], 'name' => $r['category_name'], 'slug' => $r['category_slug'], 'icon' => $r['category_icon']];
-        unset($r['category_id'], $r['category_name'], $r['category_slug'], $r['category_icon']);
+        $r['category'] = [
+            'id' => (int) $r['category_id'],
+            'type_group' => $r['type_group'] ?? 'food',
+            'name' => $r['category_name'],
+            'slug' => $r['category_slug'],
+            'icon' => $r['category_icon']
+        ];
+        unset($r['category_id'], $r['category_name'], $r['category_slug'], $r['category_icon'], $r['type_group']);
         return $r;
     }, $rows);
 }
