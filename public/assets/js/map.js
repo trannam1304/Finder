@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { CONFIG } from './config.js';
-import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl } from './format.js';
+import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl, getGoogleMapsPinUrl } from './format.js';
 import { categoryIcon } from './icons.js';
 
 let map = null;
@@ -241,6 +241,15 @@ function showPopup(marker, restaurant) {
   dirBtn.rel = 'noopener noreferrer';
   actions.appendChild(dirBtn);
 
+  const gmapBtn = document.createElement('a');
+  gmapBtn.className = 'btn btn--ghost btn--sm';
+  gmapBtn.textContent = 'Google Maps';
+  gmapBtn.href = getGoogleMapsPinUrl(restaurant);
+  gmapBtn.target = '_blank';
+  gmapBtn.rel = 'noopener noreferrer';
+  gmapBtn.title = 'Xem vị trí quán trên Google Maps';
+  actions.appendChild(gmapBtn);
+
   container.appendChild(name);
   container.appendChild(address);
   container.appendChild(meta);
@@ -327,4 +336,5 @@ export function getMap() {
 /**
  * Lấy directions URL (export cho random card)
  */
-export { getDirectionsUrl };
+export { getDirectionsUrl, getGoogleMapsPinUrl };
+
