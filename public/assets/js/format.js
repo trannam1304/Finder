@@ -70,27 +70,18 @@ export function formatTime(timeStr) {
 }
 
 /**
- * Tạo URL chỉ đường (Google Maps / Apple Maps) ưu tiên toạ độ chính xác (lat, lng) khớp với marker
+ * Tạo URL chỉ đường (Google Maps / Apple Maps) ưu tiên địa chỉ và tên quán chính xác
  */
 export function getDirectionsUrl(restaurant) {
   if (!restaurant) return '#';
-  const lat = restaurant.lat ?? restaurant.latitude;
-  const lng = restaurant.lng ?? restaurant.longitude;
   const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
+  const target = [restaurant.name, restaurant.address].filter(Boolean).join(', ');
+  const destQuery = encodeURIComponent(target.trim() || `${restaurant.lat},${restaurant.lng}`);
 
-  if (lat && lng) {
-    if (isApple) {
-      return `https://maps.apple.com/?daddr=${lat},${lng}&q=${encodeURIComponent(restaurant.name || restaurant.address || '')}&dirflg=d`;
-    }
-    // Dùng toạ độ lat,lng chính xác để Google Maps chỉ đường chuẩn xác đến đúng vị trí marker trên Finder
-    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-  }
-
-  const target = encodeURIComponent([restaurant.name, restaurant.address].filter(Boolean).join(', '));
   if (isApple) {
     return `https://maps.apple.com/?daddr=${encodeURIComponent(restaurant.address || '')}&q=${encodeURIComponent(restaurant.name || '')}&dirflg=d`;
   }
-  return `https://www.google.com/maps/dir/?api=1&destination=${target}&travelmode=driving`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${destQuery}&travelmode=driving`;
 }
 
 /**
