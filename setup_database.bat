@@ -1,14 +1,21 @@
 @echo off
 chcp 65001 >nul
 echo ========================================================
-echo   KHOI TAO DATABASE CHO FOOD FINDER
+echo   KHOI TAO / TAI TAO DATABASE CHO FOOD FINDER
 echo ========================================================
 echo.
+
+where php >nul 2>&1
+if %errorlevel% equ 0 (
+    php "%~dp0database\setup.php"
+    pause
+    exit /b 0
+)
 
 set MYSQL_BIN=C:\xampp\mysql\bin\mysql.exe
 
 if not exist "%MYSQL_BIN%" (
-    echo [LOI] Khong tim thay MySQL tai C:\xampp\mysql\bin\mysql.exe!
+    echo [LOI] Khong tim thay MySQL tai C:\xampp\mysql\bin\mysql.exe va khong tim thay lenh php!
     echo Vui long kiem tra lai duong dan cai dat XAMPP.
     pause
     exit /b 1
