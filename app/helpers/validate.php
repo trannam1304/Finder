@@ -17,6 +17,16 @@ function optional_float(array $source, string $key, float $default, float $min, 
     return required_float($source, $key, $min, $max);
 }
 
+function required_int(array $source, string $key, int $min, int $max): int
+{
+    if (!isset($source[$key]) || filter_var($source[$key], FILTER_VALIDATE_INT) === false) {
+        throw new InvalidArgumentException("Tham số {$key} không hợp lệ");
+    }
+    $value = (int) $source[$key];
+    if ($value < $min || $value > $max) throw new InvalidArgumentException("Tham số {$key} không hợp lệ");
+    return $value;
+}
+
 function optional_int(array $source, string $key, ?int $default, int $min, int $max): ?int
 {
     if (!isset($source[$key]) || $source[$key] === '') return $default;
