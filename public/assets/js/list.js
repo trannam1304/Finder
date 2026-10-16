@@ -2,7 +2,7 @@
    LIST.JS — Render danh sách quán, skeleton, empty/error state
    ============================================================ */
 
-import { formatDistance, formatPrice, isOpenNow, renderStars } from './format.js';
+import { formatDistance, formatPrice, isOpenNow, renderStars, formatPlaceType, formatTicketPrice, formatDuration } from './format.js';
 import { CONFIG } from './config.js';
 import { icon, categoryIcon } from './icons.js';
 
@@ -58,22 +58,33 @@ export function renderList(listEl, restaurants, selectedId = null) {
     nameEl.className = 'resto-row__name';
     nameEl.textContent = r.name;
 
-    // Info line: category chip + price
+    // Info line: category chip + type badge + price/ticket
     const info = document.createElement('div');
     info.className = 'resto-row__info';
+
+    // FE-03: Type Badge
+    const placeType = r.place_type || 'food';
+    const typeBadge = document.createElement('span');
+    typeBadge.className = `badge badge--type-${placeType}`;
+    typeBadge.textContent = formatPlaceType(placeType);
+    info.appendChild(typeBadge);
 
     const catBadge = document.createElement('span');
     catBadge.className = 'badge badge--category';
     catBadge.innerHTML = `${categoryIcon(r.category)}<span>${r.category?.name || ''}</span>`;
+    info.appendChild(catBadge);
 
+    // Price or Ticket price
     const priceEl = document.createElement('span');
     priceEl.className = 'resto-row__price';
-    priceEl.textContent = formatPrice(r.price_min, r.price_max);
-
-    info.appendChild(catBadge);
+    if (placeType !== 'food' && r.ticket_price !== undefined) {
+      priceEl.textContent = formatTicketPrice(r.ticket_price);
+    } else {
+      priceEl.textContent = formatPrice(r.price_min, r.price_max);
+    }
     if (priceEl.textContent) info.appendChild(priceEl);
 
-    // Meta line: open status + rating
+    // Meta line: open status + rating + duration
     const meta = document.createElement('div');
     meta.className = 'resto-row__meta';
 
@@ -83,6 +94,14 @@ export function renderList(listEl, restaurants, selectedId = null) {
       statusBadge.className = `badge ${openStatus ? 'badge--open' : 'badge--closed'}`;
       statusBadge.innerHTML = `<span class="badge__dot" aria-hidden="true"></span>${openStatus ? 'Đang mở' : 'Đã đóng'}`;
       meta.appendChild(statusBadge);
+    }
+
+    // FE-03: Estimated duration badge
+    if (r.estimated_duration) {
+      const durBadge = document.createElement('span');
+      durBadge.className = 'badge badge--duration';
+      durBadge.textContent = formatDuration(r.estimated_duration);
+      meta.appendChild(durBadge);
     }
 
     if (r.rating > 0) {
@@ -102,6 +121,7 @@ export function renderList(listEl, restaurants, selectedId = null) {
       }
       meta.appendChild(starsEl);
     }
+
 
     // Distance (aligned right)
     const distEl = document.createElement('div');

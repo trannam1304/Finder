@@ -33,9 +33,34 @@ const paths = {
   starHalf: '<path d="M12 2v15.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none"/>',
   logo: '<circle cx="12" cy="12" r="10"/><path d="M7 15c0-3 1.5-6 5-6s5 3 5 6"/><circle cx="12" cy="7.5" r="1.5"/><path d="M6 17h12"/>',
   dot: '<rect x="8" y="8" width="8" height="8" fill="currentColor"/>',
+  tourism: '<path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6M10 10h4"/>',
+  entertainment: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="m12 3 2.5 7h7.5l-6 4.5 2.5 7.5-6.5-5-6.5 5 2.5-7.5-6-4.5h7.5Z"/>',
+  ticket: '<path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"/><path d="M13 6v12M9 10v.01M9 14v.01"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  refresh: '<path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>',
+  sparkles: '<path d="m12 3 1.9 5.6a2 2 0 0 0 1.25 1.25L21 12l-5.85 1.9a2 2 0 0 0-1.25 1.25L12 21l-1.9-5.85a2 2 0 0 0-1.25-1.25L3 12l5.85-1.9a2 2 0 0 0 1.25-1.25L12 3Z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  compass: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
 };
 
-const categoryNames = { com: 'rice', 'bun-pho': 'noodles', 'banh-mi': 'bread', 'lau-nuong': 'grill', 'an-vat': 'snack', chay: 'leaf', 'ca-phe': 'coffee' };
+const categoryNames = {
+  com: 'rice',
+  'bun-pho': 'noodles',
+  'banh-mi': 'bread',
+  'lau-nuong': 'grill',
+  'an-vat': 'snack',
+  chay: 'leaf',
+  'ca-phe': 'coffee',
+  'bao-tang': 'tourism',
+  'cong-vien': 'leaf',
+  'di-tich': 'tourism',
+  'check-in': 'compass',
+  'van-dong': 'entertainment',
+  'rap-phim': 'entertainment',
+  'board-game': 'entertainment',
+  'mua-sam': 'entertainment',
+};
 
 export function icon(name, className = '') {
   const path = paths[name] || paths.plate;
@@ -43,7 +68,21 @@ export function icon(name, className = '') {
 }
 
 export function categoryIcon(category, className = 'category-glyph') {
-  return icon(categoryNames[category?.slug] || 'plate', className);
+  const slug = category?.slug;
+  const group = category?.type_group;
+  let iconName = categoryNames[slug];
+  if (!iconName) {
+    if (group === 'tourism') iconName = 'tourism';
+    else if (group === 'entertainment') iconName = 'entertainment';
+    else iconName = 'plate';
+  }
+  return icon(iconName, className);
+}
+
+export function placeTypeIcon(type, className = '') {
+  if (type === 'tourism') return icon('tourism', className);
+  if (type === 'entertainment') return icon('entertainment', className);
+  return icon('fork', className);
 }
 
 export function setIcon(element, name, className = '') {
@@ -61,3 +100,4 @@ export function renderStars(rating, max = 5) {
   for (let i = 0; i < empty; i++) html += icon('starEmpty', 'ui-icon--star ui-icon--star-empty');
   return html;
 }
+

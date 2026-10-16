@@ -5,9 +5,10 @@
 import { MOCK_RESTAURANTS } from './mock-data.js';
 import { fetchRestaurant } from './api.js';
 import { CONFIG } from './config.js';
-import { escapeText, getDirectionsUrl } from './format.js';
+import { escapeText, getDirectionsUrl, formatPlaceType, formatTicketPrice, formatDuration } from './format.js';
 import { icon, categoryIcon, renderStars } from './icons.js';
 import { isFavorite, toggleFavorite } from './favorites.js';
+
 
 // ── Theme ────────────────────────────────────────────────────
 const btnTheme = document.getElementById('btn-theme');
@@ -81,11 +82,24 @@ document.getElementById('page-title').textContent = `${r.name} — Food Finder`;
 document.getElementById('hero-img').src = r.image_url;
 document.getElementById('hero-img').alt = r.name;
 document.getElementById('hero-name').textContent = r.name;
+
+const placeType = r.place_type || 'food';
+const isTourismOrEnt = placeType === 'tourism' || placeType === 'entertainment';
+const ticketBadge = isTourismOrEnt
+  ? `<span class="badge badge--ticket">${icon('ticket')} <span>${formatTicketPrice(r.ticket_price)}</span></span>`
+  : '';
+const durBadge = r.estimated_duration
+  ? `<span class="badge badge--duration">${icon('clock')} <span>Gợi ý: ${formatDuration(r.estimated_duration)}</span></span>`
+  : '';
+
 document.getElementById('hero-badges').innerHTML = `
+  <span class="badge badge--type-${placeType}">${formatPlaceType(placeType)}</span>
   <span class="badge ${open ? 'badge--open' : 'badge--closed'}">
     <span class="badge__dot" aria-hidden="true"></span>${open ? 'Đang mở' : 'Đã đóng'}
   </span>
   <span class="badge badge--category">${categoryIcon(r.category)}<span>${esc(r.category.name)}</span></span>
+  ${ticketBadge}
+  ${durBadge}
   <span class="badge" style="background:var(--c-surface);color:var(--c-ink-soft)">
     ${priceLabel(r.price_level)}
   </span>
@@ -118,7 +132,7 @@ if (btnFav) {
   btnFav.addEventListener('click', () => {
     const isNowSaved = toggleFavorite(r.id);
     updateFavState();
-    showToast(isNowSaved ? '❤️ Đã lưu quán vào danh sách yêu thích!' : 'Đã bỏ lưu quán.');
+    showToast(isNowSaved ? '❤️ Đã lưu địa điểm vào danh sách yêu thích!' : 'Đã bỏ lưu địa điểm.');
   });
 }
 
@@ -133,6 +147,15 @@ document.getElementById('btn-share').addEventListener('click', async () => {
     showToast('Đã sao chép đường dẫn!');
   }
 });
+
+// Best time slot text
+const timeSlotMap = {
+  morning: 'Buổi sáng (07:00 - 11:30)',
+  afternoon: 'Buổi chiều (13:30 - 17:30)',
+  evening: 'Buổi tối (18:00 - 22:30)',
+  any: 'Linh hoạt mọi thời điểm trong ngày',
+};
+const bestTimeStr = timeSlotMap[r.best_time_slot] || 'Mọi khung giờ';
 
 // Info rows
 document.getElementById('info-rows').innerHTML = `
@@ -155,6 +178,29 @@ document.getElementById('info-rows').innerHTML = `
       </div>
     </div>
   </div>
+  ${isTourismOrEnt ? `
+  <div class="info-row">
+    <div class="info-row__icon">${icon('ticket')}</div>
+    <div>
+      <div class="info-row__label">Giá vé vào cổng</div>
+      <div class="info-row__value" style="font-weight:700;color:var(--c-primary)">${formatTicketPrice(r.ticket_price)}</div>
+    </div>
+  </div>
+  ` : ''}
+  <div class="info-row">
+    <div class="info-row__icon">${icon('cash')}</div>
+    <div>
+      <div class="info-row__label">${isTourismOrEnt ? 'Chi phí dự kiến' : 'Khoảng giá'}</div>
+      <div class="info-row__value">${fmtPrice(r.price_min, r.price_max)} / người</div>
+    </div>
+  </div>
+  <div class="info-row">
+    <div class="info-row__icon">${icon('calendar')}</div>
+    <div>
+      <div class="info-row__label">Thời lượng trải nghiệm đề xuất</div>
+      <div class="info-row__value">${formatDuration(r.estimated_duration || 60)} • Thích hợp nhất vào: <strong>${bestTimeStr}</strong></div>
+    </div>
+  </div>
   <div class="info-row">
     <div class="info-row__icon">${icon('phone')}</div>
     <div>
@@ -163,20 +209,17 @@ document.getElementById('info-rows').innerHTML = `
     </div>
   </div>
   <div class="info-row">
-    <div class="info-row__icon">${icon('cash')}</div>
-    <div>
-      <div class="info-row__label">Khoảng giá</div>
-      <div class="info-row__value">${fmtPrice(r.price_min, r.price_max)} / người</div>
-    </div>
-  </div>
-  <div class="info-row">
     <div class="info-row__icon">${categoryIcon(r.category)}</div>
     <div>
-      <div class="info-row__label">Danh mục</div>
-      <div class="info-row__value">${esc(r.category.name)}</div>
+      <div class="info-row__label">Phân loại & Danh mục</div>
+      <div class="info-row__value">
+        <span class="badge badge--type-${placeType}" style="margin-right:6px">${formatPlaceType(placeType)}</span>
+        <span>${esc(r.category.name)}</span>
+      </div>
     </div>
   </div>
 `;
+
 
 // Gallery — use different images from the same folder
 const galleryImages = [
