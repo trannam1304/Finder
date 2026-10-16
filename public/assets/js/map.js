@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { CONFIG } from './config.js';
-import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl } from './format.js';
+import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl, formatPlaceType, formatTicketPrice, formatDuration } from './format.js';
 import { categoryIcon } from './icons.js';
 
 let map = null;
@@ -11,10 +11,14 @@ let tileLayer = null;
 let userMarker = null;
 let markerGroup = null;
 let markers = new Map(); // id → L.marker
+let routePolyline = null;
+let routeShadowPolyline = null;
+let routeMarkers = [];
 
 // Callbacks
 let onMarkerClick = null;
 let onUserDrag = null;
+
 
 /**
  * Khởi tạo bản đồ Leaflet
@@ -169,15 +173,17 @@ export function renderMarkers(restaurants, selectedId = null) {
 }
 
 /**
- * Tạo divIcon cho quán
+ * Tạo divIcon cho quán (FE-02: màu riêng theo loại hình ẩm thực / du lịch / vui chơi)
  */
 function createRestaurantIcon(restaurant, isSelected) {
+  const placeType = restaurant.place_type || 'food';
+  const typeClass = ` marker-pin--${placeType}`;
   const selectedClass = isSelected ? ' marker-pin--selected' : '';
   const categoryGlyph = categoryIcon(restaurant.category, 'marker-pin__svg');
 
   return L.divIcon({
     className: '',
-    html: `<div class="marker-pin${selectedClass}">
+    html: `<div class="marker-pin${typeClass}${selectedClass}">
              <div class="marker-pin__drop"></div>
              <span class="marker-pin__icon">${categoryGlyph}</span>
            </div>`,
@@ -193,6 +199,13 @@ function createRestaurantIcon(restaurant, isSelected) {
 function showPopup(marker, restaurant) {
   const container = document.createElement('div');
   container.className = 'popup';
+
+  // Badge loại hình địa điểm (FE-02, FE-03)
+  const placeType = restaurant.place_type || 'food';
+  const typeTag = document.createElement('div');
+  typeTag.className = `popup__tag popup__tag--${placeType}`;
+  typeTag.textContent = formatPlaceType(placeType);
+  container.appendChild(typeTag);
 
   const name = document.createElement('div');
   name.className = 'popup__name';
@@ -214,12 +227,28 @@ function showPopup(marker, restaurant) {
     meta.appendChild(badge);
   }
 
-  // Price
-  const price = formatPrice(restaurant.price_min, restaurant.price_max);
-  if (price) {
-    const priceEl = document.createElement('span');
-    priceEl.textContent = price;
-    meta.appendChild(priceEl);
+  // Price or Ticket
+  if (placeType !== 'food' && restaurant.ticket_price !== undefined) {
+    const ticketEl = document.createElement('span');
+    ticketEl.className = 'popup__price';
+    ticketEl.textContent = formatTicketPrice(restaurant.ticket_price);
+    meta.appendChild(ticketEl);
+  } else {
+    const price = formatPrice(restaurant.price_min, restaurant.price_max);
+    if (price) {
+      const priceEl = document.createElement('span');
+      priceEl.className = 'popup__price';
+      priceEl.textContent = price;
+      meta.appendChild(priceEl);
+    }
+  }
+
+  // Duration estimate (FE-03)
+  if (restaurant.estimated_duration) {
+    const durEl = document.createElement('span');
+    durEl.className = 'popup__duration';
+    durEl.textContent = formatDuration(restaurant.estimated_duration);
+    meta.appendChild(durEl);
   }
 
   // Distance
@@ -241,13 +270,22 @@ function showPopup(marker, restaurant) {
   dirBtn.rel = 'noopener noreferrer';
   actions.appendChild(dirBtn);
 
+  if (restaurant.id) {
+    const detailBtn = document.createElement('a');
+    detailBtn.className = 'btn btn--ghost btn--sm';
+    detailBtn.textContent = 'Chi tiết';
+    detailBtn.href = `restaurant.html?id=${restaurant.id}`;
+    actions.appendChild(detailBtn);
+  }
+
   container.appendChild(name);
   container.appendChild(address);
   container.appendChild(meta);
   container.appendChild(actions);
 
-  marker.bindPopup(container, { maxWidth: 280, minWidth: 200 }).openPopup();
+  marker.bindPopup(container, { maxWidth: 290, minWidth: 220 }).openPopup();
 }
+
 
 /**
  * Bay tới vị trí — offset bù cho sidebar trên desktop
@@ -328,3 +366,102 @@ export function getMap() {
  * Lấy directions URL (export cho random card)
  */
 export { getDirectionsUrl };
+
+/**
+ * FE-06: Vẽ Tuyến Đường Đa Điểm trên Leaflet (Routing Polyline)
+ * @param {Array} stops - Danh sách stops [{ place: {...}, step_order: 1, ... }]
+ * @param {Object} userPos - { lat, lng }
+ */
+export function renderItineraryRoute(stops = [], userPos = null) {
+  if (!map || typeof L === 'undefined') return;
+
+  clearItineraryRoute();
+
+  // Ẩn tạm markers thông thường để tập trung vào lộ trình
+  if (markerGroup) {
+    markerGroup.clearLayers();
+  }
+
+  const latlngs = [];
+  if (userPos && userPos.lat && userPos.lng) {
+    latlngs.push([userPos.lat, userPos.lng]);
+  }
+
+  stops.forEach((stop, index) => {
+    const place = stop.place || stop;
+    const stepNum = stop.step_order || (index + 1);
+    latlngs.push([place.lat, place.lng]);
+
+    // Tạo numbered marker [1], [2], [3]...
+    const placeType = place.place_type || 'food';
+    const numberedIcon = L.divIcon({
+      className: '',
+      html: `<div class="marker-pin marker-pin--numbered marker-pin--${placeType}">
+               <div class="marker-pin__drop"></div>
+               <span class="marker-pin__num">${stepNum}</span>
+             </div>`,
+      iconSize: [36, 44],
+      iconAnchor: [18, 44],
+      popupAnchor: [0, -46],
+    });
+
+    const marker = L.marker([place.lat, place.lng], {
+      icon: numberedIcon,
+      zIndexOffset: 1200 + stepNum,
+      title: `${stepNum}. ${place.name}`,
+    }).addTo(map);
+
+    marker.on('click', () => {
+      showPopup(marker, place);
+    });
+
+    routeMarkers.push(marker);
+  });
+
+  if (latlngs.length >= 2) {
+    // 1. Lớp viền đổ bóng Neo-Brutalist
+    routeShadowPolyline = L.polyline(latlngs, {
+      color: '#000000',
+      weight: 9,
+      opacity: 0.45,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map);
+
+    // 2. Lớp đường nét chính nổi bật
+    routePolyline = L.polyline(latlngs, {
+      color: '#4F46E5', // Neo-Brutalist Indigo / Purple
+      weight: 5,
+      opacity: 0.95,
+      dashArray: '10, 8',
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map);
+
+    map.fitBounds(routePolyline.getBounds(), {
+      padding: [60, 60],
+      maxZoom: 15,
+    });
+  }
+}
+
+/**
+ * Xóa tuyến đường lộ trình và các marker số
+ */
+export function clearItineraryRoute() {
+  if (routePolyline && map) {
+    try { map.removeLayer(routePolyline); } catch (_) {}
+    routePolyline = null;
+  }
+  if (routeShadowPolyline && map) {
+    try { map.removeLayer(routeShadowPolyline); } catch (_) {}
+    routeShadowPolyline = null;
+  }
+  if (routeMarkers && routeMarkers.length > 0 && map) {
+    routeMarkers.forEach(m => {
+      try { map.removeLayer(m); } catch (_) {}
+    });
+    routeMarkers = [];
+  }
+}
+

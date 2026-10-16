@@ -27,13 +27,42 @@
   left: 0;
 }
 
-.marker-pin__icon {
+/* ── FE-02: Marker Colors by Place Type ── */
+.marker-pin--food .marker-pin__drop {
+  background: #E11D48; /* Đỏ/Cam tươi cho Quán ăn */
+}
+
+.marker-pin--tourism .marker-pin__drop {
+  background: #2563EB; /* Xanh lam/Tím hoàng gia cho Du lịch & Tham quan */
+}
+
+.marker-pin--entertainment .marker-pin__drop {
+  background: #EA580C; /* Cam neon/Vàng rực rỡ cho Vui chơi & Trải nghiệm */
+}
+
+/* ── FE-06: Numbered Itinerary Markers ── */
+.marker-pin--numbered {
+  width: 36px;
+  height: 44px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+}
+
+.marker-pin--numbered .marker-pin__drop {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #FFFFFF;
+}
+
+.marker-pin__num {
   position: relative;
-  z-index: 1;
-  font-size: 14px;
+  z-index: 2;
+  font-size: 15px;
+  font-weight: 900;
   color: #FFFFFF;
   line-height: 1;
-  margin-top: -4px;
+  margin-top: -6px;
+  font-family: var(--font-display, inherit);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Selected state */
@@ -43,8 +72,9 @@
 }
 
 .marker-pin--selected .marker-pin__drop {
-  background: var(--c-accent);
+  background: var(--c-accent) !important;
 }
+
 
 /* ── Marker drop animation ── */
 @media (prefers-reduced-motion: no-preference) {

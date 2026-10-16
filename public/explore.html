@@ -17,7 +17,9 @@
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/pages.css">
   <link rel="stylesheet" href="assets/css/brutal.css">
+  <link rel="stylesheet" href="assets/css/itinerary.css">
 </head>
+
 <body>
 
   <!-- ══ NAV ══ -->
@@ -123,8 +125,27 @@
     <!-- ── Main grid ── -->
     <main class="explore-main" id="explore-main">
 
+      <!-- FE-01: Thanh Tabs Phân Loại Cấp 1 -->
+      <div class="explore-type-tabs-wrap">
+        <div class="type-tabs" id="explore-type-tabs" role="tablist" aria-label="Phân loại địa điểm">
+          <button class="type-tab type-tab--active" type="button" role="tab" data-type="all" aria-selected="true" title="Tất cả địa điểm">
+            <span>Tất cả</span>
+          </button>
+          <button class="type-tab type-tab--food" type="button" role="tab" data-type="food" aria-selected="false" title="Ẩm thực, Quán ăn, Cà phê">
+            <span>🍽️ Ẩm thực</span>
+          </button>
+          <button class="type-tab type-tab--tourism" type="button" role="tab" data-type="tourism" aria-selected="false" title="Du lịch, Bảo tàng, Di tích, Check-in">
+            <span>🏛️ Du lịch</span>
+          </button>
+          <button class="type-tab type-tab--entertainment" type="button" role="tab" data-type="entertainment" aria-selected="false" title="Vui chơi giải trí, Thể thao, Rạp phim">
+            <span>🎉 Vui chơi giải trí</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Toolbar -->
       <div class="explore-toolbar">
+
         <div class="explore-search-wrap">
           <svg class="explore-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
             <circle cx="7" cy="7" r="5.5"/><path d="M11 11l3.5 3.5"/>

@@ -61,14 +61,20 @@ function mockCategories() {
   };
 }
 
-function mockRestaurants({ lat, lng, radius = 3, category_id, price_level, min_rating, open_now, q, sort = 'distance', limit = 50, offset = 0 } = {}) {
+function mockRestaurants({ lat, lng, radius = 3, type, category_id, price_level, min_rating, open_now, q, sort = 'distance', limit = 50, offset = 0 } = {}) {
   const currentLat = (lat !== undefined && lat !== null && !isNaN(Number(lat))) ? Number(lat) : CONFIG.FALLBACK_LAT;
   const currentLng = (lng !== undefined && lng !== null && !isNaN(Number(lng))) ? Number(lng) : CONFIG.FALLBACK_LNG;
   let results = MOCK_RESTAURANTS.map(r => ({
     ...r,
+    place_type: r.place_type || 'food',
     distance_km: haversineKm(currentLat, currentLng, r.lat, r.lng),
     is_open_now: isOpenNowMock(r.open_time, r.close_time, r.is_24h),
   }));
+
+  // Filter by type ('all', 'food', 'tourism', 'entertainment')
+  if (type && type !== 'all') {
+    results = results.filter(r => (r.place_type || 'food') === type);
+  }
 
   // Filter by radius
   results = results.filter(r => r.distance_km <= radius);
@@ -121,6 +127,99 @@ function mockRestaurants({ lat, lng, radius = 3, category_id, price_level, min_r
     meta: { count: total, radius_km: radius, limit, offset },
   };
 }
+
+function mockItinerary({ lat, lng, duration = 'half_day', vibe = 'chill', radius = 8 } = {}) {
+  const cLat = Number(lat) || CONFIG.FALLBACK_LAT;
+  const cLng = Number(lng) || CONFIG.FALLBACK_LNG;
+
+  const places = MOCK_RESTAURANTS.map(r => ({
+    ...r,
+    place_type: r.place_type || 'food',
+    distance_km: haversineKm(cLat, cLng, r.lat, r.lng),
+  })).filter(r => r.distance_km <= (radius || 15));
+
+  const foodPlaces = places.filter(r => (r.place_type || 'food') === 'food');
+  const tourPlaces = places.filter(r => r.place_type === 'tourism');
+  const entPlaces = places.filter(r => r.place_type === 'entertainment');
+
+  const stops = [];
+  let curLat = cLat;
+  let curLng = cLng;
+  let totalKm = 0;
+
+  const addStop = (candidate, timeSlot, note) => {
+    if (!candidate) return;
+    const legDist = Math.round(haversineKm(curLat, curLng, candidate.lat, candidate.lng) * 10) / 10;
+    totalKm += legDist;
+    curLat = candidate.lat;
+    curLng = candidate.lng;
+
+    stops.push({
+      step_order: stops.length + 1,
+      time_slot: timeSlot,
+      suggested_time: timeSlot,
+      activity_note: note,
+      leg_distance_km: legDist,
+      place: candidate,
+    });
+  };
+
+  if (duration === 'evening') {
+    addStop(foodPlaces[0] || places[0], '18:00 - 19:30', 'Ăn tối khởi đầu buổi tối thú vị');
+    addStop(entPlaces[0] || tourPlaces[0] || places[1], '19:45 - 21:15', 'Vui chơi giải trí & thư giãn');
+    addStop(tourPlaces[0] || foodPlaces[1] || places[2], '21:30 - 22:30', 'Dạo mát & ngắm cảnh đêm');
+  } else if (duration === 'full_day') {
+    addStop(foodPlaces[0] || places[0], '08:00 - 09:15', 'Ăn sáng nạp năng lượng & cà phê');
+    addStop(tourPlaces[0] || places[1], '09:30 - 11:30', 'Tham quan khám phá điểm văn hóa/nghệ thuật');
+    addStop(foodPlaces[1] || places[2], '12:00 - 13:30', 'Nghỉ trưa & thưởng thức bữa ăn đặc sắc');
+    addStop(entPlaces[0] || places[3], '14:00 - 16:30', 'Trải nghiệm vui chơi vận động sôi nổi');
+    addStop(tourPlaces[1] || foodPlaces[2] || places[4], '17:00 - 19:00', 'Ngắm hoàng hôn & kết thúc ngày trọn vẹn');
+  } else {
+    // half_day
+    addStop(foodPlaces[0] || places[0], '08:30 - 09:45', 'Khởi động với món ngon & cà phê');
+    addStop(tourPlaces[0] || entPlaces[0] || places[1], '10:00 - 11:45', 'Tham quan trải nghiệm địa điểm nổi bật');
+    addStop(foodPlaces[1] || places[2], '12:00 - 13:30', 'Ăn trưa thư giãn');
+  }
+
+  return {
+    success: true,
+    data: {
+      duration,
+      vibe,
+      total_stops: stops.length,
+      total_distance_km: Math.round(totalKm * 10) / 10,
+      estimated_hours: duration === 'full_day' ? 8 : (duration === 'evening' ? 4.5 : 4),
+      stops,
+    },
+  };
+}
+
+function mockReroll({ current_id, exclude_ids = [], from_lat, from_lng, place_type = 'food' } = {}) {
+  const cLat = Number(from_lat) || CONFIG.FALLBACK_LAT;
+  const cLng = Number(from_lng) || CONFIG.FALLBACK_LNG;
+  const excludes = new Set(exclude_ids.map(Number));
+  excludes.add(Number(current_id));
+
+  const candidates = MOCK_RESTAURANTS.filter(r => {
+    if (excludes.has(r.id)) return false;
+    return (r.place_type || 'food') === place_type;
+  }).map(r => ({
+    ...r,
+    place_type: r.place_type || 'food',
+    distance_km: haversineKm(cLat, cLng, r.lat, r.lng),
+  })).sort((a, b) => a.distance_km - b.distance_km);
+
+  const picked = candidates[0] || MOCK_RESTAURANTS.find(r => !excludes.has(r.id)) || MOCK_RESTAURANTS[0];
+
+  return {
+    success: true,
+    data: {
+      place: picked,
+      message: 'Đã đổi địa điểm thành công (mock)',
+    },
+  };
+}
+
 
 function isOpenNowMock(openTime, closeTime, is24h) {
   if (is24h) return true;
@@ -217,7 +316,36 @@ export async function fetchRestaurant(id) {
   }
 }
 
+export async function fetchItinerary(params = {}) {
+  if (CONFIG.USE_MOCK) {
+    await new Promise(r => setTimeout(r, 400));
+    return mockItinerary(params);
+  }
+  try {
+    return await apiFetch('itinerary.php', params);
+  } catch (err) {
+    if (err?.name === 'AbortError') throw err;
+    console.warn('[FoodFinder] API itinerary gặp sự cố, fallback sang mock itinerary:', err);
+    return mockItinerary(params);
+  }
+}
+
+export async function rerollItineraryStop(params = {}) {
+  if (CONFIG.USE_MOCK) {
+    await new Promise(r => setTimeout(r, 250));
+    return mockReroll(params);
+  }
+  try {
+    return await apiFetch('itinerary_reroll.php', params);
+  } catch (err) {
+    if (err?.name === 'AbortError') throw err;
+    console.warn('[FoodFinder] API itinerary_reroll gặp sự cố, fallback sang mock reroll:', err);
+    return mockReroll(params);
+  }
+}
+
 export function abortPending() {
   controllers.forEach(controller => controller.abort());
   controllers.clear();
 }
+

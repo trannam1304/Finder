@@ -5,7 +5,7 @@
 import { MOCK_RESTAURANTS, MOCK_CATEGORIES } from './mock-data.js';
 import { CONFIG } from './config.js';
 import { fetchCategories, fetchRestaurants } from './api.js';
-import { escapeText } from './format.js';
+import { escapeText, formatPlaceType, formatTicketPrice, formatDuration } from './format.js';
 import { icon, categoryIcon, renderStars } from './icons.js';
 
 let restaurants = [...MOCK_RESTAURANTS];
@@ -31,12 +31,14 @@ if (btnTheme) btnTheme.addEventListener('click', () => {
 // ── State ────────────────────────────────────────────────────
 let state = {
   search: '',
+  type: 'all',
   categories: new Set(),
   prices: new Set(),
   minRating: 0,
   openNow: false,
   sort: 'rating',
 };
+
 
 // ── DOM refs ─────────────────────────────────────────────────
 const grid        = document.getElementById('resto-grid');
@@ -70,6 +72,11 @@ function priceLabel(level) {
 // ── Filter & sort restaurants ─────────────────────────────────
 function filterAndSort() {
   let list = [...restaurants];
+
+  // FE-01: Filter by Type Tab
+  if (state.type && state.type !== 'all') {
+    list = list.filter(r => (r.place_type || 'food') === state.type);
+  }
 
   if (state.search) {
     const q = state.search.toLowerCase();
@@ -109,9 +116,18 @@ function filterAndSort() {
 // ── Render grid ───────────────────────────────────────────────
 function renderCard(r) {
   const open = isOpenNow(r);
+  const placeType = r.place_type || 'food';
   const fmtPrice = r.price_min >= 1000
     ? `${(r.price_min / 1000).toFixed(0)}k–${(r.price_max / 1000).toFixed(0)}k`
     : `${r.price_min}–${r.price_max}`;
+
+  const priceText = (placeType !== 'food' && r.ticket_price !== undefined)
+    ? formatTicketPrice(r.ticket_price)
+    : `${fmtPrice}đ`;
+
+  const durBadge = r.estimated_duration
+    ? `<span class="badge badge--duration">${formatDuration(r.estimated_duration)}</span>`
+    : '';
 
   return `
     <a href="restaurant.html?id=${r.id}" class="resto-card" role="listitem" id="card-${r.id}" aria-label="${escapeText(r.name)}">
@@ -125,10 +141,12 @@ function renderCard(r) {
           onerror="this.src='assets/img/placeholder.webp'"
         >
         <div class="resto-card__badges">
+          <span class="badge badge--type-${placeType}">${formatPlaceType(placeType)}</span>
           <span class="badge ${open ? 'badge--open' : 'badge--closed'}">
             <span class="badge__dot" aria-hidden="true"></span>${open ? 'Đang mở' : 'Đã đóng'}
           </span>
           <span class="badge badge--category">${categoryIcon(r.category)}<span>${escapeText(r.category.name)}</span></span>
+          ${durBadge}
         </div>
         <button
           class="resto-card__fav"
@@ -147,11 +165,12 @@ function renderCard(r) {
             <span class="stars__value">${r.rating}</span>
             <span class="stars__count">(${r.rating_count})</span>
           </span>
-          <span class="resto-card__price">${fmtPrice}đ</span>
+          <span class="resto-card__price">${priceText}</span>
         </div>
       </div>
     </a>`;
 }
+
 
 function renderSkeletons(count = 6) {
   return Array.from({ length: count }, () => `
@@ -266,7 +285,24 @@ document.querySelectorAll('input[name="price"]').forEach(cb => {
   });
 });
 
+// FE-01: Type Tabs in Explore
+document.querySelectorAll('#explore-type-tabs [data-type]').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const typeVal = tab.dataset.type || 'all';
+    state.type = typeVal;
+
+    document.querySelectorAll('#explore-type-tabs [data-type]').forEach(t => {
+      const isSel = (t.dataset.type || 'all') === typeVal;
+      t.classList.toggle('type-tab--active', isSel);
+      t.setAttribute('aria-selected', isSel ? 'true' : 'false');
+    });
+
+    render();
+  });
+});
+
 // Rating radios
+
 document.querySelectorAll('input[name="rating"]').forEach(rb => {
   rb.addEventListener('change', () => {
     state.minRating = parseFloat(rb.value);
