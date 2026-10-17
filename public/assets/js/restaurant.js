@@ -5,7 +5,7 @@
 import { MOCK_RESTAURANTS } from './mock-data.js';
 import { fetchRestaurant } from './api.js';
 import { CONFIG } from './config.js';
-import { escapeText, getDirectionsUrl } from './format.js';
+import { escapeText, getDirectionsUrl, getGoogleMapsPinUrl } from './format.js';
 import { icon, categoryIcon, renderStars } from './icons.js';
 import { isFavorite, toggleFavorite } from './favorites.js';
 
@@ -305,13 +305,23 @@ if (window.L) {
   popupAddress.style.cssText = 'font-size:12px;color:var(--c-ink-soft);margin-top:2px;';
   const popupAction = document.createElement('div');
   popupAction.style.marginTop = '8px';
+  popupAction.style.display = 'flex';
+  popupAction.style.gap = '6px';
   const popupDir = document.createElement('a');
   popupDir.className = 'btn btn--primary btn--sm';
   popupDir.textContent = 'Chỉ đường';
-  popupDir.href = dirUrl;
+  popupDir.href = getDirectionsUrl(r);
   popupDir.target = '_blank';
   popupDir.rel = 'noopener noreferrer';
   popupAction.appendChild(popupDir);
+  const popupGmap = document.createElement('a');
+  popupGmap.className = 'btn btn--ghost btn--sm';
+  popupGmap.textContent = 'Google Maps';
+  popupGmap.href = getGoogleMapsPinUrl(r);
+  popupGmap.target = '_blank';
+  popupGmap.rel = 'noopener noreferrer';
+  popupGmap.title = 'Xem vị trí trên Google Maps';
+  popupAction.appendChild(popupGmap);
   popup.append(popupName, popupAddress, popupAction);
   L.marker([r.lat, r.lng], { icon }).addTo(map).bindPopup(popup).openPopup();
 } else {

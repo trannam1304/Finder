@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { CONFIG } from './config.js';
-import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl } from './format.js';
+import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl, getGoogleMapsPinUrl } from './format.js';
 import { categoryIcon } from './icons.js';
 
 let map = null;
@@ -11,6 +11,7 @@ let tileLayer = null;
 let userMarker = null;
 let markerGroup = null;
 let markers = new Map(); // id → L.marker
+let markerTimers = []; // Keep track of pending drop animation timeouts
 
 // Callbacks
 let onMarkerClick = null;
@@ -40,6 +41,8 @@ export function initMap(containerId, { lat, lng, zoom, isDark, onMarkerSelect, o
     } catch (e) {
       console.warn('Map cleanup error:', e);
     }
+    markerTimers.forEach((timerId) => clearTimeout(timerId));
+    markerTimers = [];
     map = null;
     userMarker = null;
     markerGroup = null;
@@ -102,6 +105,10 @@ export function initMap(containerId, { lat, lng, zoom, isDark, onMarkerSelect, o
  */
 export function setUserMarker(lat, lng) {
   if (!map || typeof L === 'undefined') return;
+  const numLat = Number(lat);
+  const numLng = Number(lng);
+  if (isNaN(numLat) || isNaN(numLng) || !isFinite(numLat) || !isFinite(numLng)) return;
+
   const icon = L.divIcon({
     className: '',
     html: '<div class="marker-user"></div>',
@@ -110,9 +117,9 @@ export function setUserMarker(lat, lng) {
   });
 
   if (userMarker) {
-    userMarker.setLatLng([lat, lng]);
+    userMarker.setLatLng([numLat, numLng]);
   } else {
-    userMarker = L.marker([lat, lng], {
+    userMarker = L.marker([numLat, numLng], {
       icon,
       draggable: true,
       zIndexOffset: 2000,
@@ -131,40 +138,77 @@ export function setUserMarker(lat, lng) {
  */
 export function renderMarkers(restaurants, selectedId = null) {
   if (!map || !markerGroup || typeof L === 'undefined') return;
+
+  // Clear toàn bộ setTimeout đang chờ từ lần render trước
+  markerTimers.forEach((timerId) => clearTimeout(timerId));
+  markerTimers = [];
+
   markerGroup.clearLayers();
   markers.clear();
 
+  if (!Array.isArray(restaurants)) return;
+
   restaurants.forEach((r, index) => {
-    const isSelected = r.id === selectedId;
+    if (!r) return;
+    const lat = Number(r.lat ?? r.latitude);
+    const lng = Number(r.lng ?? r.longitude);
+
+    if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
+      return;
+    }
+
+    // Đảm bảo r.lat và r.lng luôn mang kiểu số hợp lệ cho các hàm downstream
+    r.lat = lat;
+    r.lng = lng;
+
+    const isSelected = String(r.id) === String(selectedId);
     const icon = createRestaurantIcon(r, isSelected);
-    const marker = L.marker([r.lat, r.lng], {
+    const marker = L.marker([lat, lng], {
       icon,
       zIndexOffset: isSelected ? 1000 : 0,
       title: r.name,
     });
 
-    // Popup content (DOM-based, not innerHTML for XSS safety)
-    marker.on('click', () => {
-      if (onMarkerClick) onMarkerClick(r.id);
-      showPopup(marker, r);
+    // Gắn popup trực tiếp vào marker (DOM-based, an toàn XSS)
+    marker.bindPopup(() => createPopupContent(r), {
+      maxWidth: 280,
+      minWidth: 200,
+      autoPan: true,
+      autoPanPadding: [20, 20],
     });
 
-    // Staggered drop animation
+    // Khi click marker: kích hoạt callback chọn quán
+    marker.on('click', () => {
+      if (onMarkerClick) onMarkerClick(r.id);
+    });
+
+    // Thêm marker ngay vào layer group để marker luôn tồn tại và tra cứu được
+    marker.addTo(markerGroup);
+
+    // Staggered drop animation mượt mà qua CSS transition delay
     const shouldAnimate = index < CONFIG.MAX_ANIMATED_MARKERS;
     if (shouldAnimate) {
-      setTimeout(() => {
-        marker.addTo(markerGroup);
-        const el = marker.getElement();
-        if (el) {
-          const pin = el.querySelector('.marker-pin');
-          if (pin) pin.classList.add('marker-pin--animate');
+      const el = marker.getElement();
+      if (el) {
+        const pin = el.querySelector('.marker-pin');
+        if (pin) {
+          pin.style.animationDelay = `${index * CONFIG.MARKER_STAGGER_MS}ms`;
+          pin.classList.add('marker-pin--animate');
         }
-      }, index * CONFIG.MARKER_STAGGER_MS);
-    } else {
-      marker.addTo(markerGroup);
+      }
     }
 
     markers.set(r.id, marker);
+
+    if (isSelected) {
+      setTimeout(() => {
+        if (markerGroup && typeof markerGroup.zoomToShowLayer === 'function') {
+          markerGroup.zoomToShowLayer(marker, () => marker.openPopup());
+        } else {
+          marker.openPopup();
+        }
+      }, 100);
+    }
   });
 }
 
@@ -188,9 +232,9 @@ function createRestaurantIcon(restaurant, isSelected) {
 }
 
 /**
- * Hiện popup cho marker (dùng DOM, không innerHTML)
+ * Tạo phần tử DOM nội dung popup cho quán (DOM-based, an toàn XSS)
  */
-function showPopup(marker, restaurant) {
+export function createPopupContent(restaurant) {
   const container = document.createElement('div');
   container.className = 'popup';
 
@@ -241,51 +285,70 @@ function showPopup(marker, restaurant) {
   dirBtn.rel = 'noopener noreferrer';
   actions.appendChild(dirBtn);
 
+  const gmapBtn = document.createElement('a');
+  gmapBtn.className = 'btn btn--ghost btn--sm';
+  gmapBtn.textContent = 'Google Maps';
+  gmapBtn.href = getGoogleMapsPinUrl(restaurant);
+  gmapBtn.target = '_blank';
+  gmapBtn.rel = 'noopener noreferrer';
+  gmapBtn.title = 'Xem vị trí quán trên Google Maps';
+  actions.appendChild(gmapBtn);
+
   container.appendChild(name);
   container.appendChild(address);
   container.appendChild(meta);
   container.appendChild(actions);
 
-  marker.bindPopup(container, { maxWidth: 280, minWidth: 200 }).openPopup();
+  return container;
 }
 
 /**
- * Bay tới vị trí — offset bù cho sidebar trên desktop
+ * Hiện popup cho marker
+ */
+function showPopup(marker, restaurant) {
+  marker.setPopupContent(createPopupContent(restaurant)).openPopup();
+}
+
+/**
+ * Bay tới vị trí chuẩn xác tuyệt đối ở trung tâm bản đồ nhìn thấy
  */
 export function flyTo(lat, lng, zoom, options = {}) {
   if (!map) return;
+  const numLat = Number(lat);
+  const numLng = Number(lng);
+  if (isNaN(numLat) || isNaN(numLng) || !isFinite(numLat) || !isFinite(numLng)) return;
 
-  // Compensate for sidebar width so the point lands in the visible center
-  const sidebarEl = document.querySelector('.sidebar');
-  const sidebarW = (sidebarEl && sidebarEl.offsetWidth) ? sidebarEl.offsetWidth : 0;
-
-  map.flyTo([lat, lng], zoom || CONFIG.FOCUS_ZOOM, {
+  map.flyTo([numLat, numLng], zoom || CONFIG.FOCUS_ZOOM, {
     duration: CONFIG.FLY_DURATION,
     easeLinearity: 0.25,
   });
-
-  // After animation, re-pan if sidebar is visible to center in visible area
-  if (sidebarW > 0 && !options.noOffset) {
-    setTimeout(() => {
-      map.panBy([-sidebarW / 2, 0], { animate: false });
-    }, CONFIG.FLY_DURATION * 1000 + 80);
-  }
 }
 
 /**
- * Highlight marker khi chọn quán
+ * Highlight marker khi chọn quán và mở popup chi tiết
  */
-export function highlightMarker(id) {
+export function highlightMarker(id, shouldOpenPopup = false) {
   markers.forEach((marker, markerId) => {
+    const isMatch = String(markerId) === String(id);
     const el = marker.getElement();
-    if (!el) return;
-    const pin = el.querySelector('.marker-pin');
-    if (!pin) return;
-    if (markerId === id) {
-      pin.classList.add('marker-pin--selected');
+    if (isMatch) {
+      if (el) {
+        const pin = el.querySelector('.marker-pin');
+        if (pin) pin.classList.add('marker-pin--selected');
+      }
       marker.setZIndexOffset(1000);
+      if (shouldOpenPopup) {
+        if (markerGroup && typeof markerGroup.zoomToShowLayer === 'function') {
+          markerGroup.zoomToShowLayer(marker, () => marker.openPopup());
+        } else {
+          marker.openPopup();
+        }
+      }
     } else {
-      pin.classList.remove('marker-pin--selected');
+      if (el) {
+        const pin = el.querySelector('.marker-pin');
+        if (pin) pin.classList.remove('marker-pin--selected');
+      }
       marker.setZIndexOffset(0);
     }
   });
@@ -327,4 +390,5 @@ export function getMap() {
 /**
  * Lấy directions URL (export cho random card)
  */
-export { getDirectionsUrl };
+export { getDirectionsUrl, getGoogleMapsPinUrl };
+

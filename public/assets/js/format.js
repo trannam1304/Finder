@@ -70,16 +70,49 @@ export function formatTime(timeStr) {
 }
 
 /**
- * Tạo URL chỉ đường (Google Maps / Apple Maps) ưu tiên địa chỉ và tên quán chính xác
+ * Tạo URL chỉ đường (Google Maps / Apple Maps) ưu tiên toạ độ chính xác (lat, lng) khớp với marker
+ * Tuyệt đối không ghép restaurant.name vào đầu chuỗi tìm kiếm để tránh Google Maps fuzzy-match sai địa điểm
  */
 export function getDirectionsUrl(restaurant) {
   if (!restaurant) return '#';
+  const lat = restaurant.lat ?? restaurant.latitude;
+  const lng = restaurant.lng ?? restaurant.longitude;
   const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
-  const target = [restaurant.name, restaurant.address].filter(Boolean).join(', ');
-  const destQuery = encodeURIComponent(target.trim() || `${restaurant.lat},${restaurant.lng}`);
+
+  if (lat && lng) {
+    if (isApple) {
+      return `https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+    }
+    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+  }
+
+  // Fallback nếu không có tọa độ: dùng địa chỉ kèm TP. Hồ Chí Minh
+  const addr = restaurant.address || '';
+  const fallbackAddr = addr
+    ? (addr.includes('Hồ Chí Minh') ? addr : `${addr}, TP. Hồ Chí Minh`)
+    : '';
 
   if (isApple) {
-    return `https://maps.apple.com/?daddr=${encodeURIComponent(restaurant.address || '')}&q=${encodeURIComponent(restaurant.name || '')}&dirflg=d`;
+    return `https://maps.apple.com/?daddr=${encodeURIComponent(fallbackAddr)}&dirflg=d`;
   }
-  return `https://www.google.com/maps/dir/?api=1&destination=${destQuery}&travelmode=driving`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fallbackAddr)}&travelmode=driving`;
 }
+
+/**
+ * Tạo URL xem vị trí ghim (drop pin) trên Google Maps
+ * Ưu tiên toạ độ chính xác (lat, lng) để ghim đúng 100% vị trí marker
+ */
+export function getGoogleMapsPinUrl(restaurant) {
+  if (!restaurant) return '#';
+  const lat = restaurant.lat ?? restaurant.latitude;
+  const lng = restaurant.lng ?? restaurant.longitude;
+  if (lat && lng) {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  }
+  const addr = restaurant.address || '';
+  const fallbackAddr = addr
+    ? (addr.includes('Hồ Chí Minh') ? addr : `${addr}, TP. Hồ Chí Minh`)
+    : '';
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackAddr)}`;
+}
+

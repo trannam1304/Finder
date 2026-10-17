@@ -124,8 +124,8 @@ function selectRestaurant(restaurant) {
   highlightRow(sidebarList, restaurant.id);
   highlightRow(sheetList, restaurant.id);
 
-  // Highlight marker and fly to
-  highlightMarker(restaurant.id);
+  // Highlight marker and fly to with popup
+  highlightMarker(restaurant.id, true);
   flyTo(restaurant.lat, restaurant.lng);
 
   // On mobile, go to peek to see map
@@ -150,7 +150,7 @@ async function handleRandom() {
       });
       // Focus on the restaurant on the map
       flyTo(restaurant.lat, restaurant.lng);
-      highlightMarker(restaurant.id);
+      highlightMarker(restaurant.id, true);
     } else {
       showToast('Không tìm được quán nào phù hợp. Nới bán kính hoặc bỏ bớt bộ lọc.');
     }
@@ -201,7 +201,7 @@ async function bootstrap() {
     zoom: CONFIG.DEFAULT_ZOOM,
     isDark: dark,
     onMarkerSelect: (id) => {
-      const r = state.results.find(r => r.id === id);
+      const r = state.results.find(r => String(r.id) === String(id));
       if (r) selectRestaurant(r);
     },
     onUserPositionChange: (lat, lng) => {
