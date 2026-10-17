@@ -11,6 +11,7 @@ let tileLayer = null;
 let userMarker = null;
 let markerGroup = null;
 let markers = new Map(); // id → L.marker
+let markerTimers = []; // Keep track of pending drop animation timeouts
 
 // Callbacks
 let onMarkerClick = null;
@@ -40,6 +41,8 @@ export function initMap(containerId, { lat, lng, zoom, isDark, onMarkerSelect, o
     } catch (e) {
       console.warn('Map cleanup error:', e);
     }
+    markerTimers.forEach((timerId) => clearTimeout(timerId));
+    markerTimers = [];
     map = null;
     userMarker = null;
     markerGroup = null;
@@ -102,6 +105,10 @@ export function initMap(containerId, { lat, lng, zoom, isDark, onMarkerSelect, o
  */
 export function setUserMarker(lat, lng) {
   if (!map || typeof L === 'undefined') return;
+  const numLat = Number(lat);
+  const numLng = Number(lng);
+  if (isNaN(numLat) || isNaN(numLng) || !isFinite(numLat) || !isFinite(numLng)) return;
+
   const icon = L.divIcon({
     className: '',
     html: '<div class="marker-user"></div>',
@@ -110,9 +117,9 @@ export function setUserMarker(lat, lng) {
   });
 
   if (userMarker) {
-    userMarker.setLatLng([lat, lng]);
+    userMarker.setLatLng([numLat, numLng]);
   } else {
-    userMarker = L.marker([lat, lng], {
+    userMarker = L.marker([numLat, numLng], {
       icon,
       draggable: true,
       zIndexOffset: 2000,
@@ -131,13 +138,32 @@ export function setUserMarker(lat, lng) {
  */
 export function renderMarkers(restaurants, selectedId = null) {
   if (!map || !markerGroup || typeof L === 'undefined') return;
+
+  // Clear toàn bộ setTimeout đang chờ từ lần render trước để tránh marker cũ bị nạp đè lên map
+  markerTimers.forEach((timerId) => clearTimeout(timerId));
+  markerTimers = [];
+
   markerGroup.clearLayers();
   markers.clear();
 
+  if (!Array.isArray(restaurants)) return;
+
   restaurants.forEach((r, index) => {
+    if (!r) return;
+    const lat = Number(r.lat ?? r.latitude);
+    const lng = Number(r.lng ?? r.longitude);
+
+    if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
+      return;
+    }
+
+    // Đảm bảo r.lat và r.lng luôn mang kiểu số hợp lệ cho các hàm popup/chỉ đường downstream
+    r.lat = lat;
+    r.lng = lng;
+
     const isSelected = r.id === selectedId;
     const icon = createRestaurantIcon(r, isSelected);
-    const marker = L.marker([r.lat, r.lng], {
+    const marker = L.marker([lat, lng], {
       icon,
       zIndexOffset: isSelected ? 1000 : 0,
       title: r.name,
@@ -152,7 +178,7 @@ export function renderMarkers(restaurants, selectedId = null) {
     // Staggered drop animation
     const shouldAnimate = index < CONFIG.MAX_ANIMATED_MARKERS;
     if (shouldAnimate) {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         marker.addTo(markerGroup);
         const el = marker.getElement();
         if (el) {
@@ -160,6 +186,7 @@ export function renderMarkers(restaurants, selectedId = null) {
           if (pin) pin.classList.add('marker-pin--animate');
         }
       }, index * CONFIG.MARKER_STAGGER_MS);
+      markerTimers.push(timerId);
     } else {
       marker.addTo(markerGroup);
     }
@@ -263,12 +290,15 @@ function showPopup(marker, restaurant) {
  */
 export function flyTo(lat, lng, zoom, options = {}) {
   if (!map) return;
+  const numLat = Number(lat);
+  const numLng = Number(lng);
+  if (isNaN(numLat) || isNaN(numLng) || !isFinite(numLat) || !isFinite(numLng)) return;
 
   // Compensate for sidebar width so the point lands in the visible center
   const sidebarEl = document.querySelector('.sidebar');
   const sidebarW = (sidebarEl && sidebarEl.offsetWidth) ? sidebarEl.offsetWidth : 0;
 
-  map.flyTo([lat, lng], zoom || CONFIG.FOCUS_ZOOM, {
+  map.flyTo([numLat, numLng], zoom || CONFIG.FOCUS_ZOOM, {
     duration: CONFIG.FLY_DURATION,
     easeLinearity: 0.25,
   });
