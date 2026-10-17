@@ -9,13 +9,18 @@
 ## 🚀 Hướng dẫn chạy nhanh (Windows + XAMPP)
 
 1. Mở **XAMPP Control Panel** và nhấn **Start** cho **Apache** và **MySQL**.
-2. Chạy file `setup_database.bat` để tự động tạo database `food_finder` và nạp toàn bộ dữ liệu mẫu (schema, danh mục, quán ăn).
+2. Khởi tạo / Tạo lại Database bằng 1 trong 2 cách:
+   - **Cách 1 (Khuyên dùng - gõ trong Terminal):**
+     ```bash
+     php database/setup.php
+     ```
+   - **Cách 2:** Nhấp đúp vào file `setup_database.bat`.
+   *(Script sẽ tự động tạo database `food_finder`, import toàn bộ schema, danh mục, dữ liệu quán ăn mẫu và tài khoản admin mặc định: `admin` / `Admin@123456`)*
 3. Sao chép `app/config.example.php` thành `app/config.php` (mặc định đã cấu hình sẵn cho XAMPP `root` không mật khẩu).
-4. Tạo tài khoản quản trị Admin:
+4. Tạo thêm tài khoản quản trị Admin tùy ý (nếu cần):
    ```bash
    php database/create_admin.php
    ```
-   *(Tài khoản mặc định: `admin` / `Admin@123456`)*
 5. Nhấp đúp vào `start_server.bat` (hoặc chạy lệnh bên dưới) để khởi động web server:
    ```bash
    php -S localhost:8000 -t public

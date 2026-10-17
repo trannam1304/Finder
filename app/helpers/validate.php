@@ -17,6 +17,16 @@ function optional_float(array $source, string $key, float $default, float $min, 
     return required_float($source, $key, $min, $max);
 }
 
+function required_int(array $source, string $key, int $min, int $max): int
+{
+    if (!isset($source[$key]) || filter_var($source[$key], FILTER_VALIDATE_INT) === false) {
+        throw new InvalidArgumentException("Tham số {$key} không hợp lệ");
+    }
+    $value = (int) $source[$key];
+    if ($value < $min || $value > $max) throw new InvalidArgumentException("Tham số {$key} không hợp lệ");
+    return $value;
+}
+
 function optional_int(array $source, string $key, ?int $default, int $min, int $max): ?int
 {
     if (!isset($source[$key]) || $source[$key] === '') return $default;
@@ -50,6 +60,7 @@ function restaurant_filters(array $source): array
     return [
         'lat' => $lat, 'lng' => $lng, 'radius' => $radius,
         'category_id' => optional_int($source, 'category_id', null, 1, PHP_INT_MAX),
+        'type' => optional_enum($source, 'type', 'all', ['all', 'food', 'tourism', 'entertainment']),
         'price_level' => optional_int($source, 'price_level', null, 1, 3),
         'min_rating' => optional_float($source, 'min_rating', 0, 0, 5),
         'open_now' => optional_int($source, 'open_now', 0, 0, 1) === 1,
