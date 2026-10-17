@@ -66,7 +66,7 @@ try {
 
     // 6. Tự động tạo tài khoản Admin mặc định
     echo "[6/6] Dang tao tai khoan Admin mac dinh...\n";
-    $stmt = $pdo->prepare('INSERT INTO admins (username, password_hash, display_name) VALUES (:username, :hash, :display_name)');
+    $stmt = $pdo->prepare('INSERT INTO admins (username, password_hash, display_name) VALUES (:username, :hash, :display_name) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), display_name = VALUES(display_name)');
     $stmt->execute([
         ':username' => 'admin',
         ':hash' => password_hash('Admin@123456', PASSWORD_DEFAULT),

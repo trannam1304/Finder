@@ -79,6 +79,11 @@ CREATE TABLE admins (
   UNIQUE KEY uq_admins_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tai khoan Admin mac dinh: admin / Admin@123456 (dam bao chay ca qua CLI va PHP)
+INSERT INTO admins (id, username, password_hash, display_name) VALUES
+(1, 'admin', '$2y$10$4TJc9Ej.6cEVpiO4yxiYX.XR3kqa3lORK/MeQ1mXPaRc0JO12Hx32', 'Quan tri vien')
+ON DUPLICATE KEY UPDATE display_name = VALUES(display_name);
+
 CREATE TABLE login_attempts (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   ip VARBINARY(16) NOT NULL,
