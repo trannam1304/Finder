@@ -27,10 +27,10 @@ admin_header('Quản lý danh mục');
 
 <div class="admin-heading">
   <div>
-    <h1>Quản lý danh mục ẩm thực</h1>
-    <p class="admin-note">Phân loại món ăn giúp người dùng lọc và tìm kiếm quán ăn chính xác</p>
+    <h1>Quản lý danh mục đa địa điểm</h1>
+    <p class="admin-note">Phân loại danh mục theo 3 nhóm chính: Ẩm thực, Du lịch tham quan &amp; Vui chơi giải trí</p>
   </div>
-  <a href="index.php" class="btn btn--ghost">&larr; Về danh sách quán</a>
+  <a href="index.php" class="btn btn--ghost">&larr; Về danh sách địa điểm</a>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; align-items: start;">
@@ -49,10 +49,22 @@ admin_header('Quản lý danh mục');
 
       <div>
         <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          Nhóm loại hình (Type Group) <span style="color:red">*</span>
+        </label>
+        <select class="admin-select" name="type_group" style="width: 100%;">
+          <?php $currentGroup = $editCategory['type_group'] ?? 'food'; ?>
+          <option value="food" <?= $currentGroup === 'food' ? 'selected' : '' ?>>🍜 Ẩm thực (Food)</option>
+          <option value="tourism" <?= $currentGroup === 'tourism' ? 'selected' : '' ?>>🏛️ Du lịch / Tham quan (Tourism)</option>
+          <option value="entertainment" <?= $currentGroup === 'entertainment' ? 'selected' : '' ?>>🎡 Vui chơi giải trí (Entertainment)</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.25rem;">
           Tên danh mục <span style="color:red">*</span>
         </label>
         <input required type="text" class="admin-input" name="name" style="width: 100%;"
-          value="<?= h($editCategory['name'] ?? '') ?>" placeholder="Ví dụ: Bánh xèo, Nem nướng">
+          value="<?= h($editCategory['name'] ?? '') ?>" placeholder="Ví dụ: Bảo tàng, Cà phê, Rạp phim">
       </div>
 
       <div>
@@ -60,7 +72,7 @@ admin_header('Quản lý danh mục');
           Slug (Đường dẫn tĩnh) <span style="color:red">*</span>
         </label>
         <input required type="text" class="admin-input" name="slug" style="width: 100%;"
-          value="<?= h($editCategory['slug'] ?? '') ?>" placeholder="Ví dụ: banh-xeo">
+          value="<?= h($editCategory['slug'] ?? '') ?>" placeholder="Ví dụ: bao-tang">
         <small style="color: var(--c-ink-soft, #65706a);">Chỉ gồm chữ thường không dấu và gạch ngang</small>
       </div>
 
@@ -71,14 +83,22 @@ admin_header('Quản lý danh mục');
         <select class="admin-select" name="icon" style="width: 100%;">
           <?php
           $icons = [
-            'rice' => 'Bát cơm (rice)',
-            'noodles' => 'Tô bún phở (noodles)',
-            'bread' => 'Ổ bánh mì (bread)',
-            'grill' => 'Lẩu nướng (grill)',
-            'snack' => 'Ăn vặt (snack)',
-            'leaf' => 'Món chay (leaf)',
-            'coffee' => 'Cà phê & Đồ uống (coffee)',
-            'plate' => 'Dĩa thức ăn (plate)'
+            'rice' => '🍚 Bát cơm (rice)',
+            'noodles' => '🍜 Tô bún phở (noodles)',
+            'bread' => '🥖 Ổ bánh mì (bread)',
+            'grill' => '🔥 Lẩu nướng (grill)',
+            'snack' => '🍡 Ăn vặt (snack)',
+            'leaf' => '🥬 Món chay (leaf)',
+            'coffee' => '☕ Cà phê & Đồ uống (coffee)',
+            'plate' => '🍽️ Dĩa thức ăn (plate)',
+            'landmark' => '🏛️ Bảo tàng / Triển lãm (landmark)',
+            'trees' => '🌳 Công viên / Sinh thái (trees)',
+            'monument' => '⛩️ Di tích / Văn hóa (monument)',
+            'camera' => '📸 Điểm ngắm cảnh / Check-in (camera)',
+            'trophy' => '🎳 Vận động / Thể thao (trophy)',
+            'film' => '🎬 Rạp phim / Nghệ thuật (film)',
+            'gamepad' => '🎮 Boardgame / Acoustic / Chill (gamepad)',
+            'bag' => '🛍️ TTTM / Mua sắm (bag)'
           ];
           $currentIcon = $editCategory['icon'] ?? 'plate';
           foreach ($icons as $val => $label): ?>
@@ -116,9 +136,10 @@ admin_header('Quản lý danh mục');
           <tr>
             <th>Icon</th>
             <th>Tên danh mục</th>
+            <th>Nhóm</th>
             <th>Slug</th>
             <th>Thứ tự</th>
-            <th>Số quán</th>
+            <th>Số điểm</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -129,11 +150,12 @@ admin_header('Quản lý danh mục');
                 <?= admin_category_icon($cat['slug'] ?? $cat['icon']) ?>
               </td>
               <td><strong><?= h($cat['name']) ?></strong></td>
+              <td><?= admin_place_type_badge($cat['type_group'] ?? 'food') ?></td>
               <td><code><?= h($cat['slug']) ?></code></td>
               <td><?= (int)$cat['sort_order'] ?></td>
               <td>
                 <span class="badge" style="background: var(--c-bg, #f7f5ef); padding: 2px 8px; border-radius: 999px;">
-                  <?= (int)$cat['resto_count'] ?> quán
+                  <?= (int)$cat['resto_count'] ?> điểm
                 </span>
               </td>
               <td>

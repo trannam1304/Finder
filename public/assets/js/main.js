@@ -15,7 +15,8 @@ import { icon } from './icons.js';
 // ══════════════ APP STATE ══════════════
 const state = {
   user:     { lat: CONFIG.FALLBACK_LAT, lng: CONFIG.FALLBACK_LNG, source: 'fallback' },
-  filters:  { radius: CONFIG.DEFAULT_RADIUS || 3, categoryId: null, priceLevel: null, minRating: null, openNow: false, q: '', sort: 'distance' },
+  filters:  { radius: CONFIG.DEFAULT_RADIUS || 3, type: 'all', categoryId: null, priceLevel: null, minRating: null, openNow: false, q: '', sort: 'distance' },
+  categories: [],
   results:  [],
   selectedId: null,
   sheet:    'peek',
@@ -171,25 +172,26 @@ async function bootstrap() {
   renderSkeleton(sidebarList, 5);
   renderSkeleton(sheetList, 5);
 
-  // 3. Load categories (with localStorage cache)
+  // 3. Load categories (with localStorage cache v2)
   let categories = [];
   try {
-    const cachedCats = localStorage.getItem('food-finder-categories');
-    const cachedTime = localStorage.getItem('food-finder-categories-ts');
+    const cachedCats = localStorage.getItem('food-finder-categories-v2');
+    const cachedTime = localStorage.getItem('food-finder-categories-v2-ts');
     if (cachedCats && cachedTime && (Date.now() - parseInt(cachedTime)) < 3600000) {
       categories = JSON.parse(cachedCats);
     } else {
       const catResult = await fetchCategories();
       if (catResult.success) {
         categories = catResult.data;
-        localStorage.setItem('food-finder-categories', JSON.stringify(categories));
-        localStorage.setItem('food-finder-categories-ts', String(Date.now()));
+        localStorage.setItem('food-finder-categories-v2', JSON.stringify(categories));
+        localStorage.setItem('food-finder-categories-v2-ts', String(Date.now()));
       }
     }
   } catch {
     // Non-fatal, chips just won't render
   }
 
+  state.categories = categories;
   // Render category chips
   renderCategoryChips(categories, state);
 

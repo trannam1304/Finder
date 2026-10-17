@@ -61,17 +61,26 @@ function mockCategories() {
   };
 }
 
-function mockRestaurants({ lat, lng, radius = 3, category_id, price_level, min_rating, open_now, q, sort = 'distance', limit = 50, offset = 0 } = {}) {
+function mockRestaurants({ lat, lng, radius = 3, type = 'all', category_id, price_level, min_rating, open_now, q, sort = 'distance', limit = 50, offset = 0 } = {}) {
   const currentLat = (lat !== undefined && lat !== null && !isNaN(Number(lat))) ? Number(lat) : CONFIG.FALLBACK_LAT;
   const currentLng = (lng !== undefined && lng !== null && !isNaN(Number(lng))) ? Number(lng) : CONFIG.FALLBACK_LNG;
   let results = MOCK_RESTAURANTS.map(r => ({
     ...r,
+    place_type: r.place_type || r.category?.type_group || 'food',
+    ticket_price: r.ticket_price ?? 0,
+    estimated_duration: r.estimated_duration ?? 60,
+    best_time_slot: r.best_time_slot || 'any',
     distance_km: haversineKm(currentLat, currentLng, r.lat, r.lng),
     is_open_now: isOpenNowMock(r.open_time, r.close_time, r.is_24h),
   }));
 
   // Filter by radius
   results = results.filter(r => r.distance_km <= radius);
+
+  // Filter by place_type (food, tourism, entertainment)
+  if (type && type !== 'all') {
+    results = results.filter(r => (r.place_type || r.category?.type_group || 'food') === type);
+  }
 
   // Filter by category
   if (category_id) {

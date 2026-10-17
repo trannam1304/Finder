@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { CONFIG } from './config.js';
-import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl, getGoogleMapsPinUrl } from './format.js';
+import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl, getGoogleMapsPinUrl, getPlaceTypeInfo, formatTicketOrPrice, formatDuration } from './format.js';
 import { categoryIcon } from './icons.js';
 
 let map = null;
@@ -213,15 +213,17 @@ export function renderMarkers(restaurants, selectedId = null) {
 }
 
 /**
- * Tạo divIcon cho quán
+ * Tạo divIcon cho địa điểm (Màu riêng theo loại hình: Ẩm thực / Du lịch / Vui chơi)
  */
 function createRestaurantIcon(restaurant, isSelected) {
+  const placeType = restaurant.place_type || restaurant.category?.type_group || 'food';
+  const typeInfo = getPlaceTypeInfo(placeType);
   const selectedClass = isSelected ? ' marker-pin--selected' : '';
   const categoryGlyph = categoryIcon(restaurant.category, 'marker-pin__svg');
 
   return L.divIcon({
     className: '',
-    html: `<div class="marker-pin${selectedClass}">
+    html: `<div class="marker-pin ${typeInfo.markerClass}${selectedClass}">
              <div class="marker-pin__drop"></div>
              <span class="marker-pin__icon">${categoryGlyph}</span>
            </div>`,
@@ -232,11 +234,30 @@ function createRestaurantIcon(restaurant, isSelected) {
 }
 
 /**
- * Tạo phần tử DOM nội dung popup cho quán (DOM-based, an toàn XSS)
+ * Tạo phần tử DOM nội dung popup cho địa điểm (DOM-based, an toàn XSS)
  */
 export function createPopupContent(restaurant) {
   const container = document.createElement('div');
   container.className = 'popup';
+
+  const placeType = restaurant.place_type || restaurant.category?.type_group || 'food';
+  const typeInfo = getPlaceTypeInfo(placeType);
+
+  // Top badges: Place Type + Category
+  const badgesRow = document.createElement('div');
+  badgesRow.className = 'popup__badges';
+
+  const typeBadge = document.createElement('span');
+  typeBadge.className = `badge ${typeInfo.badgeClass}`;
+  typeBadge.textContent = `${typeInfo.emoji} ${typeInfo.label}`;
+  badgesRow.appendChild(typeBadge);
+
+  if (restaurant.category?.name) {
+    const catBadge = document.createElement('span');
+    catBadge.className = 'badge badge--category';
+    catBadge.textContent = restaurant.category.name;
+    badgesRow.appendChild(catBadge);
+  }
 
   const name = document.createElement('div');
   name.className = 'popup__name';
@@ -258,12 +279,22 @@ export function createPopupContent(restaurant) {
     meta.appendChild(badge);
   }
 
-  // Price
-  const price = formatPrice(restaurant.price_min, restaurant.price_max);
-  if (price) {
+  // Ticket price / Food price
+  const priceText = formatTicketOrPrice(restaurant);
+  if (priceText) {
     const priceEl = document.createElement('span');
-    priceEl.textContent = price;
+    priceEl.className = 'popup__price';
+    priceEl.textContent = priceText;
     meta.appendChild(priceEl);
+  }
+
+  // Estimated duration
+  const durationText = formatDuration(restaurant.estimated_duration);
+  if (durationText) {
+    const durEl = document.createElement('span');
+    durEl.className = 'popup__duration';
+    durEl.textContent = `⏱ ${durationText}`;
+    meta.appendChild(durEl);
   }
 
   // Distance
@@ -277,6 +308,12 @@ export function createPopupContent(restaurant) {
   const actions = document.createElement('div');
   actions.className = 'popup__actions';
 
+  const detailBtn = document.createElement('a');
+  detailBtn.className = 'btn btn--ghost btn--sm';
+  detailBtn.textContent = 'Chi tiết';
+  detailBtn.href = `restaurant.html?id=${encodeURIComponent(restaurant.id)}`;
+  actions.appendChild(detailBtn);
+
   const dirBtn = document.createElement('a');
   dirBtn.className = 'btn btn--primary btn--sm';
   dirBtn.textContent = 'Chỉ đường';
@@ -287,13 +324,14 @@ export function createPopupContent(restaurant) {
 
   const gmapBtn = document.createElement('a');
   gmapBtn.className = 'btn btn--ghost btn--sm';
-  gmapBtn.textContent = 'Google Maps';
+  gmapBtn.textContent = 'Bản đồ';
   gmapBtn.href = getGoogleMapsPinUrl(restaurant);
   gmapBtn.target = '_blank';
   gmapBtn.rel = 'noopener noreferrer';
-  gmapBtn.title = 'Xem vị trí quán trên Google Maps';
+  gmapBtn.title = 'Xem vị trí trên Google Maps';
   actions.appendChild(gmapBtn);
 
+  container.appendChild(badgesRow);
   container.appendChild(name);
   container.appendChild(address);
   container.appendChild(meta);

@@ -36,6 +36,23 @@
   margin-top: -4px;
 }
 
+/* ── Place type marker colors (Task FE-02) ── */
+.marker-pin--food .marker-pin__drop {
+  background: #ff4d2e;
+}
+
+.marker-pin--tourism .marker-pin__drop {
+  background: #0284c7;
+}
+
+.marker-pin--entertainment .marker-pin__drop {
+  background: #f59e0b;
+}
+
+.marker-pin--entertainment .marker-pin__icon {
+  color: #181818;
+}
+
 /* Selected state */
 .marker-pin--selected {
   transform: scale(1.25);
@@ -44,6 +61,11 @@
 
 .marker-pin--selected .marker-pin__drop {
   background: var(--c-accent);
+  border-color: #181818;
+}
+
+.marker-pin--selected .marker-pin__icon {
+  color: #181818;
 }
 
 /* ── Marker drop animation ── */
@@ -96,8 +118,8 @@
 
 .leaflet-popup-content {
   margin: 0 !important;
-  min-width: 200px;
-  max-width: 280px;
+  min-width: 220px;
+  max-width: 300px;
 }
 
 .leaflet-popup-tip {
@@ -109,9 +131,16 @@
   padding: var(--sp-3);
 }
 
+.popup__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
 .popup__name {
   font-size: var(--fs-md);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--c-ink);
   margin-bottom: var(--sp-1);
 }
@@ -125,15 +154,27 @@
 .popup__meta {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: var(--fs-xs);
   color: var(--c-ink-faint);
   margin-bottom: var(--sp-3);
 }
 
+.popup__price {
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.popup__duration {
+  font-weight: 600;
+  color: var(--c-ink-soft);
+}
+
 .popup__actions {
   display: flex;
-  gap: var(--sp-2);
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 /* ── Leaflet controls ── */

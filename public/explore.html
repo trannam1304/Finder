@@ -123,6 +123,14 @@
     <!-- ── Main grid ── -->
     <main class="explore-main" id="explore-main">
 
+      <!-- Level-1 Place Type Tabs (Task FE-01) -->
+      <div class="place-type-tabs place-type-tabs--explore" id="explore-type-tabs" role="tablist" aria-label="Phân loại địa điểm">
+        <button type="button" class="place-type-tab place-type-tab--active" data-type="all" role="tab" aria-selected="true">Tất cả</button>
+        <button type="button" class="place-type-tab" data-type="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
+        <button type="button" class="place-type-tab" data-type="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
+        <button type="button" class="place-type-tab" data-type="entertainment" role="tab" aria-selected="false">🎡 Vui chơi giải trí</button>
+      </div>
+
       <!-- Toolbar -->
       <div class="explore-toolbar">
         <div class="explore-search-wrap">
@@ -133,8 +141,8 @@
             type="search"
             id="explore-search"
             class="explore-search"
-            placeholder="Tìm tên quán, địa chỉ..."
-            aria-label="Tìm kiếm quán ăn"
+            placeholder="Tìm tên quán, điểm du lịch, khu vui chơi..."
+            aria-label="Tìm kiếm địa điểm"
             autocomplete="off"
           >
         </div>
@@ -158,7 +166,7 @@
       </div>
 
       <!-- Grid -->
-      <div class="resto-grid" id="resto-grid" role="list" aria-label="Danh sách quán ăn">
+      <div class="resto-grid" id="resto-grid" role="list" aria-label="Danh sách địa điểm">
         <!-- Rendered by JS -->
       </div>
 

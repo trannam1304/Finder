@@ -48,6 +48,13 @@
 
       <!-- Filter chips (scrollable) -->
       <div class="header__filters" id="header-filters">
+        <!-- Level-1 Place Type Tabs (Task FE-01) -->
+        <div class="place-type-tabs place-type-tabs--compact" role="tablist" aria-label="Loại hình địa điểm">
+          <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true">Tất cả</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false">🎡 Vui chơi giải trí</button>
+        </div>
         <!-- Radius selector -->
         <select class="radius-select" id="filter-radius" aria-label="Bán kính tìm kiếm">
           <option value="0.5">500 m</option>
@@ -56,8 +63,9 @@
           <option value="3" selected>3 km</option>
           <option value="5">5 km</option>
           <option value="10">10 km</option>
+          <option value="15">15 km</option>
         </select>
-        <button class="chip" type="button" id="btn-recenter-tdtu" title="Xem 18 quán ăn quanh ĐH Tôn Đức Thắng (Quận 7)">
+        <button class="chip" type="button" id="btn-recenter-tdtu" title="Xem các địa điểm quanh ĐH Tôn Đức Thắng (Quận 7)">
           📍 ĐH Tôn Đức Thắng (Q.7)
         </button>
         <!-- Category chips rendered by JS -->
@@ -103,14 +111,21 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar__header">
           <div class="sidebar__count" id="sidebar-count" aria-live="polite">
-            Đang tìm quán...
+            Đang tìm địa điểm...
+          </div>
+          <!-- Level-1 Place Type Tabs in Sidebar -->
+          <div class="place-type-tabs place-type-tabs--sidebar" role="tablist" aria-label="Lọc nhanh theo nhóm">
+            <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true">Tất cả</button>
+            <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
+            <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
+            <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false">🎡 Vui chơi</button>
           </div>
           <div class="sidebar__search">
             <svg class="sidebar__search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
               <circle cx="7" cy="7" r="5.5"/><path d="M11 11l3.5 3.5"/>
             </svg>
             <input type="search" class="sidebar__search-input" id="sidebar-search"
-              placeholder="Tìm tên quán hoặc địa chỉ..." aria-label="Tìm kiếm quán ăn" autocomplete="off">
+              placeholder="Tìm tên địa điểm hoặc địa chỉ..." aria-label="Tìm kiếm địa điểm" autocomplete="off">
           </div>
         </div>
         <div class="sidebar__list-wrap" id="sidebar-list-wrap">
@@ -122,7 +137,7 @@
 
       <!-- ── Map ── -->
       <div class="map-wrap" id="map-wrap">
-        <div id="map" role="application" aria-label="Bản đồ quán ăn"></div>
+        <div id="map" role="application" aria-label="Bản đồ địa điểm"></div>
       </div>
     </main>
 
@@ -133,14 +148,21 @@
       </div>
       <div class="sheet__header">
         <div class="sheet__count" id="sheet-count" aria-live="polite">
-          Đang tìm quán...
+          Đang tìm địa điểm...
+        </div>
+        <!-- Level-1 Place Type Tabs in Mobile Sheet -->
+        <div class="place-type-tabs place-type-tabs--sidebar" role="tablist" aria-label="Lọc nhanh theo nhóm">
+          <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true">Tất cả</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false">🎡 Vui chơi</button>
         </div>
         <div class="sheet__search">
           <svg class="sheet__search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
             <circle cx="7" cy="7" r="5.5"/><path d="M11 11l3.5 3.5"/>
           </svg>
           <input type="search" class="sheet__search-input" id="sheet-search"
-            placeholder="Tìm tên quán hoặc địa chỉ..." aria-label="Tìm kiếm quán ăn" autocomplete="off">
+            placeholder="Tìm tên địa điểm hoặc địa chỉ..." aria-label="Tìm kiếm địa điểm" autocomplete="off">
         </div>
       </div>
       <div class="sheet__list-wrap" id="sheet-list-wrap">
