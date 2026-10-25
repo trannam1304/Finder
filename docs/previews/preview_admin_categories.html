@@ -1,6 +1,6 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Quản lý danh mục — Food Finder</title>
+    <title>Quản lý danh mục — Food & Trip Finder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
@@ -13,43 +13,45 @@
       <a href="#" class="admin-brand"><span style="color:#d22b1f;font-weight:900;">Food Finder</span> <small>Quản trị</small></a>
       <nav>
         <a href="#">Tổng quan</a>
-        <a href="#">Quán ăn</a>
+        <a href="#">Địa điểm</a>
         <a href="#" style="font-weight:700;color:#d22b1f;">Danh mục</a>
         <a href="#">Đánh giá</a>
-        <a href="#">+ Thêm quán</a>
+        <a href="#">+ Thêm địa điểm</a>
         <a href="#">Xem bản đồ</a>
         <button class="link-button">Đăng xuất</button>
       </nav>
     </header>
     <main class="admin-container">
       <div class="admin-heading">
-        <div><h1>Quản lý danh mục ẩm thực</h1><p class="admin-note">Phân loại món ăn giúp người dùng lọc và tìm kiếm quán ăn chính xác</p></div>
-        <a href="#" class="btn btn--ghost">&larr; Về danh sách quán</a>
+        <div><h1>Quản lý danh mục đa loại hình</h1><p class="admin-note">Phân loại theo 3 nhóm cấp 1 (Ẩm thực, Du lịch, Vui chơi) và 15 danh mục chi tiết</p></div>
+        <a href="#" class="btn btn--ghost">&larr; Về danh sách địa điểm</a>
       </div>
       <div style="display:grid;grid-template-columns:360px 1fr;gap:1.5rem;">
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
           <h3 style="margin:0 0 1rem;">Thêm danh mục mới</h3>
           <form style="display:flex;flex-direction:column;gap:0.85rem;">
-            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Tên danh mục *</label><input class="admin-input" style="width:100%;" placeholder="Ví dụ: Bánh xèo, Nem nướng"></div>
-            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Slug (Đường dẫn tĩnh) *</label><input class="admin-input" style="width:100%;" placeholder="Ví dụ: banh-xeo"></div>
-            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Biểu tượng</label><select class="admin-select" style="width:100%;"><option>Bát cơm (rice)</option><option>Tô bún phở (noodles)</option><option>Ổ bánh mì (bread)</option></select></div>
-            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Thứ tự hiển thị</label><input type="number" class="admin-input" style="width:100%;" value="8"></div>
+            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Nhóm loại hình (Cấp 1) *</label><select class="admin-select" style="width:100%;"><option value="food">🍜 Ẩm thực & Đồ uống</option><option value="tourism">🏛️ Du lịch & Tham quan</option><option value="entertainment">🎡 Vui chơi & Giải trí</option></select></div>
+            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Tên danh mục *</label><input class="admin-input" style="width:100%;" placeholder="Ví dụ: Bảo tàng & Nghệ thuật"></div>
+            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Slug (Đường dẫn tĩnh) *</label><input class="admin-input" style="width:100%;" placeholder="Ví dụ: bao-tang"></div>
+            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Biểu tượng</label><select class="admin-select" style="width:100%;"><option>Bát cơm (rice)</option><option>Bảo tàng (landmark)</option><option>Cúp vận động (trophy)</option></select></div>
+            <div><label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:3px;">Thứ tự hiển thị</label><input type="number" class="admin-input" style="width:100%;" value="16"></div>
             <button class="btn btn--primary" type="button" style="margin-top:0.5rem;">+ Thêm danh mục</button>
           </form>
         </div>
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
-          <h3 style="margin:0 0 1rem;">Danh sách danh mục hiện có (7)</h3>
+          <h3 style="margin:0 0 1rem;">Danh sách danh mục hiện có (15)</h3>
           <div class="admin-table-wrap">
             <table class="admin-table">
-              <thead><tr><th>Icon</th><th>Tên danh mục</th><th>Slug</th><th>Thứ tự</th><th>Số quán</th><th>Thao tác</th></tr></thead>
+              <thead><tr><th>Icon</th><th>Tên danh mục</th><th>Nhóm cấp 1</th><th>Slug</th><th>Số địa điểm</th><th>Thao tác</th></tr></thead>
               <tbody>
-                <tr><td>🍚</td><td><strong>Cơm</strong></td><td><code>com</code></td><td>1</td><td>14 quán</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
-                <tr><td>🍜</td><td><strong>Bún, Phở, Hủ tiếu</strong></td><td><code>bun-pho</code></td><td>2</td><td>11 quán</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
-                <tr><td>🥖</td><td><strong>Bánh mì</strong></td><td><code>banh-mi</code></td><td>3</td><td>8 quán</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
-                <tr><td>🔥</td><td><strong>Lẩu, Nướng</strong></td><td><code>lau-nuong</code></td><td>4</td><td>6 quán</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
-                <tr><td>🍢</td><td><strong>Ăn vặt</strong></td><td><code>an-vat</code></td><td>5</td><td>4 quán</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
-                <tr><td>🥬</td><td><strong>Món chay</strong></td><td><code>chay</code></td><td>6</td><td>2 quán</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
-                <tr><td>☕</td><td><strong>Cà phê, Trà sữa</strong></td><td><code>ca-phe</code></td><td>7</td><td>5 quán</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>🍚</td><td><strong>Cơm</strong></td><td><span style="color:#d22b1f;font-weight:700;">🍜 Ẩm thực</span></td><td><code>com</code></td><td>4 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>🍜</td><td><strong>Bún, Phở, Hủ tiếu</strong></td><td><span style="color:#d22b1f;font-weight:700;">🍜 Ẩm thực</span></td><td><code>bun-pho</code></td><td>5 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>🏛️</td><td><strong>Bảo tàng & Nghệ thuật</strong></td><td><span style="color:#0284c7;font-weight:700;">🏛️ Du lịch</span></td><td><code>bao-tang</code></td><td>3 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>🌳</td><td><strong>Công viên & Cảnh quan</strong></td><td><span style="color:#0284c7;font-weight:700;">🏛️ Du lịch</span></td><td><code>cong-vien</code></td><td>4 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>📸</td><td><strong>Check-in & Hoàng hôn</strong></td><td><span style="color:#0284c7;font-weight:700;">🏛️ Du lịch</span></td><td><code>check-in</code></td><td>5 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>🏆</td><td><strong>Khu thể thao, vận động</strong></td><td><span style="color:#d97706;font-weight:700;">🎡 Vui chơi</span></td><td><code>van-dong</code></td><td>8 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>🎬</td><td><strong>Rạp chiếu phim</strong></td><td><span style="color:#d97706;font-weight:700;">🎡 Vui chơi</span></td><td><code>rap-phim</code></td><td>2 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
+                <tr><td>🎮</td><td><strong>Board Game & Workshop</strong></td><td><span style="color:#d97706;font-weight:700;">🎡 Vui chơi</span></td><td><code>board-game</code></td><td>3 địa điểm</td><td><button class="btn btn--ghost btn--sm">Sửa</button></td></tr>
               </tbody>
             </table>
           </div>

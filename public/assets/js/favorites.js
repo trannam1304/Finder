@@ -1,13 +1,13 @@
 /* ============================================================
-   FAVORITES.JS — Quản lý quán ăn yêu thích đã lưu
-   Hoạt động độc lập bằng localStorage trên Web tĩnh
+   FAVORITES.JS — Quản lý địa điểm yêu thích đã lưu (Đa loại hình)
+   Hoạt động độc lập bằng localStorage trên Web tĩnh & Backend API
    ============================================================ */
 
 import { MOCK_RESTAURANTS, MOCK_CATEGORIES } from './mock-data.js';
 import { fetchRestaurants, fetchCategories } from './api.js';
 import { CONFIG } from './config.js';
-import { escapeText, formatPrice, getDirectionsUrl } from './format.js';
-import { icon, categoryIcon, renderStars } from './icons.js';
+import { escapeText, formatTicketOrPrice, formatDuration, getPlaceTypeInfo, getDirectionsUrl } from './format.js';
+import { icon, categoryIcon } from './icons.js';
 
 const STORAGE_KEY = 'food_finder_favorites';
 
@@ -15,9 +15,9 @@ const STORAGE_KEY = 'food_finder_favorites';
 export function getFavoriteIds() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [1, 2, 5]; // Mặc định gợi ý 3 quán khi mới mở
+    return raw ? JSON.parse(raw) : [1, 19, 35]; // Mặc định gợi ý 3 địa điểm (Ẩm thực, Du lịch, Vui chơi) khi mới mở
   } catch {
-    return [1, 2, 5];
+    return [1, 19, 35];
   }
 }
 
@@ -30,12 +30,12 @@ export function saveFavoriteIds(ids) {
   }
 }
 
-// ── Kiểm tra quán đã lưu chưa ──
+// ── Kiểm tra địa điểm đã lưu chưa ──
 export function isFavorite(id) {
   return getFavoriteIds().includes(Number(id));
 }
 
-// ── Bật/tắt lưu quán ──
+// ── Bật/tắt lưu địa điểm ──
 export function toggleFavorite(id) {
   const numId = Number(id);
   const ids = getFavoriteIds();
@@ -60,8 +60,11 @@ async function initFavoritesPage() {
   const filterCatEl = document.getElementById('filter-category');
   const btnClearAll = document.getElementById('btn-clear-all');
   const searchInput = document.getElementById('search-favorites');
+  const typeTabsContainer = document.getElementById('favorites-type-tabs');
 
   if (!listEl) return;
+
+  let activePlaceType = 'all';
 
   // Theme toggle
   const btnTheme = document.getElementById('btn-theme');
@@ -78,14 +81,14 @@ async function initFavoritesPage() {
     applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
   });
 
-  // Tải danh sách quán
+  // Tải danh sách địa điểm
   let allRestaurants = [...MOCK_RESTAURANTS];
   let allCategories = [...MOCK_CATEGORIES];
 
   if (!CONFIG.USE_MOCK) {
     try {
       const [resR, resC] = await Promise.all([
-        fetchRestaurants({ lat: CONFIG.FALLBACK_LAT, lng: CONFIG.FALLBACK_LNG, radius: 10 }),
+        fetchRestaurants({ lat: CONFIG.FALLBACK_LAT, lng: CONFIG.FALLBACK_LNG, radius: 25, type: 'all', limit: 100 }),
         fetchCategories()
       ]);
       if (resR.success && resR.data) allRestaurants = resR.data;
@@ -95,19 +98,35 @@ async function initFavoritesPage() {
     }
   }
 
-  // Đổ danh mục vào select
-  if (filterCatEl) {
-    filterCatEl.innerHTML = `<option value="">Tất cả danh mục (${allCategories.length})</option>` +
-      allCategories.map(c => `<option value="${c.id}">${escapeText(c.name)}</option>`).join('');
+  function populateCategories() {
+    if (!filterCatEl) return;
+    const visibleCats = activePlaceType === 'all'
+      ? allCategories
+      : allCategories.filter(c => (c.type_group || 'food') === activePlaceType);
+    const prevVal = filterCatEl.value;
+    filterCatEl.innerHTML = `<option value="">Tất cả danh mục (${visibleCats.length})</option>` +
+      visibleCats.map(c => `<option value="${c.id}">${escapeText(c.name)}</option>`).join('');
+    if (visibleCats.some(c => String(c.id) === String(prevVal))) {
+      filterCatEl.value = prevVal;
+    } else {
+      filterCatEl.value = '';
+    }
   }
+
+  populateCategories();
 
   function render() {
     const favoriteIds = getFavoriteIds();
     const query = (searchInput?.value || '').trim().toLowerCase();
     const selectedCat = filterCatEl?.value ? Number(filterCatEl.value) : null;
 
-    // Lọc các quán có trong danh sách yêu thích
+    // Lọc các địa điểm có trong danh sách yêu thích
     let items = allRestaurants.filter(r => favoriteIds.includes(r.id));
+
+    // Lọc theo nhóm loại hình cấp 1 (Task FE-01)
+    if (activePlaceType !== 'all') {
+      items = items.filter(r => (r.place_type || r.category?.type_group || 'food') === activePlaceType);
+    }
 
     // Lọc theo danh mục
     if (selectedCat) {
@@ -123,20 +142,25 @@ async function initFavoritesPage() {
     }
 
     if (countEl) {
-      countEl.textContent = `${items.length} quán`;
+      countEl.textContent = `${items.length} địa điểm`;
     }
 
     if (items.length === 0) {
       listEl.innerHTML = '';
       emptyEl.style.display = 'block';
-      if (btnClearAll) btnClearAll.style.display = 'none';
+      if (btnClearAll) btnClearAll.style.display = favoriteIds.length > 0 ? 'inline-flex' : 'none';
       return;
     }
 
     emptyEl.style.display = 'none';
     if (btnClearAll) btnClearAll.style.display = 'inline-flex';
 
-    listEl.innerHTML = items.map(r => `
+    listEl.innerHTML = items.map(r => {
+      const placeType = r.place_type || r.category?.type_group || 'food';
+      const typeInfo = getPlaceTypeInfo(placeType);
+      const durationStr = formatDuration(r.estimated_duration);
+
+      return `
       <article class="fav-card" id="fav-card-${r.id}">
         <div class="fav-card__media">
           <img src="${escapeText(r.image_url)}" alt="${escapeText(r.name)}"
@@ -145,9 +169,13 @@ async function initFavoritesPage() {
           <button class="fav-card__btn-remove" data-id="${r.id}" title="Xóa khỏi yêu thích" aria-label="Xóa ${escapeText(r.name)} khỏi danh sách đã lưu">
             <svg class="ui-icon ui-icon--heart-filled" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
           </button>
-          <span class="fav-card__badge-cat">${categoryIcon(r.category)} <span>${escapeText(r.category?.name || 'Món ngon')}</span></span>
+          <span class="fav-card__badge-cat">${categoryIcon(r.category)} <span>${escapeText(r.category?.name || 'Địa điểm')}</span></span>
         </div>
         <div class="fav-card__body">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+            <span class="badge ${typeInfo.badgeClass}">${typeInfo.emoji} ${escapeText(typeInfo.label)}</span>
+            ${durationStr ? `<span class="badge badge--duration">${icon('timer')} ${escapeText(durationStr)}</span>` : ''}
+          </div>
           <div class="fav-card__header">
             <h3 class="fav-card__title"><a href="restaurant.html?id=${r.id}">${escapeText(r.name)}</a></h3>
             <div class="fav-card__rating">
@@ -160,7 +188,7 @@ async function initFavoritesPage() {
             ${icon('pin')} ${escapeText(r.address)}
           </p>
           <div class="fav-card__meta">
-            <span class="fav-card__price">${formatPrice(r.price_min, r.price_max)}</span>
+            <span class="fav-card__price">${escapeText(formatTicketOrPrice(r))}</span>
             <span class="fav-card__hours">${icon('clock')} ${r.is_24h ? 'Mở cả ngày 24/7' : `${r.open_time?.slice(0,5)} – ${r.close_time?.slice(0,5)}`}</span>
           </div>
           <div class="fav-card__actions">
@@ -172,13 +200,31 @@ async function initFavoritesPage() {
           </div>
         </div>
       </article>
-    `).join('');
+    `;
+    }).join('');
 
-    // Gắn sự kiện xóa từng quán
+    // Gắn sự kiện xóa từng địa điểm
     listEl.querySelectorAll('.fav-card__btn-remove').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = Number(e.currentTarget.dataset.id);
         toggleFavorite(id);
+        render();
+      });
+    });
+  }
+
+  // Sự kiện Tabs phân loại địa điểm cấp 1 (Task FE-01)
+  if (typeTabsContainer) {
+    typeTabsContainer.querySelectorAll('.place-type-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        typeTabsContainer.querySelectorAll('.place-type-tab').forEach(t => {
+          t.classList.remove('place-type-tab--active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('place-type-tab--active');
+        tab.setAttribute('aria-selected', 'true');
+        activePlaceType = tab.dataset.type || 'all';
+        populateCategories();
         render();
       });
     });
@@ -190,7 +236,7 @@ async function initFavoritesPage() {
 
   // Xóa toàn bộ
   btnClearAll?.addEventListener('click', () => {
-    if (confirm('Bạn có chắc muốn xóa tất cả các quán đã lưu không?')) {
+    if (confirm('Bạn có chắc muốn xóa tất cả các địa điểm đã lưu không?')) {
       saveFavoriteIds([]);
       render();
     }

@@ -125,6 +125,8 @@ body::before {
 .badge--tourism { background: #bae6fd; color: #0c4a6e; }
 .badge--entertainment { background: #fef08a; color: #713f12; }
 .badge--duration { background: var(--c-surface-sunk); color: var(--c-ink); }
+.badge--ticket { background: #dcfce7; color: #14532d; }
+[data-theme="dark"] .badge--ticket { background: #14532d; color: #dcfce7; }
 [data-theme="dark"] .badge--food { background: #7c2d12; color: #ffedd5; }
 [data-theme="dark"] .badge--tourism { background: #075985; color: #e0f2fe; }
 [data-theme="dark"] .badge--entertainment { background: #854d0e; color: #fef9c3; }
