@@ -306,6 +306,21 @@ async function resolveUserLocation() {
 
 // ══════════════ BIND EVENTS ══════════════
 function bindEvents() {
+  // Click vào logo Food Finder -> reload / quay về trang chủ ban đầu
+  const headerBrand = document.getElementById('header-brand');
+  if (headerBrand) {
+    headerBrand.addEventListener('click', (e) => {
+      if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        e.preventDefault();
+        if (window.location.pathname.endsWith('index.html') && !window.location.search && !window.location.hash) {
+          window.location.reload();
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
+    });
+  }
+
   // Dark mode toggle
   if (btnTheme) {
     btnTheme.addEventListener('click', () => {
