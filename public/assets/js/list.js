@@ -2,7 +2,7 @@
    LIST.JS — Render danh sách quán, skeleton, empty/error state
    ============================================================ */
 
-import { formatDistance, formatPrice, isOpenNow, renderStars, formatPlaceType, formatTicketPrice, formatDuration } from './format.js';
+import { formatDistance, formatPrice, isOpenNow, renderStars, getPlaceTypeInfo, formatTicketOrPrice, formatDuration } from './format.js';
 import { CONFIG } from './config.js';
 import { icon, categoryIcon } from './icons.js';
 
@@ -18,7 +18,7 @@ export function setRowClickHandler(handler) {
 /**
  * Render danh sách quán vào container
  * @param {HTMLElement} listEl — <ul> element
- * @param {Array} restaurants — mảng quán ăn
+ * @param {Array} restaurants — mảng quán ăn / địa điểm
  * @param {number|null} selectedId — id quán đang chọn
  */
 export function renderList(listEl, restaurants, selectedId = null) {
@@ -58,15 +58,16 @@ export function renderList(listEl, restaurants, selectedId = null) {
     nameEl.className = 'resto-row__name';
     nameEl.textContent = r.name;
 
-    // Info line: category chip + type badge + price/ticket
+    // Info line: place_type badge + category chip + ticket/price
     const info = document.createElement('div');
     info.className = 'resto-row__info';
 
-    // FE-03: Type Badge
-    const placeType = r.place_type || 'food';
+    const placeType = r.place_type || r.category?.type_group || 'food';
+    const typeInfo = getPlaceTypeInfo(placeType);
+
     const typeBadge = document.createElement('span');
-    typeBadge.className = `badge badge--type-${placeType}`;
-    typeBadge.textContent = formatPlaceType(placeType);
+    typeBadge.className = `badge ${typeInfo.badgeClass}`;
+    typeBadge.textContent = `${typeInfo.emoji} ${typeInfo.label}`;
     info.appendChild(typeBadge);
 
     const catBadge = document.createElement('span');
@@ -74,19 +75,18 @@ export function renderList(listEl, restaurants, selectedId = null) {
     catBadge.innerHTML = `${categoryIcon(r.category)}<span>${r.category?.name || ''}</span>`;
     info.appendChild(catBadge);
 
-    // Price or Ticket price
-    const priceEl = document.createElement('span');
-    priceEl.className = 'resto-row__price';
-    if (placeType !== 'food' && r.ticket_price !== undefined) {
-      priceEl.textContent = formatTicketPrice(r.ticket_price);
-    } else {
-      priceEl.textContent = formatPrice(r.price_min, r.price_max);
+    const priceText = formatTicketOrPrice(r);
+    if (priceText) {
+      const priceEl = document.createElement('span');
+      priceEl.className = 'resto-row__price';
+      priceEl.textContent = priceText;
+      info.appendChild(priceEl);
     }
-    if (priceEl.textContent) info.appendChild(priceEl);
 
-    // Meta line: open status + rating + duration
+    // Meta line: open status + duration + rating
     const meta = document.createElement('div');
     meta.className = 'resto-row__meta';
+    meta.style.flexWrap = 'wrap';
 
     const openStatus = isOpenNow(r.open_time, r.close_time, r.is_24h);
     if (openStatus !== null) {
@@ -96,11 +96,11 @@ export function renderList(listEl, restaurants, selectedId = null) {
       meta.appendChild(statusBadge);
     }
 
-    // FE-03: Estimated duration badge
-    if (r.estimated_duration) {
+    const durationText = formatDuration(r.estimated_duration);
+    if (durationText) {
       const durBadge = document.createElement('span');
       durBadge.className = 'badge badge--duration';
-      durBadge.textContent = formatDuration(r.estimated_duration);
+      durBadge.textContent = `⏱ ${durationText}`;
       meta.appendChild(durBadge);
     }
 
@@ -121,7 +121,6 @@ export function renderList(listEl, restaurants, selectedId = null) {
       }
       meta.appendChild(starsEl);
     }
-
 
     // Distance (aligned right)
     const distEl = document.createElement('div');
@@ -227,11 +226,11 @@ export function renderSkeleton(listEl, count = 5) {
 export function updateCount(countEl, count) {
   if (!countEl) return;
   if (count === null) {
-    countEl.textContent = 'Đang tìm quán...';
+    countEl.textContent = 'Đang tìm địa điểm...';
   } else if (count === 0) {
-    countEl.textContent = 'Không tìm thấy quán nào';
+    countEl.textContent = 'Không tìm thấy địa điểm nào';
   } else {
-    countEl.textContent = `${count} quán quanh bạn`;
+    countEl.textContent = `${count} địa điểm quanh bạn`;
   }
 }
 

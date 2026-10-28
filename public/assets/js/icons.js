@@ -28,6 +28,16 @@ const paths = {
   leaf: '<path d="M20 4C10 4 5 8 5 15c0 3 2 5 5 5 7 0 10-7 10-16Z"/><path d="M4 21c4-5 8-8 13-11"/>',
   coffee: '<path d="M4 8h12v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8Z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2M6 4c0 1 1 1 1 2M10 4c0 1 1 1 1 2"/>',
   snack: '<path d="M2 22l20-20"/><circle cx="8.5" cy="15.5" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="15.5" cy="8.5" r="3"/><path d="M7 14l3 3M10.5 10.5l3 3M14 7l3 3"/>',
+  landmark: '<path d="M3 21h18M4 18h16M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 3 3 8h18L12 3Z"/>',
+  trees: '<path d="M12 3 6 11h4l-3 6h10l-3-6h4L12 3Z"/><path d="M12 17v4M9 21h6"/>',
+  monument: '<path d="M4 21h16M6 21V9l6-5 6 5v12"/><path d="M10 21v-5a2 2 0 0 1 4 0v5M9 11h6"/>',
+  camera: '<path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/>',
+  film: '<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M7 4v16M17 4v16M3 8h4M17 8h4M3 12h18M3 16h4M17 16h4"/>',
+  gamepad: '<rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/>',
+  bag: '<path d="M6 7h12l1 13H5L6 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/>',
+  ticket: '<path d="M3 9V7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a2 2 0 0 0 0 4v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2a2 2 0 0 0 0-4Z"/><path d="M13 6v2M13 11v2M13 16v2"/>',
+  timer: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 3h6M12 3v2"/>',
   star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/>',
   starEmpty: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none"/>',
   starHalf: '<path d="M12 2v15.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none"/>',
@@ -52,14 +62,14 @@ const categoryNames = {
   'an-vat': 'snack',
   chay: 'leaf',
   'ca-phe': 'coffee',
-  'bao-tang': 'tourism',
-  'cong-vien': 'leaf',
-  'di-tich': 'tourism',
-  'check-in': 'compass',
-  'van-dong': 'entertainment',
-  'rap-phim': 'entertainment',
-  'board-game': 'entertainment',
-  'mua-sam': 'entertainment',
+  'bao-tang': 'landmark',
+  'cong-vien': 'trees',
+  'di-tich': 'monument',
+  'check-in': 'camera',
+  'van-dong': 'trophy',
+  'rap-phim': 'film',
+  'board-game': 'gamepad',
+  'mua-sam': 'bag',
 };
 
 export function icon(name, className = '') {
@@ -68,15 +78,8 @@ export function icon(name, className = '') {
 }
 
 export function categoryIcon(category, className = 'category-glyph') {
-  const slug = category?.slug;
-  const group = category?.type_group;
-  let iconName = categoryNames[slug];
-  if (!iconName) {
-    if (group === 'tourism') iconName = 'tourism';
-    else if (group === 'entertainment') iconName = 'entertainment';
-    else iconName = 'plate';
-  }
-  return icon(iconName, className);
+  const key = categoryNames[category?.slug] || category?.icon || 'plate';
+  return icon(key, className);
 }
 
 export function placeTypeIcon(type, className = '') {

@@ -92,35 +92,36 @@ export function formatTicketPrice(ticketPrice) {
 }
 
 /**
- * Định dạng thời lượng trải nghiệm
- */
-export function formatDuration(minutes) {
-  const m = Number(minutes) || 60;
-  if (m >= 60) {
-    const h = Math.floor(m / 60);
-    const rem = m % 60;
-    return rem > 0 ? `~${h}h ${rem}p` : `~${h} giờ`;
-  }
-  return `~${m} phút`;
-}
-
-/**
- * Tạo URL chỉ đường (Google Maps / Apple Maps) ưu tiên địa chỉ và tên quán chính xác
+ * Tạo URL chỉ đường (Google Maps / Apple Maps) ưu tiên toạ độ chính xác (lat, lng) khớp với marker
+ * Tuyệt đối không ghép restaurant.name vào đầu chuỗi tìm kiếm để tránh Google Maps fuzzy-match sai địa điểm
  */
 export function getDirectionsUrl(restaurant) {
   if (!restaurant) return '#';
+  const lat = restaurant.lat ?? restaurant.latitude;
+  const lng = restaurant.lng ?? restaurant.longitude;
   const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
-  const target = [restaurant.name, restaurant.address].filter(Boolean).join(', ');
-  const destQuery = encodeURIComponent(target.trim() || `${restaurant.lat},${restaurant.lng}`);
+
+  if (lat && lng) {
+    if (isApple) {
+      return `https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+    }
+    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+  }
+
+  // Fallback nếu không có tọa độ: dùng địa chỉ kèm TP. Hồ Chí Minh
+  const addr = restaurant.address || '';
+  const fallbackAddr = addr
+    ? (addr.includes('Hồ Chí Minh') ? addr : `${addr}, TP. Hồ Chí Minh`)
+    : '';
 
   if (isApple) {
-    return `https://maps.apple.com/?daddr=${encodeURIComponent(restaurant.address || '')}&q=${encodeURIComponent(restaurant.name || '')}&dirflg=d`;
+    return `https://maps.apple.com/?daddr=${encodeURIComponent(fallbackAddr)}&dirflg=d`;
   }
-  return `https://www.google.com/maps/dir/?api=1&destination=${destQuery}&travelmode=driving`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fallbackAddr)}&travelmode=driving`;
 }
 
 /**
- * Tạo URL chỉ đường toàn bộ lộ trình đa điểm (Multi-waypoint Route) trên Google Maps
+ * Tạo URL chỉ đường toàn bộ lộ trình đa điểm (Multi-waypoint Route) trên Google Maps (Task FE-06)
  */
 export function getMultiStopDirectionsUrl(origin, stops = []) {
   if (!stops || stops.length === 0) return '#';
@@ -143,3 +144,103 @@ export function getMultiStopDirectionsUrl(origin, stops = []) {
   return url;
 }
 
+/**
+ * Tạo URL xem vị trí ghim (drop pin) trên Google Maps
+ * Ưu tiên toạ độ chính xác (lat, lng) để ghim đúng 100% vị trí marker
+ */
+export function getGoogleMapsPinUrl(restaurant) {
+  if (!restaurant) return '#';
+  const lat = restaurant.lat ?? restaurant.latitude;
+  const lng = restaurant.lng ?? restaurant.longitude;
+  if (lat && lng) {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  }
+  const addr = restaurant.address || '';
+  const fallbackAddr = addr
+    ? (addr.includes('Hồ Chí Minh') ? addr : `${addr}, TP. Hồ Chí Minh`)
+    : '';
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackAddr)}`;
+}
+
+/**
+ * Thông tin hiển thị theo loại hình địa điểm (place_type)
+ */
+export function getPlaceTypeInfo(placeType = 'food') {
+  switch (placeType) {
+    case 'tourism':
+      return {
+        key: 'tourism',
+        label: 'Du lịch',
+        fullLabel: '🏛️ Du lịch & Tham quan',
+        emoji: '🏛️',
+        badgeClass: 'badge--tourism',
+        markerClass: 'marker-pin--tourism',
+      };
+    case 'entertainment':
+      return {
+        key: 'entertainment',
+        label: 'Vui chơi',
+        fullLabel: '🎡 Vui chơi giải trí',
+        emoji: '🎡',
+        badgeClass: 'badge--entertainment',
+        markerClass: 'marker-pin--entertainment',
+      };
+    default:
+      return {
+        key: 'food',
+        label: 'Ẩm thực',
+        fullLabel: '🍜 Ẩm thực & Đồ uống',
+        emoji: '🍜',
+        badgeClass: 'badge--food',
+        markerClass: 'marker-pin--food',
+      };
+  }
+}
+
+/**
+ * Định dạng giá vé vào cổng hoặc khoảng giá cho địa điểm
+ */
+export function formatTicketOrPrice(place) {
+  if (!place) return '';
+  const placeType = place.place_type || place.category?.type_group || 'food';
+  const ticketPrice = Number(place.ticket_price || 0);
+  const priceMin = Number(place.price_min || 0);
+  const priceMax = Number(place.price_max || 0);
+
+  if (placeType !== 'food') {
+    if (ticketPrice > 0) {
+      return `Vé: ${formatPrice(ticketPrice, priceMax > ticketPrice ? priceMax : ticketPrice)}`;
+    }
+    if (priceMin === 0 && priceMax === 0) {
+      return 'Vé miễn phí';
+    }
+    if (ticketPrice === 0 && priceMax > 0) {
+      return `Vào cổng miễn phí (${formatPrice(0, priceMax)})`;
+    }
+    return 'Vé miễn phí';
+  }
+
+  const p = formatPrice(priceMin, priceMax);
+  return p || 'Đang cập nhật';
+}
+
+/**
+ * Định dạng thời lượng trải nghiệm đề xuất (phút)
+ */
+export function formatDuration(minutes) {
+  const m = Number(minutes || 0);
+  if (!m || m <= 0) return '';
+  return `Gợi ý: ${m} phút`;
+}
+
+/**
+ * Định dạng khung giờ lý tưởng ghé thăm
+ */
+export function formatBestTimeSlot(slot) {
+  switch (slot) {
+    case 'morning':   return 'Buổi sáng (06:00 – 11:00)';
+    case 'afternoon': return 'Buổi chiều (13:00 – 17:30)';
+    case 'evening':   return 'Buổi tối (17:30 – 22:30)';
+    default:          return 'Mọi khung giờ trong ngày';
+  }
+}

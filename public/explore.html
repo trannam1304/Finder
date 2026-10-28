@@ -17,9 +17,7 @@
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/pages.css">
   <link rel="stylesheet" href="assets/css/brutal.css">
-  <link rel="stylesheet" href="assets/css/itinerary.css">
 </head>
-
 <body>
 
   <!-- ══ NAV ══ -->
@@ -125,27 +123,16 @@
     <!-- ── Main grid ── -->
     <main class="explore-main" id="explore-main">
 
-      <!-- FE-01: Thanh Tabs Phân Loại Cấp 1 -->
-      <div class="explore-type-tabs-wrap">
-        <div class="type-tabs" id="explore-type-tabs" role="tablist" aria-label="Phân loại địa điểm">
-          <button class="type-tab type-tab--active" type="button" role="tab" data-type="all" aria-selected="true" title="Tất cả địa điểm">
-            <span>Tất cả</span>
-          </button>
-          <button class="type-tab type-tab--food" type="button" role="tab" data-type="food" aria-selected="false" title="Ẩm thực, Quán ăn, Cà phê">
-            <span>🍽️ Ẩm thực</span>
-          </button>
-          <button class="type-tab type-tab--tourism" type="button" role="tab" data-type="tourism" aria-selected="false" title="Du lịch, Bảo tàng, Di tích, Check-in">
-            <span>🏛️ Du lịch</span>
-          </button>
-          <button class="type-tab type-tab--entertainment" type="button" role="tab" data-type="entertainment" aria-selected="false" title="Vui chơi giải trí, Thể thao, Rạp phim">
-            <span>🎉 Vui chơi giải trí</span>
-          </button>
-        </div>
+      <!-- Level-1 Place Type Tabs (Task FE-01) -->
+      <div class="place-type-tabs place-type-tabs--explore" id="explore-type-tabs" role="tablist" aria-label="Phân loại địa điểm">
+        <button type="button" class="place-type-tab place-type-tab--active" data-type="all" role="tab" aria-selected="true">Tất cả</button>
+        <button type="button" class="place-type-tab" data-type="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
+        <button type="button" class="place-type-tab" data-type="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
+        <button type="button" class="place-type-tab" data-type="entertainment" role="tab" aria-selected="false">🎡 Vui chơi giải trí</button>
       </div>
 
       <!-- Toolbar -->
       <div class="explore-toolbar">
-
         <div class="explore-search-wrap">
           <svg class="explore-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
             <circle cx="7" cy="7" r="5.5"/><path d="M11 11l3.5 3.5"/>
@@ -154,8 +141,8 @@
             type="search"
             id="explore-search"
             class="explore-search"
-            placeholder="Tìm tên quán, địa chỉ..."
-            aria-label="Tìm kiếm quán ăn"
+            placeholder="Tìm tên quán, điểm du lịch, khu vui chơi..."
+            aria-label="Tìm kiếm địa điểm"
             autocomplete="off"
           >
         </div>
@@ -179,7 +166,7 @@
       </div>
 
       <!-- Grid -->
-      <div class="resto-grid" id="resto-grid" role="list" aria-label="Danh sách quán ăn">
+      <div class="resto-grid" id="resto-grid" role="list" aria-label="Danh sách địa điểm">
         <!-- Rendered by JS -->
       </div>
 

@@ -5,10 +5,9 @@
 import { MOCK_RESTAURANTS } from './mock-data.js';
 import { fetchRestaurant } from './api.js';
 import { CONFIG } from './config.js';
-import { escapeText, getDirectionsUrl, formatPlaceType, formatTicketPrice, formatDuration } from './format.js';
+import { escapeText, getDirectionsUrl, getGoogleMapsPinUrl, getPlaceTypeInfo, formatTicketOrPrice, formatDuration, formatBestTimeSlot, formatPrice } from './format.js';
 import { icon, categoryIcon, renderStars } from './icons.js';
 import { isFavorite, toggleFavorite } from './favorites.js';
-
 
 // ── Theme ────────────────────────────────────────────────────
 const btnTheme = document.getElementById('btn-theme');
@@ -44,6 +43,7 @@ if (!CONFIG.USE_MOCK && Number.isInteger(id)) {
 // ── Helpers ───────────────────────────────────────────────────
 function isOpenNow(r) {
   if (r.is_24h) return true;
+  if (!r.open_time || !r.close_time) return true;
   const hhmm = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
   const now = new Date();
   const cur = now.getHours() * 60 + now.getMinutes();
@@ -53,12 +53,7 @@ function isOpenNow(r) {
 }
 
 function fmtTime(t) {
-  return t.slice(0, 5);
-}
-
-function fmtPrice(min, max) {
-  const fmt = n => n >= 1000 ? `${(n / 1000).toFixed(0)}k` : String(n);
-  return `${fmt(min)} – ${fmt(max)} đ`;
+  return (t || '').slice(0, 5);
 }
 
 function priceLabel(level) {
@@ -73,6 +68,11 @@ function starsHtml(rating) {
 const r = restaurant;
 const open = isOpenNow(r);
 const esc = escapeText;
+const placeType = r.place_type || r.category?.type_group || 'food';
+const typeInfo = getPlaceTypeInfo(placeType);
+const durationText = formatDuration(r.estimated_duration || 60);
+const ticketOrPriceText = formatTicketOrPrice(r);
+const timeSlotText = formatBestTimeSlot(r.best_time_slot);
 
 // Page title & meta
 document.title = `${r.name} — Food Finder`;
@@ -82,24 +82,15 @@ document.getElementById('page-title').textContent = `${r.name} — Food Finder`;
 document.getElementById('hero-img').src = r.image_url;
 document.getElementById('hero-img').alt = r.name;
 document.getElementById('hero-name').textContent = r.name;
-
-const placeType = r.place_type || 'food';
-const isTourismOrEnt = placeType === 'tourism' || placeType === 'entertainment';
-const ticketBadge = isTourismOrEnt
-  ? `<span class="badge badge--ticket">${icon('ticket')} <span>${formatTicketPrice(r.ticket_price)}</span></span>`
-  : '';
-const durBadge = r.estimated_duration
-  ? `<span class="badge badge--duration">${icon('clock')} <span>Gợi ý: ${formatDuration(r.estimated_duration)}</span></span>`
-  : '';
-
 document.getElementById('hero-badges').innerHTML = `
-  <span class="badge badge--type-${placeType}">${formatPlaceType(placeType)}</span>
+  <span class="badge ${typeInfo.badgeClass}">
+    ${esc(typeInfo.fullLabel)}
+  </span>
   <span class="badge ${open ? 'badge--open' : 'badge--closed'}">
     <span class="badge__dot" aria-hidden="true"></span>${open ? 'Đang mở' : 'Đã đóng'}
   </span>
   <span class="badge badge--category">${categoryIcon(r.category)}<span>${esc(r.category.name)}</span></span>
-  ${ticketBadge}
-  ${durBadge}
+  ${durationText ? `<span class="badge badge--duration">⏱ ${esc(durationText)}</span>` : ''}
   <span class="badge" style="background:var(--c-surface);color:var(--c-ink-soft)">
     ${priceLabel(r.price_level)}
   </span>
@@ -120,7 +111,7 @@ function updateFavState() {
     favIcon.setAttribute('stroke', saved ? 'var(--c-primary)' : 'currentColor');
   }
   if (favText) {
-    favText.textContent = saved ? 'Đã lưu' : 'Lưu quán';
+    favText.textContent = saved ? 'Đã lưu' : 'Lưu địa điểm';
   }
   if (btnFav) {
     btnFav.style.color = saved ? 'var(--c-primary)' : '';
@@ -132,7 +123,7 @@ if (btnFav) {
   btnFav.addEventListener('click', () => {
     const isNowSaved = toggleFavorite(r.id);
     updateFavState();
-    showToast(isNowSaved ? '❤️ Đã lưu địa điểm vào danh sách yêu thích!' : 'Đã bỏ lưu địa điểm.');
+    showToast(isNowSaved ? '❤️ Đã lưu vào danh sách yêu thích!' : 'Đã bỏ lưu.');
   });
 }
 
@@ -148,22 +139,45 @@ document.getElementById('btn-share').addEventListener('click', async () => {
   }
 });
 
-// Best time slot text
-const timeSlotMap = {
-  morning: 'Buổi sáng (07:00 - 11:30)',
-  afternoon: 'Buổi chiều (13:30 - 17:30)',
-  evening: 'Buổi tối (18:00 - 22:30)',
-  any: 'Linh hoạt mọi thời điểm trong ngày',
-};
-const bestTimeStr = timeSlotMap[r.best_time_slot] || 'Mọi khung giờ';
+// Info rows (Task FE-03: Loại hình, Giá vé / Khoảng giá, Thời lượng đề xuất, Khung giờ lý tưởng)
+const ticketDetailHtml = placeType !== 'food'
+  ? (Number(r.ticket_price) > 0
+      ? `<strong>Có phí: ${Number(r.ticket_price).toLocaleString('vi-VN')}đ / vé</strong>${r.price_max > r.ticket_price ? ` (Chi phí dự kiến: ${formatPrice(r.price_min, r.price_max)})` : ''}`
+      : `<strong>Vé miễn phí (Vào cổng tự do)</strong>${r.price_max > 0 ? ` — Dịch vụ/chi tiêu thêm: ${formatPrice(r.price_min, r.price_max)}` : ''}`)
+  : `<strong>${esc(ticketOrPriceText)} / người</strong> (${esc(priceLabel(r.price_level))})`;
 
-// Info rows
 document.getElementById('info-rows').innerHTML = `
   <div class="info-row">
     <div class="info-row__icon">${icon('pin')}</div>
     <div>
       <div class="info-row__label">Địa chỉ</div>
       <div class="info-row__value">${esc(r.address)}</div>
+    </div>
+  </div>
+  <div class="info-row">
+    <div class="info-row__icon">${categoryIcon(r.category)}</div>
+    <div>
+      <div class="info-row__label">Phân loại & Danh mục</div>
+      <div class="info-row__value">
+        <span class="badge ${typeInfo.badgeClass}" style="margin-right:6px">${esc(typeInfo.fullLabel)}</span>
+        <span>${esc(r.category.name)}</span>
+      </div>
+    </div>
+  </div>
+  <div class="info-row">
+    <div class="info-row__icon">${icon(placeType === 'food' ? 'cash' : 'ticket')}</div>
+    <div>
+      <div class="info-row__label">${placeType === 'food' ? 'Khoảng giá tham khảo' : 'Giá vé vào cổng & Chi phí'}</div>
+      <div class="info-row__value">${ticketDetailHtml}</div>
+    </div>
+  </div>
+  <div class="info-row">
+    <div class="info-row__icon">${icon('timer')}</div>
+    <div>
+      <div class="info-row__label">Thời lượng trải nghiệm & Thời điểm lý tưởng</div>
+      <div class="info-row__value">
+        <strong>${esc(durationText || 'Gợi ý: 60 phút')}</strong> &bull; Lý tưởng: ${esc(timeSlotText)}
+      </div>
     </div>
   </div>
   <div class="info-row">
@@ -178,48 +192,22 @@ document.getElementById('info-rows').innerHTML = `
       </div>
     </div>
   </div>
-  ${isTourismOrEnt ? `
-  <div class="info-row">
-    <div class="info-row__icon">${icon('ticket')}</div>
-    <div>
-      <div class="info-row__label">Giá vé vào cổng</div>
-      <div class="info-row__value" style="font-weight:700;color:var(--c-primary)">${formatTicketPrice(r.ticket_price)}</div>
-    </div>
-  </div>
-  ` : ''}
-  <div class="info-row">
-    <div class="info-row__icon">${icon('cash')}</div>
-    <div>
-      <div class="info-row__label">${isTourismOrEnt ? 'Chi phí dự kiến' : 'Khoảng giá'}</div>
-      <div class="info-row__value">${fmtPrice(r.price_min, r.price_max)} / người</div>
-    </div>
-  </div>
-  <div class="info-row">
-    <div class="info-row__icon">${icon('calendar')}</div>
-    <div>
-      <div class="info-row__label">Thời lượng trải nghiệm đề xuất</div>
-      <div class="info-row__value">${formatDuration(r.estimated_duration || 60)} • Thích hợp nhất vào: <strong>${bestTimeStr}</strong></div>
-    </div>
-  </div>
   <div class="info-row">
     <div class="info-row__icon">${icon('phone')}</div>
     <div>
-      <div class="info-row__label">Điện thoại</div>
+      <div class="info-row__label">Điện thoại liên hệ</div>
       <div class="info-row__value"><a href="tel:${encodeURIComponent(r.phone || '')}">${esc(r.phone || 'Chưa cập nhật')}</a></div>
     </div>
   </div>
+  ${r.note ? `
   <div class="info-row">
-    <div class="info-row__icon">${categoryIcon(r.category)}</div>
+    <div class="info-row__icon">${icon('plate')}</div>
     <div>
-      <div class="info-row__label">Phân loại & Danh mục</div>
-      <div class="info-row__value">
-        <span class="badge badge--type-${placeType}" style="margin-right:6px">${formatPlaceType(placeType)}</span>
-        <span>${esc(r.category.name)}</span>
-      </div>
+      <div class="info-row__label">Điểm nổi bật</div>
+      <div class="info-row__value">${esc(r.note)}</div>
     </div>
-  </div>
+  </div>` : ''}
 `;
-
 
 // Gallery — use different images from the same folder
 const galleryImages = [
@@ -328,12 +316,13 @@ if (window.L) {
   }).addTo(map);
   tileLayer.on('load', () => { window.__tilesLoaded = true; });
 
+  const markerColor = placeType === 'tourism' ? '#0284c7' : (placeType === 'entertainment' ? '#f59e0b' : 'var(--c-primary)');
   const icon = L.divIcon({
     className: '',
     html: `<div style="
       width:36px;height:36px;
-      background:var(--c-primary);
-      border:3px solid #fff;
+      background:${markerColor};
+      border:3px solid #121212;
       border-radius:50% 50% 50% 0;
       transform:rotate(-45deg);
       box-shadow:0 2px 8px rgba(0,0,0,.3);
@@ -348,13 +337,23 @@ if (window.L) {
   popupAddress.style.cssText = 'font-size:12px;color:var(--c-ink-soft);margin-top:2px;';
   const popupAction = document.createElement('div');
   popupAction.style.marginTop = '8px';
+  popupAction.style.display = 'flex';
+  popupAction.style.gap = '6px';
   const popupDir = document.createElement('a');
   popupDir.className = 'btn btn--primary btn--sm';
   popupDir.textContent = 'Chỉ đường';
-  popupDir.href = dirUrl;
+  popupDir.href = getDirectionsUrl(r);
   popupDir.target = '_blank';
   popupDir.rel = 'noopener noreferrer';
   popupAction.appendChild(popupDir);
+  const popupGmap = document.createElement('a');
+  popupGmap.className = 'btn btn--ghost btn--sm';
+  popupGmap.textContent = 'Google Maps';
+  popupGmap.href = getGoogleMapsPinUrl(r);
+  popupGmap.target = '_blank';
+  popupGmap.rel = 'noopener noreferrer';
+  popupGmap.title = 'Xem vị trí trên Google Maps';
+  popupAction.appendChild(popupGmap);
   popup.append(popupName, popupAddress, popupAction);
   L.marker([r.lat, r.lng], { icon }).addTo(map).bindPopup(popup).openPopup();
 } else {

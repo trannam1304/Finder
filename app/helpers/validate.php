@@ -53,8 +53,8 @@ function restaurant_filters(array $source): array
 {
     $lat = required_float($source, 'lat', -90, 90);
     $lng = required_float($source, 'lng', -180, 180);
-    $radius = optional_float($source, 'radius', 1.0, 0.1, 10.0);
-    if (!in_array($radius, [0.5, 1.0, 2.0, 3.0, 5.0, 10.0], true)) {
+    $radius = optional_float($source, 'radius', 1.0, 0.1, 25.0);
+    if (!in_array($radius, [0.5, 1.0, 2.0, 3.0, 5.0, 10.0, 15.0, 20.0], true)) {
         throw new InvalidArgumentException('Bán kính không hợp lệ');
     }
     return [

@@ -1,6 +1,6 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Quản lý quán ăn — Food Finder</title>
+    <title>Quản lý địa điểm — Food & Trip Finder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
@@ -13,33 +13,34 @@
       <a href="#" class="admin-brand"><span style="color:#d22b1f;font-weight:900;">Food Finder</span> <small>Quản trị</small></a>
       <nav>
         <a href="#">Tổng quan</a>
-        <a href="#" style="font-weight:700;color:#d22b1f;">Quán ăn</a>
+        <a href="#" style="font-weight:700;color:#d22b1f;">Địa điểm</a>
         <a href="#">Danh mục</a>
         <a href="#">Đánh giá</a>
-        <a href="#">+ Thêm quán</a>
+        <a href="#">+ Thêm địa điểm</a>
         <a href="#">Xem bản đồ</a>
         <button class="link-button">Đăng xuất</button>
       </nav>
     </header>
     <main class="admin-container">
       <div class="admin-heading">
-        <div><h1>Quản lý quán ăn</h1><p class="admin-note">48 quán trong hệ thống</p></div>
-        <a href="#" class="btn btn--primary">+ Thêm quán mới</a>
+        <div><h1>Quản lý địa điểm (Đa loại hình)</h1><p class="admin-note">50 địa điểm trong hệ thống (Ẩm thực, Du lịch, Vui chơi)</p></div>
+        <a href="#" class="btn btn--primary">+ Thêm địa điểm mới</a>
       </div>
       <form class="admin-toolbar" method="get">
-        <input class="admin-input" placeholder="Tìm theo tên quán hoặc địa chỉ..." style="width:280px;" value="">
-        <select class="admin-select"><option>Tất cả danh mục (7)</option><option>Cơm</option><option>Bún, Phở</option></select>
-        <button class="btn btn--ghost" type="button">Lọc quán</button>
+        <input class="admin-input" placeholder="Tìm theo tên địa điểm hoặc địa chỉ..." style="width:260px;" value="">
+        <select class="admin-select"><option>Tất cả loại hình</option><option>🍜 Ẩm thực</option><option>🏛️ Du lịch</option><option>🎡 Vui chơi</option></select>
+        <select class="admin-select"><option>Tất cả danh mục (15)</option><option>Cơm</option><option>Bảo tàng & Nghệ thuật</option><option>Khu thể thao, vận động</option></select>
+        <button class="btn btn--ghost" type="button">Lọc địa điểm</button>
       </form>
       <div class="admin-table-wrap">
         <table class="admin-table">
-          <thead><tr><th>Quán ăn</th><th>Danh mục</th><th>Đánh giá</th><th>Khoảng giá</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+          <thead><tr><th>Địa điểm</th><th>Loại hình</th><th>Danh mục</th><th>Đánh giá</th><th>Giá vé / Khoảng giá</th><th>Thời lượng</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
           <tbody>
-            <tr><td><strong>Cơm tấm Bụi Sài Gòn</strong><br><small style="color:#65706a;">378 Lê Văn Lương, P. Tân Hưng, Q7</small></td><td>🍚 Cơm</td><td>★ 4.3 (156)</td><td>25k &ndash; 45k</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
-            <tr><td><strong>Phở Hương Quê</strong><br><small style="color:#65706a;">568 Lê Văn Lương, P. Tân Hưng, Q7</small></td><td>🍜 Bún, Phở</td><td>★ 4.5 (234)</td><td>35k &ndash; 55k</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
-            <tr><td><strong>Bánh mì Má Hai</strong><br><small style="color:#65706a;">72 Lâm Văn Bền, P. Tân Kiểng, Q7</small></td><td>🥖 Bánh mì</td><td>★ 4.4 (189)</td><td>15k &ndash; 25k</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
-            <tr><td><strong>Lẩu Bò Nhà Gỗ</strong><br><small style="color:#65706a;">162 Huỳnh Tấn Phát, P. Tân Thuận Tây, Q7</small></td><td>🔥 Lẩu, Nướng</td><td>★ 4.6 (312)</td><td>150k &ndash; 300k</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
-            <tr><td><strong>Highlands Coffee Sunrise</strong><br><small style="color:#65706a;">23 Nguyễn Hữu Thọ, P. Tân Hưng, Q7</small></td><td>☕ Cà phê</td><td>★ 4.2 (178)</td><td>29k &ndash; 65k</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
+            <tr><td><strong>Cơm tấm Phúc Lộc Thọ</strong><br><small style="color:#65706a;">236 Nguyễn Thị Thập, P. Bình Thuận, Q7</small></td><td><span style="color:#d22b1f;font-weight:700;">🍜 Ẩm thực</span></td><td>🍚 Cơm</td><td>★ 4.5 (520)</td><td>35k &ndash; 65k</td><td>~45 phút</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
+            <tr><td><strong>Cầu Ánh Sao (Starlight Bridge)</strong><br><small style="color:#65706a;">Khu đô thị Phú Mỹ Hưng, P. Tân Phú, Q7</small></td><td><span style="color:#0284c7;font-weight:700;">🏛️ Du lịch</span></td><td>📸 Check-in & Hoàng hôn</td><td>★ 4.7 (1250)</td><td>Vé miễn phí</td><td>~45 phút</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
+            <tr><td><strong>Bảo tàng tranh 3D Artinus</strong><br><small style="color:#65706a;">Số 2-4 Đường số 9, KDC Him Lam, Q7</small></td><td><span style="color:#0284c7;font-weight:700;">🏛️ Du lịch</span></td><td>🏛️ Bảo tàng & Nghệ thuật</td><td>★ 4.5 (780)</td><td>Vé: 150k&ndash;200k</td><td>~120 phút</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
+            <tr><td><strong>Jump Arena Him Lam</strong><br><small style="color:#65706a;">Số 2-4 Đường số 9, KDC Him Lam, Q7</small></td><td><span style="color:#d97706;font-weight:700;">🎡 Vui chơi</span></td><td>🏆 Khu thể thao, vận động</td><td>★ 4.6 (850)</td><td>Vé: 120k&ndash;200k</td><td>~120 phút</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
+            <tr><td><strong>CGV Cinemas SC VivoCity (IMAX)</strong><br><small style="color:#65706a;">Tầng 5 SC VivoCity, 1058 Nguyễn Văn Linh, Q7</small></td><td><span style="color:#d97706;font-weight:700;">🎡 Vui chơi</span></td><td>🎬 Rạp chiếu phim</td><td>★ 4.7 (1420)</td><td>Vé: 110k&ndash;220k</td><td>~130 phút</td><td><span class="badge" style="background:#eaf7ef;color:#145a32;padding:2px 8px;border-radius:999px;">Hoạt động</span></td><td><div class="actions"><button class="btn btn--ghost btn--sm">Sửa</button><button class="btn btn--ghost btn--sm danger">Ẩn</button></div></td></tr>
           </tbody>
         </table>
       </div>
