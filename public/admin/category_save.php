@@ -14,6 +14,10 @@ $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT) ?: 0;
 $name = trim((string) ($_POST['name'] ?? ''));
 $slug = trim((string) ($_POST['slug'] ?? ''));
 $icon = trim((string) ($_POST['icon'] ?? 'plate'));
+$typeGroup = trim((string) ($_POST['type_group'] ?? 'food'));
+if (!in_array($typeGroup, ['food', 'tourism', 'entertainment'], true)) {
+    $typeGroup = 'food';
+}
 $sortOrder = filter_input(INPUT_POST, 'sort_order', FILTER_VALIDATE_INT) ?: 0;
 
 if ($name === '' || $slug === '') {
@@ -32,13 +36,13 @@ $pdo = db();
 try {
     if ($id > 0) {
         // Cập nhật
-        $stmt = $pdo->prepare('UPDATE categories SET name = ?, slug = ?, icon = ?, sort_order = ? WHERE id = ?');
-        $stmt->execute([$name, $slug, $icon, $sortOrder, $id]);
+        $stmt = $pdo->prepare('UPDATE categories SET name = ?, slug = ?, icon = ?, type_group = ?, sort_order = ? WHERE id = ?');
+        $stmt->execute([$name, $slug, $icon, $typeGroup, $sortOrder, $id]);
         admin_flash('Cập nhật danh mục thành công!');
     } else {
         // Thêm mới
-        $stmt = $pdo->prepare('INSERT INTO categories (name, slug, icon, sort_order) VALUES (?, ?, ?, ?)');
-        $stmt->execute([$name, $slug, $icon, $sortOrder]);
+        $stmt = $pdo->prepare('INSERT INTO categories (name, slug, icon, type_group, sort_order) VALUES (?, ?, ?, ?, ?)');
+        $stmt->execute([$name, $slug, $icon, $typeGroup, $sortOrder]);
         admin_flash('Thêm danh mục mới thành công!');
     }
 } catch (PDOException $e) {

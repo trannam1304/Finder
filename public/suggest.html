@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Đề xuất quán ăn mới — Food Finder. Đóng góp địa điểm ẩm thực yêu thích của bạn cho cộng đồng thực khách.">
+  <meta name="description" content="Đề xuất địa điểm mới — Food & Trip Finder. Đóng góp quán ăn, điểm du lịch và khu vui chơi yêu thích của bạn cho cộng đồng.">
   <meta name="theme-color" content="#D22B1F">
-  <title>Đề xuất quán ăn mới — Food Finder</title>
+  <title>Đề xuất địa điểm mới — Food Finder</title>
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,29 +71,52 @@
 
     <header style="margin-bottom: var(--sp-6);">
       <span class="badge badge--category" style="margin-bottom: var(--sp-2);">Đóng góp cộng đồng</span>
-      <h1 style="font-family: var(--font-display); font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.6rem); line-height: 1.25; letter-spacing: -0.015em; margin: 0 0 var(--sp-2);">Đề Xuất Quán Ăn Mới</h1>
-      <p style="color: var(--c-ink-soft);">Bạn biết một quán ngon gần đây mà bản đồ chưa có? Hãy chia sẻ để mọi người cùng thưởng thức nhé!</p>
+      <h1 style="font-family: var(--font-display); font-weight: 800; font-size: clamp(1.8rem, 3.5vw, 2.6rem); line-height: 1.25; letter-spacing: -0.015em; margin: 0 0 var(--sp-2);">Đề Xuất Địa Điểm Mới</h1>
+      <p style="color: var(--c-ink-soft);">Bạn biết một quán ăn ngon, điểm tham quan đẹp hay khu vui chơi hấp dẫn gần đây mà bản đồ chưa có? Hãy chia sẻ để mọi người cùng khám phá nhé!</p>
     </header>
 
     <div class="info-card" style="padding: var(--sp-6);">
       <form id="suggest-form">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-4);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-4);">
           <div>
-            <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Tên quán ăn <span style="color:var(--c-primary)">*</span></label>
-            <input required type="text" id="sug-name" placeholder="Ví dụ: Cơm tấm Sà Bì Chưởng"
+            <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Tên địa điểm <span style="color:var(--c-primary)">*</span></label>
+            <input required type="text" id="sug-name" placeholder="Ví dụ: Cơm tấm Sà Bì Chưởng / Cầu Ánh Sao"
               style="width: 100%; height: 42px; padding: 0 var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);">
           </div>
           <div>
-            <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Danh mục ẩm thực <span style="color:var(--c-primary)">*</span></label>
+            <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Loại hình địa điểm <span style="color:var(--c-primary)">*</span></label>
+            <select required id="sug-place-type"
+              style="width: 100%; height: 42px; padding: 0 var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);">
+              <option value="food">🍜 Ẩm thực & Đồ uống</option>
+              <option value="tourism">🏛️ Du lịch & Tham quan</option>
+              <option value="entertainment">🎡 Vui chơi & Giải trí</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Danh mục chi tiết <span style="color:var(--c-primary)">*</span></label>
             <select required id="sug-category"
               style="width: 100%; height: 42px; padding: 0 var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);">
-              <option value="1">Cơm (Cơm tấm, Cơm niêu, Cơm văn phòng)</option>
-              <option value="2">Bún, Phở, Hủ tiếu, Mì Quảng</option>
-              <option value="3">Bánh mì, Xôi, Điểm tâm</option>
-              <option value="4">Lẩu, Nướng, Hải sản</option>
-              <option value="5">Ăn vặt, Bánh tráng, Chè</option>
-              <option value="6">Món chay thực dưỡng</option>
-              <option value="7">Cà phê, Trà sữa, Nước ép</option>
+              <optgroup label="🍜 Ẩm thực & Đồ uống">
+                <option value="1" data-group="food">Cơm (Cơm tấm, Cơm niêu, Cơm văn phòng)</option>
+                <option value="2" data-group="food">Bún, Phở, Hủ tiếu, Mì Quảng</option>
+                <option value="3" data-group="food">Bánh mì, Xôi, Điểm tâm</option>
+                <option value="4" data-group="food">Lẩu, Nướng, Hải sản</option>
+                <option value="5" data-group="food">Ăn vặt, Bánh tráng, Chè</option>
+                <option value="6" data-group="food">Món chay thực dưỡng</option>
+                <option value="7" data-group="food">Cà phê, Trà sữa, Nước ép</option>
+              </optgroup>
+              <optgroup label="🏛️ Du lịch & Tham quan">
+                <option value="8" data-group="tourism">Bảo tàng & Nghệ thuật</option>
+                <option value="9" data-group="tourism">Công viên & Cảnh quan</option>
+                <option value="10" data-group="tourism">Di tích & Văn hóa</option>
+                <option value="11" data-group="tourism">Check-in & Hoàng hôn</option>
+              </optgroup>
+              <optgroup label="🎡 Vui chơi & Giải trí">
+                <option value="12" data-group="entertainment">Khu thể thao, vận động</option>
+                <option value="13" data-group="entertainment">Rạp chiếu phim</option>
+                <option value="14" data-group="entertainment">Board Game & Workshop</option>
+                <option value="15" data-group="entertainment">Mua sắm & Phức hợp</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -111,15 +134,25 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-4);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-4);">
           <div>
             <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Giá thấp nhất (VNĐ)</label>
-            <input type="number" id="sug-price-min" value="25000" step="5000"
+            <input type="number" id="sug-price-min" value="25000" min="0" step="5000"
               style="width: 100%; height: 42px; padding: 0 var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);">
           </div>
           <div>
             <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Giá cao nhất (VNĐ)</label>
-            <input type="number" id="sug-price-max" value="50000" step="5000"
+            <input type="number" id="sug-price-max" value="50000" min="0" step="5000"
+              style="width: 100%; height: 42px; padding: 0 var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);">
+          </div>
+          <div>
+            <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Giá vé vào cổng (VNĐ)</label>
+            <input type="number" id="sug-ticket-price" value="0" min="0" step="5000" placeholder="0 = Miễn phí"
+              style="width: 100%; height: 42px; padding: 0 var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);">
+          </div>
+          <div>
+            <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Thời lượng ghé thăm (phút)</label>
+            <input type="number" id="sug-duration" value="60" min="15" max="480" step="15"
               style="width: 100%; height: 42px; padding: 0 var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);">
           </div>
           <div>
@@ -134,7 +167,7 @@
         <!-- Map Picker -->
         <div style="margin-bottom: var(--sp-4);">
           <label style="display: flex; justify-content: space-between; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">
-            <span>Chấm vị trí quán trên bản đồ <span style="color:var(--c-primary)">*</span></span>
+            <span>Chấm vị trí địa điểm trên bản đồ <span style="color:var(--c-primary)">*</span></span>
             <small style="font-weight: 400; color: var(--c-ink-faint);">Chạm/click vào bản đồ để chọn tọa độ</small>
           </label>
           <div id="suggest-map" style="height: 280px; border-radius: var(--r-md); border: 1px solid var(--c-border); overflow: hidden; margin-bottom: var(--sp-2);"></div>
@@ -153,14 +186,14 @@
         </div>
 
         <div style="margin-bottom: var(--sp-5);">
-          <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Món ngon đặc trưng & Ghi chú</label>
-          <textarea id="sug-note" rows="3" placeholder="Ví dụ: Quán cơm sườn nướng mật ong rất ngon, trà đá miễn phí, có chỗ để xe máy..."
+          <label style="display: block; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1);">Điểm nổi bật & Ghi chú trải nghiệm</label>
+          <textarea id="sug-note" rows="3" placeholder="Ví dụ: Quán cơm sườn nướng mật ong rất ngon / Điểm ngắm hoàng hôn cực chill, giữ xe miễn phí..."
             style="width: 100%; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-bg); color: var(--c-ink);"></textarea>
         </div>
 
         <button type="submit" class="btn btn--primary" style="width: 100%; height: 48px; font-size: var(--fs-md); font-weight: 700;">
           <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Gửi Đề Xuất Quán
+          Gửi Đề Xuất Địa Điểm
         </button>
       </form>
     </div>
@@ -190,6 +223,15 @@
     applyTheme(savedTheme);
     if (btnTheme) btnTheme.addEventListener('click', () => {
       applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    // Tự động chọn danh mục mặc định theo loại hình địa điểm
+    const placeTypeSelect = document.getElementById('sug-place-type');
+    const categorySelect = document.getElementById('sug-category');
+    placeTypeSelect?.addEventListener('change', () => {
+      const selectedGroup = placeTypeSelect.value;
+      const firstMatch = categorySelect.querySelector(`option[data-group="${selectedGroup}"]`);
+      if (firstMatch) categorySelect.value = firstMatch.value;
     });
 
     // Toast
@@ -244,11 +286,14 @@
       e.preventDefault();
       const suggestion = {
         name: document.getElementById('sug-name').value,
+        place_type: document.getElementById('sug-place-type').value,
         category_id: document.getElementById('sug-category').value,
         address: document.getElementById('sug-address').value,
         phone: document.getElementById('sug-phone').value,
         price_min: document.getElementById('sug-price-min').value,
         price_max: document.getElementById('sug-price-max').value,
+        ticket_price: document.getElementById('sug-ticket-price').value,
+        estimated_duration: document.getElementById('sug-duration').value,
         open_time: document.getElementById('sug-open').value,
         close_time: document.getElementById('sug-close').value,
         lat: document.getElementById('sug-lat').value,
@@ -263,7 +308,7 @@
         localStorage.setItem('food_finder_suggestions', JSON.stringify(list));
       } catch (_) {}
 
-      showToast('🎉 Cảm ơn bạn! Đề xuất quán đã được gửi thành công đến hệ thống.');
+      showToast('🎉 Cảm ơn bạn! Đề xuất địa điểm đã được gửi thành công đến hệ thống.');
       this.reset();
       updateCoords(defaultLat, defaultLng);
       marker.setLatLng([defaultLat, defaultLng]);

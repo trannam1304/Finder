@@ -116,3 +116,87 @@ export function getGoogleMapsPinUrl(restaurant) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackAddr)}`;
 }
 
+/**
+ * Thông tin hiển thị theo loại hình địa điểm (place_type)
+ */
+export function getPlaceTypeInfo(placeType = 'food') {
+  switch (placeType) {
+    case 'tourism':
+      return {
+        key: 'tourism',
+        label: 'Du lịch',
+        fullLabel: '🏛️ Du lịch & Tham quan',
+        emoji: '🏛️',
+        badgeClass: 'badge--tourism',
+        markerClass: 'marker-pin--tourism',
+      };
+    case 'entertainment':
+      return {
+        key: 'entertainment',
+        label: 'Vui chơi',
+        fullLabel: '🎡 Vui chơi giải trí',
+        emoji: '🎡',
+        badgeClass: 'badge--entertainment',
+        markerClass: 'marker-pin--entertainment',
+      };
+    default:
+      return {
+        key: 'food',
+        label: 'Ẩm thực',
+        fullLabel: '🍜 Ẩm thực & Đồ uống',
+        emoji: '🍜',
+        badgeClass: 'badge--food',
+        markerClass: 'marker-pin--food',
+      };
+  }
+}
+
+/**
+ * Định dạng giá vé vào cổng hoặc khoảng giá cho địa điểm
+ */
+export function formatTicketOrPrice(place) {
+  if (!place) return '';
+  const placeType = place.place_type || place.category?.type_group || 'food';
+  const ticketPrice = Number(place.ticket_price || 0);
+  const priceMin = Number(place.price_min || 0);
+  const priceMax = Number(place.price_max || 0);
+
+  if (placeType !== 'food') {
+    if (ticketPrice > 0) {
+      return `Vé: ${formatPrice(ticketPrice, priceMax > ticketPrice ? priceMax : ticketPrice)}`;
+    }
+    if (priceMin === 0 && priceMax === 0) {
+      return 'Vé miễn phí';
+    }
+    if (ticketPrice === 0 && priceMax > 0) {
+      return `Vào cổng miễn phí (${formatPrice(0, priceMax)})`;
+    }
+    return 'Vé miễn phí';
+  }
+
+  const p = formatPrice(priceMin, priceMax);
+  return p || 'Đang cập nhật';
+}
+
+/**
+ * Định dạng thời lượng trải nghiệm đề xuất (phút)
+ */
+export function formatDuration(minutes) {
+  const m = Number(minutes || 0);
+  if (!m || m <= 0) return '';
+  return `Gợi ý: ${m} phút`;
+}
+
+/**
+ * Định dạng khung giờ lý tưởng ghé thăm
+ */
+export function formatBestTimeSlot(slot) {
+  switch (slot) {
+    case 'morning':   return 'Buổi sáng (06:00 – 11:00)';
+    case 'afternoon': return 'Buổi chiều (13:00 – 17:30)';
+    case 'evening':   return 'Buổi tối (17:30 – 22:30)';
+    default:          return 'Mọi khung giờ trong ngày';
+  }
+}
+
+

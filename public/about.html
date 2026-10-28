@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Giới thiệu về dự án Food Finder — Nền tảng tìm kiếm quán ăn thông minh quanh bạn. Tìm hiểu công nghệ, thuật toán Haversine và hướng dẫn sử dụng.">
+  <meta name="description" content="Giới thiệu về dự án Food & Trip Finder — Nền tảng bản đồ thông minh tìm kiếm quán ăn, điểm du lịch, khu vui chơi và gợi ý lộ trình quanh bạn.">
   <meta name="theme-color" content="#D22B1F">
   <title>Giới thiệu & Hướng dẫn — Food Finder</title>
 
@@ -67,12 +67,12 @@
 
     <!-- Hero banner -->
     <header style="text-align: center; padding: var(--sp-6) 0 var(--sp-6); border-bottom: 2px solid var(--c-border); margin-bottom: var(--sp-6);">
-      <span class="badge badge--category" style="margin-bottom: var(--sp-3); font-size: var(--fs-sm);">Đồ án môn học Web Development</span>
+      <span class="badge badge--category" style="margin-bottom: var(--sp-3); font-size: var(--fs-sm);">Đồ án môn học Lập Trình Web — ĐH Tôn Đức Thắng</span>
       <h1 style="font-family: var(--font-display); font-weight: 800; font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.25; letter-spacing: -0.015em; margin-bottom: var(--sp-3);">
-        Food Finder
+        Food & Trip Finder
       </h1>
-      <p style="font-size: var(--fs-lg); color: var(--c-ink-soft); max-width: 680px; margin: 0 auto;">
-        Nền tảng tìm kiếm quán ăn thông minh quanh bạn. Giải quyết câu hỏi muôn thuở <strong style="color:var(--c-primary);">"Hôm nay ăn gì?"</strong> bằng bản đồ tương tác và thuật toán định vị thực tế.
+      <p style="font-size: var(--fs-lg); color: var(--c-ink-soft); max-width: 720px; margin: 0 auto;">
+        Nền tảng bản đồ thông minh tích hợp tìm kiếm <strong style="color:var(--c-primary);">🍜 Ẩm thực</strong>, <strong style="color:#0284c7;">🏛️ Du lịch</strong>, <strong style="color:#d97706;">🎡 Vui chơi giải trí</strong> và tự động gợi ý lộ trình đi chơi quanh vị trí của bạn.
       </p>
     </header>
 
@@ -81,20 +81,20 @@
       <div class="info-card" style="margin-bottom: 0;">
         <div class="info-card__title">🎯 Mục tiêu & Động lực</div>
         <p style="color: var(--c-ink); line-height: 1.6; margin-bottom: var(--sp-3);">
-          Sinh viên và người đi làm thường xuyên mất từ 15–30 phút mỗi ngày chỉ để suy nghĩ xem trưa nay hay tối nay ăn ở đâu. Các ứng dụng hiện tại thường nặng nề, đòi hỏi tài khoản hoặc chỉ tập trung vào đặt đơn giao hàng đắt đỏ.
+          Sinh viên và giới trẻ thường xuyên mất từ 15–30 phút mỗi ngày chỉ để suy nghĩ xem trưa nay ăn ở đâu, cuối tuần đi chơi chỗ nào mà không bị ngược đường.
         </p>
         <p style="color: var(--c-ink-soft); line-height: 1.6;">
-          <strong>Food Finder</strong> ra đời với tiêu chí: mở lên là thấy ngay quán quanh mình trong bán kính đi bộ hoặc xe máy, thao tác tức thì không cần đăng nhập, kết quả chính xác và chân thực.
+          <strong>Food & Trip Finder</strong> ra đời với hệ sinh thái 50+ địa điểm thực tế quanh ĐH Tôn Đức Thắng (Quận 7) & TP.HCM thuộc 3 nhóm: Ẩm thực, Du lịch tham quan và Khu vui chơi giải trí.
         </p>
       </div>
 
       <div class="info-card" style="margin-bottom: 0;">
         <div class="info-card__title">⚡ Triết lý thiết kế</div>
         <p style="color: var(--c-ink); line-height: 1.6; margin-bottom: var(--sp-3);">
-          <strong>"Men sứ & biển hiệu"</strong>: Lấy cảm hứng từ nét đẹp ẩm thực đường phố Việt Nam — tô sứ trắng men, biển hiệu sơn đỏ son, danh mục món ăn gần gũi như Cơm tấm, Bún bò, Bánh mì, Phở, Cà phê.
+          <strong>"Neo-Brutalism & Glassmorphism"</strong>: Lấy cảm hứng từ nét đẹp đường phố Sài Gòn — biển hiệu nổi bật, phân màu marker trực quan (Đỏ cam cho Ẩm thực, Xanh lam cho Du lịch, Vàng cam cho Vui chơi).
         </p>
         <p style="color: var(--c-ink-soft); line-height: 1.6;">
-          Giao diện được thiết kế theo phong cách Brutalism hiện đại: tương phản cao, typography đậm cá tính, thao tác dứt khoát và tối ưu hóa tối đa cho thiết bị di động.
+          Giao diện tương phản cao, typography đậm cá tính, hỗ trợ Dark/Light Mode và tối ưu hóa tối đa thao tác vuốt chạm trên thiết bị di động.
         </p>
       </div>
     </section>
@@ -106,33 +106,33 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-4);">
         <div class="info-card" style="margin-bottom: 0; border-top: 4px solid var(--c-primary);">
           <div style="font-size: 1.8rem; margin-bottom: var(--sp-2);">🗺️</div>
-          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Bản Đồ Số Leaflet</h3>
+          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Bản Đồ Số Đa Loại Hình</h3>
           <p style="font-size: var(--fs-sm); color: var(--c-ink-soft); line-height: 1.5;">
-            Tích hợp bản đồ OpenStreetMap & Carto Voyager thông qua thư viện Leaflet.js mã nguồn mở, hiển thị marker giọt nước độc quyền và bán kính quét trực quan.
+            Tích hợp bản đồ OpenStreetMap & Leaflet.js 1.9.4, hiển thị marker giọt nước phân màu theo 3 nhóm địa điểm và gom cụm thông minh với MarkerCluster.
           </p>
         </div>
 
         <div class="info-card" style="margin-bottom: 0; border-top: 4px solid var(--c-accent);">
           <div style="font-size: 1.8rem; margin-bottom: var(--sp-2);">📐</div>
-          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Công Thức Haversine</h3>
+          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Haversine & Lộ Trình</h3>
           <p style="font-size: var(--fs-sm); color: var(--c-ink-soft); line-height: 1.5;">
-            Tính toán cự ly thực tế trên bề mặt hình cầu Trái Đất (R = 6371.0088 km). Kết hợp kỹ thuật Bounding Box giúp lọc nhanh tọa độ trước khi tính lượng giác.
+            Tính toán cự ly thực tế trên mặt cầu Trái Đất (R = 6371.0088 km), kết hợp thuật toán Nearest Neighbor Heuristic tối ưu hóa chuỗi hành trình đi chơi.
           </p>
         </div>
 
         <div class="info-card" style="margin-bottom: 0; border-top: 4px solid var(--c-open);">
           <div style="font-size: 1.8rem; margin-bottom: var(--sp-2);">🎲</div>
-          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Quay Quán Thông Minh</h3>
+          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Gợi Ý Có Trọng Số</h3>
           <p style="font-size: var(--fs-sm); color: var(--c-ink-soft); line-height: 1.5;">
-            Tính năng "Hôm nay ăn gì?" áp dụng thuật toán chọn ngẫu nhiên có trọng số: ưu tiên quán gần hơn và có điểm đánh giá cao hơn, loại trừ trùng lặp gần nhất.
+            Tính năng "Hôm nay ăn gì?" áp dụng thuật toán chọn ngẫu nhiên có trọng số: ưu tiên địa điểm gần hơn và có điểm đánh giá cao hơn, loại trừ trùng lặp.
           </p>
         </div>
 
         <div class="info-card" style="margin-bottom: 0; border-top: 4px solid var(--c-user);">
           <div style="font-size: 1.8rem; margin-bottom: var(--sp-2);">🔍</div>
-          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Lọc Nâng Cao Đa Chiều</h3>
+          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Lọc Cấp 1 & 15 Danh Mục</h3>
           <p style="font-size: var(--fs-sm); color: var(--c-ink-soft); line-height: 1.5;">
-            Lọc linh hoạt theo bán kính (0.5km, 1km, 2km, 3km, 5km), danh mục món ăn, phân khúc giá sinh viên / cao cấp, số sao đánh giá và giờ mở cửa hiện tại.
+            Chuyển đổi tức thì giữa 3 nhóm (Ẩm thực, Du lịch, Vui chơi), 15 danh mục chi tiết, bán kính (0.5km - 15km), giá vé tham quan và giờ mở cửa.
           </p>
         </div>
       </div>
@@ -145,7 +145,7 @@
         <div>
           <h4 style="font-weight: 700; color: var(--c-primary); margin-bottom: var(--sp-2);">1. Công thức Haversine (Khoảng cách km)</h4>
           <p style="font-size: var(--fs-sm); color: var(--c-ink-soft); margin-bottom: var(--sp-3);">
-            Tính khoảng cách giữa tọa độ người dùng $(lat_1, lng_1)$ và tọa độ quán ăn $(lat_2, lng_2)$:
+            Tính khoảng cách giữa tọa độ người dùng $(lat_1, lng_1)$ và tọa độ địa điểm $(lat_2, lng_2)$:
           </p>
           <pre style="background: var(--c-surface-sunk); padding: var(--sp-3); border-radius: var(--r-sm); font-size: var(--fs-xs); overflow-x: auto; line-height: 1.5;">
 Δφ = (lat₂ - lat₁) × π / 180
@@ -155,16 +155,16 @@ c  = 2 · asin(√a)
 d  = 6371.0088 · c  (km)</pre>
         </div>
         <div>
-          <h4 style="font-weight: 700; color: var(--c-accent-dark); margin-bottom: var(--sp-2);">2. Trọng số "Hôm nay ăn gì?" (Weighted Pick)</h4>
+          <h4 style="font-weight: 700; color: var(--c-accent-dark); margin-bottom: var(--sp-2);">2. Trọng số Gợi ý & Nearest Neighbor</h4>
           <p style="font-size: var(--fs-sm); color: var(--c-ink-soft); margin-bottom: var(--sp-3);">
-            Trọng số của quán $i$ được tính theo điểm đánh giá và khoảng cách suy giảm:
+            Trọng số của địa điểm $i$ được tính theo điểm đánh giá và khoảng cách suy giảm:
           </p>
           <pre style="background: var(--c-surface-sunk); padding: var(--sp-3); border-radius: var(--r-sm); font-size: var(--fs-xs); overflow-x: auto; line-height: 1.5;">
 wᵢ = (0.30 + ratingᵢ / 5) × e^(-dᵢ / 1.5)
 
-• 0.30: Đảm bảo quán mới vẫn có cơ hội trúng
-• rating/5: Ưu tiên quán được đánh giá cao
-• e^(-d/1.5): Quán càng gần tỉ lệ trúng càng cao</pre>
+• 0.30: Đảm bảo địa điểm mới vẫn có cơ hội trúng
+• rating/5: Ưu tiên địa điểm được đánh giá cao
+• e^(-d/1.5): Càng gần vị trí người dùng tỉ lệ càng cao</pre>
         </div>
       </div>
     </section>
@@ -176,56 +176,56 @@ wᵢ = (0.30 + ratingᵢ / 5) × e^(-dᵢ / 1.5)
         <div style="background: var(--c-surface); border: 1px solid var(--c-border); padding: var(--sp-4); border-radius: var(--r-md); box-shadow: var(--sh-1);">
           <div style="width: 32px; height: 32px; background: var(--c-primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-bottom: var(--sp-3);">1</div>
           <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Xác định vị trí</h3>
-          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Cho phép ứng dụng lấy GPS hoặc chạm vào bản đồ để chọn bất kỳ vị trí xuất phát nào bạn muốn.</p>
+          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Cho phép ứng dụng lấy GPS hoặc chạm vào bản đồ để chọn bất kỳ vị trí xuất phát nào quanh bạn.</p>
         </div>
         <div style="background: var(--c-surface); border: 1px solid var(--c-border); padding: var(--sp-4); border-radius: var(--r-md); box-shadow: var(--sh-1);">
           <div style="width: 32px; height: 32px; background: var(--c-primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-bottom: var(--sp-3);">2</div>
-          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Chọn bán kính & món</h3>
-          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Chọn bán kính (500m - 5km) và bấm vào các chip danh mục (Cơm, Bún/Phở, Bánh mì...) để lọc nhanh.</p>
+          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Chọn loại hình & bán kính</h3>
+          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Bấm vào tab [🍜 Ẩm thực], [🏛️ Du lịch] hoặc [🎡 Vui chơi] và chọn các chip danh mục để lọc nhanh.</p>
         </div>
         <div style="background: var(--c-surface); border: 1px solid var(--c-border); padding: var(--sp-4); border-radius: var(--r-md); box-shadow: var(--sh-1);">
           <div style="width: 32px; height: 32px; background: var(--c-primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-bottom: var(--sp-3);">3</div>
-          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Xem hoặc Quay quán</h3>
-          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Bấm vào từng quán trong danh sách hoặc bấm nút vàng to "Hôm nay ăn gì?" để máy chọn giúp bạn.</p>
+          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Xem chi tiết & Quay gợi ý</h3>
+          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Xem giá vé vào cổng, thời lượng trải nghiệm đề xuất hoặc bấm nút vàng "Hôm nay ăn gì?" để chọn ngẫu nhiên.</p>
         </div>
         <div style="background: var(--c-surface); border: 1px solid var(--c-border); padding: var(--sp-4); border-radius: var(--r-md); box-shadow: var(--sh-1);">
           <div style="width: 32px; height: 32px; background: var(--c-primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-bottom: var(--sp-3);">4</div>
-          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Chỉ đường & Lưu quán</h3>
-          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Nhấn nút "Chỉ đường" để mở Google Maps điều hướng, hoặc thả tim lưu lại quán để ghé lần sau.</p>
+          <h3 style="font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-2);">Chỉ đường & Lưu yêu thích</h3>
+          <p style="font-size: var(--fs-sm); color: var(--c-ink-soft);">Nhấn nút "Chỉ đường" để mở Google Maps điều hướng chính xác, hoặc thả tim lưu lại địa điểm yêu thích.</p>
         </div>
       </div>
     </section>
 
     <!-- Technical Specs -->
     <section class="info-card" style="margin-bottom: var(--sp-7);">
-      <div class="info-card__title">💻 Kiến Trúc Công Nghệ</div>
+      <div class="info-card__title">💻 Kiến Trúc Công Nghệ & Đội Ngũ Thực Hiện</div>
       <table style="width: 100%; border-collapse: collapse; font-size: var(--fs-sm);">
         <tr style="border-bottom: 1px solid var(--c-border);">
           <td style="padding: var(--sp-3) 0; font-weight: 700; width: 220px; color: var(--c-ink);">Frontend Core</td>
-          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">HTML5 Semantic, CSS3 Vanilla (Tokens & Custom Properties), ES6 Javascript Modules</td>
+          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">HTML5 Semantic, CSS3 Vanilla (Design Tokens & Neo-Brutalism), ES6 JavaScript Modules</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--c-border);">
           <td style="padding: var(--sp-3) 0; font-weight: 700; color: var(--c-ink);">Thư viện Bản đồ</td>
-          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">Leaflet.js 1.9.4, Leaflet.markercluster, Carto Voyager & OpenStreetMap Tiles</td>
+          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">Leaflet.js 1.9.4, Leaflet.markercluster, Custom SVG Multi-type Pins & OpenStreetMap Tiles</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--c-border);">
-          <td style="padding: var(--sp-3) 0; font-weight: 700; color: var(--c-ink);">Backend API</td>
-          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">PHP 8.x, PDO Prepared Statements, RESTful JSON, Quản lý phiên Session & CSRF Token</td>
+          <td style="padding: var(--sp-3) 0; font-weight: 700; color: var(--c-ink);">Backend API & Thuật toán</td>
+          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">PHP 8.1+ Strict Types, PDO Prepared Statements, Heuristic Nearest Neighbor Itinerary, Anti-CSRF</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--c-border);">
           <td style="padding: var(--sp-3) 0; font-weight: 700; color: var(--c-ink);">Cơ sở dữ liệu</td>
-          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">MySQL / MariaDB (InnoDB, UTF8mb4 Unicode), Composite Indexing cho tọa độ địa lý</td>
+          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">MySQL / MariaDB (InnoDB, UTF8mb4 Unicode), 50+ địa điểm (Ẩm thực, Du lịch, Vui chơi), 15 danh mục</td>
         </tr>
         <tr>
-          <td style="padding: var(--sp-3) 0; font-weight: 700; color: var(--c-ink);">Khả năng chạy độc lập</td>
-          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">Tự động chuyển đổi giữa chế độ Live Backend API và chế độ Mock Web tĩnh (Client-side Haversine)</td>
+          <td style="padding: var(--sp-3) 0; font-weight: 700; color: var(--c-ink);">Nhóm sinh viên thực hiện</td>
+          <td style="padding: var(--sp-3) 0; color: var(--c-ink-soft);">Phạm Nguyễn Tuấn Kiệt (52400207) • Nguyễn Trọng Quý (52400230) • Trần Hữu Nam (52400217)</td>
         </tr>
       </table>
     </section>
 
     <!-- Footer info -->
     <footer style="text-align: center; padding: var(--sp-5) 0; border-top: 1px solid var(--c-border); color: var(--c-ink-faint); font-size: var(--fs-xs);">
-      <p>© 2026 Food Finder — Đồ án Phát triển Ứng dụng Web. Khu vực thử nghiệm: Quận 7, TP. Hồ Chí Minh.</p>
+      <p>© 2026 Food & Trip Finder — Đồ án Phát triển Ứng dụng Web. Khu vực dữ liệu: ĐH Tôn Đức Thắng (Quận 7) & TP. Hồ Chí Minh.</p>
     </footer>
 
   </main>
