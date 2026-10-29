@@ -15,7 +15,7 @@ function getCsrfFromHtml(string $html): string {
 
 // 1. Lấy trang Login & CSRF
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/login.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/login.php',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_COOKIEJAR => $cookieFile,
     CURLOPT_COOKIEFILE => $cookieFile,
@@ -26,7 +26,7 @@ echo "[1] Lấy trang đăng nhập & CSRF token: " . ($csrf ? 'OK' : 'FAILED') 
 
 // 2. Gửi đăng nhập với tài khoản admin / Admin@123456
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/login.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/login.php',
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => http_build_query([
         'csrf' => $csrf,
@@ -41,7 +41,7 @@ echo "[2] Đăng nhập quản trị viên (admin / Admin@123456): " . ($loginSu
 
 // 3. Truy cập Dashboard (dashboard.php)
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/dashboard.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/dashboard.php',
     CURLOPT_POST => false,
     CURLOPT_HTTPGET => true,
 ]);
@@ -50,14 +50,14 @@ $dashOk = strpos($dashHtml, 'Finder') !== false && strpos($dashHtml, 'Tổng qua
 echo "[3] Trang Tổng quan Dashboard: " . ($dashOk ? 'HOẠT ĐỘNG TỐT (Hiển thị KPI 50 địa điểm)' : 'THẤT BẠI') . "\n";
 
 // 4. Truy cập Danh sách địa điểm (index.php)
-curl_setopt($ch, CURLOPT_URL, 'http://localhost:8000/admin/index.php');
+curl_setopt($ch, CURLOPT_URL, 'http://127.0.0.1:8000/admin/index.php');
 $indexHtml = curl_exec($ch);
 $indexOk = strpos($indexHtml, 'Quản lý địa điểm') !== false && strpos($indexHtml, 'admin-table') !== false;
 echo "[4] Trang Quản lý địa điểm (index.php): " . ($indexOk ? 'HOẠT ĐỘNG TỐT (Hiển thị bảng & bộ lọc)' : 'THẤT BẠI') . "\n";
 
 // 5. Thử nghiệm CRUD Danh mục qua HTTP (categories.php, category_save.php, category_delete.php)
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/categories.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/categories.php',
     CURLOPT_POST => false,
     CURLOPT_HTTPGET => true,
 ]);
@@ -66,7 +66,7 @@ $catPageCsrf = getCsrfFromHtml($catPageHtml);
 
 // Thêm danh mục mới
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/category_save.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/category_save.php',
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => http_build_query([
         'csrf' => $catPageCsrf,
@@ -89,7 +89,7 @@ $createdCatId = $catMatches[1] ?? 0;
 if ($createdCatId) {
     $delCsrf = getCsrfFromHtml($afterAddCat);
     curl_setopt_array($ch, [
-        CURLOPT_URL => 'http://localhost:8000/admin/category_delete.php',
+        CURLOPT_URL => 'http://127.0.0.1:8000/admin/category_delete.php',
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => [
             'csrf' => $delCsrf,
@@ -106,7 +106,7 @@ echo "[5] Quản lý Danh mục (Thêm & Xóa danh mục qua form): " . ($catAdd
 
 // 6. Thử nghiệm Form thêm địa điểm (restaurant_form.php)
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/restaurant_form.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/restaurant_form.php',
     CURLOPT_POST => false,
     CURLOPT_HTTPGET => true,
 ]);
@@ -117,7 +117,7 @@ echo "[6] Giao diện Form thêm địa điểm (Leaflet Map Picker): " . ($form
 // 7. Thử nghiệm Thêm địa điểm mới qua HTTP POST (restaurant_save.php)
 $formCsrf = getCsrfFromHtml($formHtml);
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/restaurant_save.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/restaurant_save.php',
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => [
         'csrf' => $formCsrf,
@@ -154,7 +154,7 @@ $toggleOk = false;
 if ($restoId) {
     $delCsrf = getCsrfFromHtml($afterSaveResto);
     curl_setopt_array($ch, [
-        CURLOPT_URL => 'http://localhost:8000/admin/restaurant_delete.php',
+        CURLOPT_URL => 'http://127.0.0.1:8000/admin/restaurant_delete.php',
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => http_build_query([
             'csrf' => $delCsrf,
@@ -174,7 +174,7 @@ echo "[8] Ẩn/Hiện địa điểm (Toggle Status): " . ($toggleOk ? 'THÀNH C
 
 // 9. Quản lý Đánh giá (reviews.php)
 curl_setopt_array($ch, [
-    CURLOPT_URL => 'http://localhost:8000/admin/reviews.php',
+    CURLOPT_URL => 'http://127.0.0.1:8000/admin/reviews.php',
     CURLOPT_POST => false,
     CURLOPT_HTTPGET => true,
 ]);

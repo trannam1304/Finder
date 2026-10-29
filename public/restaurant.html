@@ -98,7 +98,53 @@
 
       <!-- Reviews -->
       <div class="info-card" id="card-reviews">
-        <div class="info-card__title">Đánh giá của khách hàng</div>
+        <div class="info-card__title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Đánh giá của khách hàng</span>
+          <button type="button" class="btn btn--sm btn--primary" id="btn-toggle-review-form" style="font-size:12px; padding:4px 10px;">
+            ✍️ Viết đánh giá
+          </button>
+        </div>
+
+        <!-- Form Viết đánh giá của bạn -->
+        <div class="review-form-wrap" id="review-form-wrap" style="background:var(--c-surface-sunk, #f4f4f4); border:1.5px solid var(--c-border, #181818); border-radius:var(--r-md, 6px); padding:var(--sp-4, 16px); margin-bottom:var(--sp-5, 20px);">
+          <h3 style="font-size:var(--fs-md, 1rem); font-weight:700; margin:0 0 var(--sp-3, 12px);">Viết đánh giá của bạn</h3>
+          <form id="form-add-review">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:var(--sp-3, 12px); margin-bottom:var(--sp-3, 12px);">
+              <div>
+                <label style="display:block; font-size:var(--fs-xs, 0.75rem); font-weight:700; margin-bottom:4px;">Tên của bạn <span style="color:var(--c-primary, #e11d48)">*</span></label>
+                <input required type="text" id="rev-author" placeholder="Ví dụ: Hoàng Long, Minh Anh..."
+                  style="width:100%; height:38px; padding:0 var(--sp-3, 12px); border:1px solid var(--c-border, #181818); border-radius:var(--r-sm, 4px); background:var(--c-surface, #fff); color:var(--c-ink, #181818);">
+              </div>
+              <div>
+                <label style="display:block; font-size:var(--fs-xs, 0.75rem); font-weight:700; margin-bottom:4px;">Chấm điểm <span style="color:var(--c-primary, #e11d48)">*</span></label>
+                <div class="star-rating-select" id="star-rating-select" style="display:flex; align-items:center; gap:6px; height:38px;">
+                  <input type="hidden" id="rev-rating" value="5">
+                  <div class="star-btns" id="star-btns" style="display:flex; gap:4px; font-size:1.4rem; cursor:pointer;" title="Chọn số sao">
+                    <span data-star="1" style="color:#f59e0b;">★</span>
+                    <span data-star="2" style="color:#f59e0b;">★</span>
+                    <span data-star="3" style="color:#f59e0b;">★</span>
+                    <span data-star="4" style="color:#f59e0b;">★</span>
+                    <span data-star="5" style="color:#f59e0b;">★</span>
+                  </div>
+                  <span id="star-rating-label" style="font-size:var(--fs-xs, 0.75rem); font-weight:700; color:var(--c-ink-soft, #666); margin-left:6px;">Tuyệt vời (5/5)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:var(--sp-3, 12px);">
+              <label style="display:block; font-size:var(--fs-xs, 0.75rem); font-weight:700; margin-bottom:4px;">Cảm nhận chi tiết</label>
+              <textarea id="rev-comment" rows="3" placeholder="Chia sẻ cảm nhận thực tế của bạn về địa điểm này..."
+                style="width:100%; padding:var(--sp-2, 8px) var(--sp-3, 12px); border:1px solid var(--c-border, #181818); border-radius:var(--r-sm, 4px); background:var(--c-surface, #fff); color:var(--c-ink, #181818); font-family:inherit; font-size:var(--fs-sm, 0.875rem);"></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end;">
+              <button type="submit" class="btn btn--primary btn--sm" id="btn-submit-review" style="font-weight:700; padding:6px 16px;">
+                Gửi đánh giá
+              </button>
+            </div>
+          </form>
+        </div>
+
         <div class="rating-summary" id="rating-summary"><!-- rendered by JS --></div>
         <div id="review-list"><!-- rendered by JS --></div>
       </div>

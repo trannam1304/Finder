@@ -200,7 +200,8 @@ function mockItinerary({ lat, lng, duration = 'half_day', vibe = 'chill', radius
 function mockReroll({ current_id, exclude_ids = [], from_lat, from_lng, place_type = 'food' } = {}) {
   const cLat = Number(from_lat) || CONFIG.FALLBACK_LAT;
   const cLng = Number(from_lng) || CONFIG.FALLBACK_LNG;
-  const excludes = new Set(exclude_ids.map(Number));
+  const rawEx = Array.isArray(exclude_ids) ? exclude_ids : (typeof exclude_ids === 'string' && exclude_ids.length ? exclude_ids.split(',') : []);
+  const excludes = new Set(rawEx.map(Number));
   excludes.add(Number(current_id));
 
   const candidates = MOCK_RESTAURANTS.filter(r => {
@@ -344,6 +345,60 @@ export async function rerollItineraryStop(params = {}) {
     if (err?.name === 'AbortError') throw err;
     console.warn('[FoodFinder] API itinerary_reroll gặp sự cố, fallback sang mock reroll:', err);
     return mockReroll(params);
+  }
+}
+
+export async function fetchReviews(restaurantId) {
+  if (CONFIG.USE_MOCK) {
+    return {
+      success: true,
+      data: {
+        summary: { average_rating: 4.8, total_reviews: 4, distribution: { 5: 3, 4: 1, 3: 0, 2: 0, 1: 0 } },
+        reviews: [
+          { id: 1, author_name: 'Nguyễn Minh Tuấn', rating: 5, comment: 'Quán ngon lắm! Thức ăn tươi, phục vụ nhiệt tình.', time_ago: '2 ngày trước' },
+          { id: 2, author_name: 'Trần Thị Lan', rating: 4, comment: 'Đồ ăn vừa miệng, giá cả sinh viên hợp lý.', time_ago: '1 tuần trước' }
+        ]
+      }
+    };
+  }
+  try {
+    return await apiFetch('reviews.php', { restaurant_id: restaurantId });
+  } catch (err) {
+    console.warn('[FoodFinder] Lỗi tải đánh giá, dùng mock:', err);
+    return {
+      success: true,
+      data: {
+        summary: { average_rating: 4.8, total_reviews: 2, distribution: { 5: 1, 4: 1, 3: 0, 2: 0, 1: 0 } },
+        reviews: [
+          { id: 1, author_name: 'Nguyễn Minh Tuấn', rating: 5, comment: 'Quán ăn ngon, phục vụ nhanh.', time_ago: 'Gần đây' }
+        ]
+      }
+    };
+  }
+}
+
+export async function submitReview(reviewData) {
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}/reviews.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(reviewData)
+    });
+    return await res.json();
+  } catch (err) {
+    return {
+      success: true,
+      data: {
+        message: 'Đã ghi nhận đánh giá (chế độ cục bộ)!',
+        review: {
+          id: Date.now(),
+          author_name: reviewData.author_name,
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+          time_ago: 'Vừa xong'
+        }
+      }
+    };
   }
 }
 
