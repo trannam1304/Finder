@@ -28,8 +28,8 @@ try {
 
 // Thống kê lượt tạo lịch trình thông minh (itinerary_logs)
 $totalItineraries = 0;
-$itineraryByVibe = ['chill' => 0, 'date' => 0, 'family' => 0, 'friends' => 0, 'explorer' => 0, 'foodie' => 0];
-$itineraryByDuration = ['2h' => 0, 'half_day' => 0, 'full_day' => 0];
+$itineraryByVibe = ['chill' => 0, 'adventure' => 0, 'foodie' => 0, 'date' => 0];
+$itineraryByDuration = ['half_day' => 0, 'full_day' => 0, 'evening' => 0];
 try {
     $totalItineraries = (int) $pdo->query('SELECT COUNT(*) FROM itinerary_logs')->fetchColumn();
     $vibeRows = $pdo->query('SELECT vibe, COUNT(*) AS cnt FROM itinerary_logs GROUP BY vibe')->fetchAll();
@@ -297,18 +297,16 @@ document.addEventListener('DOMContentLoaded', function () {
     new Chart(ctxVibe, {
       type: 'bar',
       data: {
-        labels: ['Chill', 'Hẹn hò', 'Gia đình', 'Bạn bè', 'Khám phá', 'Food Tour'],
+        labels: ['🌿 Chill thư thái', '⚡ Năng động (Adventure)', '🍜 Ăn sập (Foodie)', '💖 Hẹn hò (Date)'],
         datasets: [{
           label: 'Lượt tạo lịch trình',
           data: [
             <?= (int)$itineraryByVibe['chill'] ?>,
-            <?= (int)$itineraryByVibe['date'] ?>,
-            <?= (int)$itineraryByVibe['family'] ?>,
-            <?= (int)$itineraryByVibe['friends'] ?>,
-            <?= (int)$itineraryByVibe['explorer'] ?>,
-            <?= (int)$itineraryByVibe['foodie'] ?>
+            <?= (int)$itineraryByVibe['adventure'] ?>,
+            <?= (int)$itineraryByVibe['foodie'] ?>,
+            <?= (int)$itineraryByVibe['date'] ?>
           ],
-          backgroundColor: ['#0284c7', '#ff4d2e', '#14705a', '#f59e0b', '#7c3aed', '#e11d48'],
+          backgroundColor: ['#0284c7', '#d97706', '#dc2626', '#ec4899'],
           borderColor: '#181818',
           borderWidth: 2
         }]

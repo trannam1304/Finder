@@ -36,6 +36,31 @@
   margin-top: -4px;
 }
 
+/* ── FE-06: Numbered Itinerary Markers ── */
+.marker-pin--numbered {
+  width: 36px;
+  height: 44px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+}
+
+.marker-pin--numbered .marker-pin__drop {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #FFFFFF;
+}
+
+.marker-pin__num {
+  position: relative;
+  z-index: 2;
+  font-size: 15px;
+  font-weight: 900;
+  color: #FFFFFF;
+  line-height: 1;
+  margin-top: -6px;
+  font-family: var(--font-display, inherit);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 /* ── Place type marker colors (Task FE-02) ── */
 .marker-pin--food .marker-pin__drop {
   background: #ff4d2e;
@@ -67,6 +92,7 @@
 .marker-pin--selected .marker-pin__icon {
   color: #181818;
 }
+
 
 /* ── Marker drop animation ── */
 @media (prefers-reduced-motion: no-preference) {

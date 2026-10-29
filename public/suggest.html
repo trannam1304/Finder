@@ -281,37 +281,69 @@
       updateCoords(e.latlng.lat, e.latlng.lng);
     });
 
-    // Form submit
-    document.getElementById('suggest-form').addEventListener('submit', function(e) {
+    // Form submit kết nối trực tiếp CSDL qua API /api/suggest.php
+    const formEl = document.getElementById('suggest-form');
+    const submitBtn = formEl.querySelector('button[type="submit"]');
+
+    formEl.addEventListener('submit', async function(e) {
       e.preventDefault();
+      
       const suggestion = {
-        name: document.getElementById('sug-name').value,
+        name: document.getElementById('sug-name').value.trim(),
         place_type: document.getElementById('sug-place-type').value,
-        category_id: document.getElementById('sug-category').value,
-        address: document.getElementById('sug-address').value,
-        phone: document.getElementById('sug-phone').value,
-        price_min: document.getElementById('sug-price-min').value,
-        price_max: document.getElementById('sug-price-max').value,
-        ticket_price: document.getElementById('sug-ticket-price').value,
-        estimated_duration: document.getElementById('sug-duration').value,
+        category_id: parseInt(document.getElementById('sug-category').value, 10),
+        address: document.getElementById('sug-address').value.trim(),
+        phone: document.getElementById('sug-phone').value.trim(),
+        price_min: parseInt(document.getElementById('sug-price-min').value, 10) || 0,
+        price_max: parseInt(document.getElementById('sug-price-max').value, 10) || 0,
+        ticket_price: parseInt(document.getElementById('sug-ticket-price').value, 10) || 0,
+        estimated_duration: parseInt(document.getElementById('sug-duration').value, 10) || 60,
         open_time: document.getElementById('sug-open').value,
         close_time: document.getElementById('sug-close').value,
-        lat: document.getElementById('sug-lat').value,
-        lng: document.getElementById('sug-lng').value,
-        note: document.getElementById('sug-note').value,
-        created_at: new Date().toISOString()
+        lat: parseFloat(document.getElementById('sug-lat').value),
+        lng: parseFloat(document.getElementById('sug-lng').value),
+        note: document.getElementById('sug-note').value.trim()
       };
 
-      try {
-        const list = JSON.parse(localStorage.getItem('food_finder_suggestions') || '[]');
-        list.push(suggestion);
-        localStorage.setItem('food_finder_suggestions', JSON.stringify(list));
-      } catch (_) {}
+      const origBtnHtml = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <svg class="ui-icon is-spinning" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+        Đang gửi đề xuất đến máy chủ...
+      `;
 
-      showToast('🎉 Cảm ơn bạn! Đề xuất địa điểm đã được gửi thành công đến hệ thống.');
-      this.reset();
-      updateCoords(defaultLat, defaultLng);
-      marker.setLatLng([defaultLat, defaultLng]);
+      try {
+        const response = await fetch('api/suggest.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(suggestion)
+        });
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          showToast('🎉 ' + (result.data?.message || 'Cảm ơn bạn! Đề xuất địa điểm đã được gửi thành công đến ban quản trị.'));
+          formEl.reset();
+          updateCoords(defaultLat, defaultLng);
+          marker.setLatLng([defaultLat, defaultLng]);
+        } else {
+          const errMsg = result.error?.message || 'Không thể gửi đề xuất. Vui lòng kiểm tra lại thông tin.';
+          showToast('⚠️ ' + errMsg);
+        }
+      } catch (err) {
+        // Fallback lưu LocalStorage nếu mạng mất kết nối
+        try {
+          const list = JSON.parse(localStorage.getItem('food_finder_suggestions') || '[]');
+          list.push({ ...suggestion, created_at: new Date().toISOString() });
+          localStorage.setItem('food_finder_suggestions', JSON.stringify(list));
+        } catch (_) {}
+        showToast('ℹ️ Đã lưu đề xuất vào bộ nhớ máy khách (Mất kết nối máy chủ).');
+        formEl.reset();
+        updateCoords(defaultLat, defaultLng);
+        marker.setLatLng([defaultLat, defaultLng]);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origBtnHtml;
+      }
     });
   </script>
 </body>

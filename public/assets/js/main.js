@@ -4,13 +4,15 @@
 
 import { CONFIG } from './config.js';
 import { getCurrentPosition } from './geo.js';
-import { fetchCategories, fetchRestaurants } from './api.js';
-import { initMap, setUserMarker, renderMarkers, flyTo, highlightMarker, setTheme as setMapTheme, invalidateSize, getDirectionsUrl } from './map.js';
+import { fetchCategories, fetchRestaurants, fetchItinerary } from './api.js';
+import { initMap, setUserMarker, renderMarkers, flyTo, highlightMarker, setTheme as setMapTheme, invalidateSize, getDirectionsUrl, clearItineraryRoute } from './map.js';
 import { renderList, renderSkeleton, renderError, updateCount, highlightRow, setRowClickHandler } from './list.js';
 import { initFilters, setFilterChangeHandler, getActiveFilters, renderCategoryChips } from './filters.js';
 import { rollRandom, showRandomCard, hideRandomCard } from './random.js';
 import { initSheet, setState as setSheetState } from './sheet.js';
 import { icon } from './icons.js';
+import { initItinerarySetup, deactivateItineraryMode, activateItineraryMode } from './itinerary-setup.js';
+import { setExitItineraryHandler } from './itinerary-view.js';
 
 // ══════════════ APP STATE ══════════════
 const state = {
@@ -23,6 +25,7 @@ const state = {
   loading:  false,
   error:    null,
 };
+
 
 // ── DOM refs ──
 const sidebarList  = document.getElementById('sidebar-list');
@@ -242,9 +245,32 @@ async function bootstrap() {
   // 8. Bind events
   bindEvents();
 
-  // 9. Xác định GPS của người dùng trong background (không chặn UI)
+  // 9. FE-04 -> FE-07: Khởi tạo Tính năng Lộ trình Đi chơi Thông minh
+  initItinerarySetup(state, showToast);
+  setExitItineraryHandler(() => {
+    deactivateItineraryMode();
+    renderMarkers(state.results, state.selectedId);
+  });
+
+  // Kiểm tra liên kết chia sẻ lộ trình từ URL (FE-07)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('itinerary') === '1') {
+    const duration = urlParams.get('duration') || 'half_day';
+    const vibe = urlParams.get('vibe') || 'chill';
+    fetchItinerary({ lat: state.user.lat, lng: state.user.lng, duration, vibe, radius: 10 })
+      .then(res => {
+        if (res.success && res.data) {
+          activateItineraryMode(res.data, state.user);
+          showToast('🔗 Đang mở lộ trình được chia sẻ!');
+        }
+      })
+      .catch(() => {});
+  }
+
+  // 10. Xác định GPS của người dùng trong background (không chặn UI)
   resolveUserLocation();
 }
+
 
 function haversineDistanceKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
@@ -280,6 +306,21 @@ async function resolveUserLocation() {
 
 // ══════════════ BIND EVENTS ══════════════
 function bindEvents() {
+  // Click vào logo Food Finder -> reload / quay về trang chủ ban đầu
+  const headerBrand = document.getElementById('header-brand');
+  if (headerBrand) {
+    headerBrand.addEventListener('click', (e) => {
+      if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        e.preventDefault();
+        if (window.location.pathname.endsWith('index.html') && !window.location.search && !window.location.hash) {
+          window.location.reload();
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
+    });
+  }
+
   // Dark mode toggle
   if (btnTheme) {
     btnTheme.addEventListener('click', () => {

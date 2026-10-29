@@ -11,11 +11,15 @@ let tileLayer = null;
 let userMarker = null;
 let markerGroup = null;
 let markers = new Map(); // id → L.marker
+let routePolyline = null;
+let routeShadowPolyline = null;
+let routeMarkers = [];
 let markerTimers = []; // Keep track of pending drop animation timeouts
 
 // Callbacks
 let onMarkerClick = null;
 let onUserDrag = null;
+
 
 /**
  * Khởi tạo bản đồ Leaflet
@@ -213,6 +217,7 @@ export function renderMarkers(restaurants, selectedId = null) {
 }
 
 /**
+/**
  * Tạo divIcon cho địa điểm (Màu riêng theo loại hình: Ẩm thực / Du lịch / Vui chơi)
  */
 function createRestaurantIcon(restaurant, isSelected) {
@@ -340,6 +345,7 @@ export function createPopupContent(restaurant) {
   return container;
 }
 
+
 /**
  * Hiện popup cho marker
  */
@@ -429,4 +435,102 @@ export function getMap() {
  * Lấy directions URL (export cho random card)
  */
 export { getDirectionsUrl, getGoogleMapsPinUrl };
+
+/**
+ * FE-06: Vẽ Tuyến Đường Đa Điểm trên Leaflet (Routing Polyline)
+ * @param {Array} stops - Danh sách stops [{ place: {...}, step_order: 1, ... }]
+ * @param {Object} userPos - { lat, lng }
+ */
+export function renderItineraryRoute(stops = [], userPos = null) {
+  if (!map || typeof L === 'undefined') return;
+
+  clearItineraryRoute();
+
+  // Ẩn tạm markers thông thường để tập trung vào lộ trình
+  if (markerGroup) {
+    markerGroup.clearLayers();
+  }
+
+  const latlngs = [];
+  if (userPos && userPos.lat && userPos.lng) {
+    latlngs.push([userPos.lat, userPos.lng]);
+  }
+
+  stops.forEach((stop, index) => {
+    const place = stop.place || stop;
+    const stepNum = stop.step_order || (index + 1);
+    latlngs.push([place.lat, place.lng]);
+
+    // Tạo numbered marker [1], [2], [3]...
+    const placeType = place.place_type || 'food';
+    const numberedIcon = L.divIcon({
+      className: '',
+      html: `<div class="marker-pin marker-pin--numbered marker-pin--${placeType}">
+               <div class="marker-pin__drop"></div>
+               <span class="marker-pin__num">${stepNum}</span>
+             </div>`,
+      iconSize: [36, 44],
+      iconAnchor: [18, 44],
+      popupAnchor: [0, -46],
+    });
+
+    const marker = L.marker([place.lat, place.lng], {
+      icon: numberedIcon,
+      zIndexOffset: 1200 + stepNum,
+      title: `${stepNum}. ${place.name}`,
+    }).addTo(map);
+
+    marker.on('click', () => {
+      showPopup(marker, place);
+    });
+
+    routeMarkers.push(marker);
+  });
+
+  if (latlngs.length >= 2) {
+    // 1. Lớp viền đổ bóng Neo-Brutalist
+    routeShadowPolyline = L.polyline(latlngs, {
+      color: '#000000',
+      weight: 9,
+      opacity: 0.45,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map);
+
+    // 2. Lớp đường nét chính nổi bật
+    routePolyline = L.polyline(latlngs, {
+      color: '#4F46E5', // Neo-Brutalist Indigo / Purple
+      weight: 5,
+      opacity: 0.95,
+      dashArray: '10, 8',
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(map);
+
+    map.fitBounds(routePolyline.getBounds(), {
+      padding: [60, 60],
+      maxZoom: 15,
+    });
+  }
+}
+
+/**
+ * Xóa tuyến đường lộ trình và các marker số
+ */
+export function clearItineraryRoute() {
+  if (routePolyline && map) {
+    try { map.removeLayer(routePolyline); } catch (_) {}
+    routePolyline = null;
+  }
+  if (routeShadowPolyline && map) {
+    try { map.removeLayer(routeShadowPolyline); } catch (_) {}
+    routeShadowPolyline = null;
+  }
+  if (routeMarkers && routeMarkers.length > 0 && map) {
+    routeMarkers.forEach(m => {
+      try { map.removeLayer(m); } catch (_) {}
+    });
+    routeMarkers = [];
+  }
+}
 

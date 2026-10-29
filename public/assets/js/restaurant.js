@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { MOCK_RESTAURANTS } from './mock-data.js';
-import { fetchRestaurant } from './api.js';
+import { fetchRestaurant, fetchReviews, submitReview } from './api.js';
 import { CONFIG } from './config.js';
 import { escapeText, getDirectionsUrl, getGoogleMapsPinUrl, getPlaceTypeInfo, formatTicketOrPrice, formatDuration, formatBestTimeSlot, formatPrice } from './format.js';
 import { icon, categoryIcon, renderStars } from './icons.js';
@@ -228,59 +228,173 @@ document.getElementById('gallery').innerHTML = galleryImages.map((src, i) => `
   </div>
 `).join('');
 
-// Rating summary (mock distribution)
-const totalReviews = r.rating_count;
-const dist = [
-  Math.floor(totalReviews * 0.60),
-  Math.floor(totalReviews * 0.25),
-  Math.floor(totalReviews * 0.08),
-  Math.floor(totalReviews * 0.05),
-  Math.floor(totalReviews * 0.02),
-];
+// ── TÍNH NĂNG ĐÁNH GIÁ HAI CHIỀU (USER REVIEW) ─────────────────
+const btnToggleReview = document.getElementById('btn-toggle-review-form');
+const reviewFormWrap = document.getElementById('review-form-wrap');
+if (btnToggleReview && reviewFormWrap) {
+  btnToggleReview.addEventListener('click', () => {
+    const isHidden = reviewFormWrap.style.display === 'none';
+    reviewFormWrap.style.display = isHidden ? 'block' : 'none';
+    btnToggleReview.textContent = isHidden ? '✕ Đóng form' : '✍️ Viết đánh giá';
+  });
+}
 
-document.getElementById('rating-summary').innerHTML = `
-  <div class="rating-big">
-    <div class="rating-big__score">${r.rating}</div>
-    <div class="rating-big__stars">${starsHtml(r.rating)}</div>
-    <div class="rating-big__count">${r.rating_count} đánh giá</div>
-  </div>
-  <div class="rating-bars">
-    ${[5,4,3,2,1].map((star, i) => {
-      const count = dist[i];
-      const pct   = totalReviews > 0 ? Math.round(count / totalReviews * 100) : 0;
-      return `
-      <div class="rating-bar">
-        <span class="rating-bar__label">${star} ${icon('star', 'ui-icon--star-filled')}</span>
-        <div class="rating-bar__track">
-          <div class="rating-bar__fill" style="width:${pct}%"></div>
-        </div>
-        <span style="font-size:var(--fs-xs);color:var(--c-ink-faint);width:28px">${pct}%</span>
-      </div>`;
-    }).join('')}
-  </div>
-`;
+// Xử lý chọn số sao đánh giá (Interactive Star Rating)
+const starRatingInput = document.getElementById('rev-rating');
+const starRatingLabel = document.getElementById('star-rating-label');
+const starButtons = document.querySelectorAll('#star-btns span');
+const starLabels = {
+  5: 'Tuyệt vời (5/5)',
+  4: 'Rất tốt (4/5)',
+  3: 'Bình thường (3/5)',
+  2: 'Kém (2/5)',
+  1: 'Rất tệ (1/5)',
+};
 
-// Mock reviews
-const MOCK_REVIEWS = [
-  { name: 'Nguyễn Minh Tuấn', rating: 5, date: '2 ngày trước', text: 'Quán ngon lắm! Thức ăn tươi, nhân viên phục vụ nhiệt tình. Mình đã ghé nhiều lần và lần nào cũng hài lòng.' },
-  { name: 'Trần Thị Lan', rating: 4, date: '1 tuần trước', text: 'Đồ ăn vừa miệng, giá cả hợp lý. Không gian khá ổn tuy nhiên hơi ồn vào buổi trưa.' },
-  { name: 'Lê Văn Bình', rating: 5, date: '2 tuần trước', text: 'Đây là quán yêu thích của tôi ở khu vực này. Phục vụ nhanh, đồ ăn nóng hổi.' },
-  { name: 'Phạm Thị Hoa', rating: 4, date: '3 tuần trước', text: 'Hương vị chuẩn vị, đặc biệt phần nước dùng rất ngon. Sẽ quay lại!' },
-];
+function setStarRating(ratingVal) {
+  if (starRatingInput) starRatingInput.value = String(ratingVal);
+  if (starRatingLabel) starRatingLabel.textContent = starLabels[ratingVal] || `${ratingVal} sao`;
+  starButtons.forEach(btn => {
+    const s = parseInt(btn.dataset.star, 10);
+    btn.style.color = s <= ratingVal ? '#f59e0b' : '#cbd5e1';
+  });
+}
 
-document.getElementById('review-list').innerHTML = MOCK_REVIEWS.map(review => `
-  <div class="review-card">
-    <div class="review-card__header">
-      <div class="review-card__avatar">${review.name.charAt(0)}</div>
-      <div>
-        <div class="review-card__name">${review.name}</div>
-        <div class="review-card__stars">${renderStars(review.rating)}</div>
+starButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = parseInt(btn.dataset.star, 10);
+    setStarRating(val);
+  });
+});
+
+// Render danh sách reviews và tổng hợp phân bố sao từ API
+function renderReviewUI(summaryData, reviewList) {
+  const currentRating = summaryData?.average_rating || r.rating || 5.0;
+  const currentTotal = summaryData?.total_reviews ?? r.rating_count ?? 0;
+  const distObj = summaryData?.distribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+  const ratingSummaryEl = document.getElementById('rating-summary');
+  if (ratingSummaryEl) {
+    ratingSummaryEl.innerHTML = `
+      <div class="rating-big">
+        <div class="rating-big__score">${currentRating.toFixed(1)}</div>
+        <div class="rating-big__stars">${starsHtml(currentRating)}</div>
+        <div class="rating-big__count">${currentTotal} đánh giá</div>
       </div>
-      <span class="review-card__date">${review.date}</span>
-    </div>
-    <div class="review-card__text">${review.text}</div>
-  </div>
-`).join('');
+      <div class="rating-bars">
+        ${[5, 4, 3, 2, 1].map(star => {
+          const count = distObj[star] || 0;
+          const pct = currentTotal > 0 ? Math.round(count / currentTotal * 100) : 0;
+          return `
+          <div class="rating-bar">
+            <span class="rating-bar__label">${star} ${icon('star', 'ui-icon--star-filled')}</span>
+            <div class="rating-bar__track">
+              <div class="rating-bar__fill" style="width:${pct}%"></div>
+            </div>
+            <span style="font-size:var(--fs-xs);color:var(--c-ink-faint);width:28px">${pct}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  const reviewListEl = document.getElementById('review-list');
+  if (reviewListEl) {
+    if (!reviewList || reviewList.length === 0) {
+      reviewListEl.innerHTML = `
+        <div style="padding:var(--sp-5); text-align:center; color:var(--c-ink-soft); font-size:var(--fs-sm); border:1px dashed var(--c-border); border-radius:var(--r-md); margin-top:var(--sp-4);">
+          Chưa có đánh giá nào cho địa điểm này. Hãy là người đầu tiên chia sẻ trải nghiệm nhé!
+        </div>
+      `;
+    } else {
+      reviewListEl.innerHTML = reviewList.map(review => {
+        const author = escapeText(review.author_name || 'Khách');
+        const firstLetter = author.charAt(0).toUpperCase();
+        const dateStr = escapeText(review.time_ago || review.created_at || 'Gần đây');
+        const commentStr = escapeText(review.comment || 'Không có nhận xét chi tiết.');
+        const rVal = review.rating || 5;
+
+        return `
+          <div class="review-card" style="margin-top:var(--sp-3);">
+            <div class="review-card__header">
+              <div class="review-card__avatar">${firstLetter}</div>
+              <div>
+                <div class="review-card__name">${author}</div>
+                <div class="review-card__stars">${renderStars(rVal)}</div>
+              </div>
+              <span class="review-card__date">${dateStr}</span>
+            </div>
+            <div class="review-card__text">${commentStr}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+}
+
+// Tải dữ liệu review thật từ API
+async function loadReviews() {
+  try {
+    const res = await fetchReviews(r.id);
+    if (res.success && res.data) {
+      renderReviewUI(res.data.summary, res.data.reviews);
+    } else {
+      renderReviewUI(null, []);
+    }
+  } catch (err) {
+    console.warn('Lỗi tải đánh giá từ API:', err);
+    renderReviewUI(null, []);
+  }
+}
+
+loadReviews();
+
+// Gửi form đánh giá
+const formAddReview = document.getElementById('form-add-review');
+if (formAddReview) {
+  formAddReview.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnSubmit = document.getElementById('btn-submit-review');
+    const authorVal = (document.getElementById('rev-author')?.value || '').trim();
+    const ratingVal = parseInt(document.getElementById('rev-rating')?.value || '5', 10);
+    const commentVal = (document.getElementById('rev-comment')?.value || '').trim();
+
+    if (!authorVal) {
+      showToast('Vui lòng nhập tên của bạn');
+      return;
+    }
+
+    const origText = btnSubmit.innerHTML;
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = 'Đang gửi...';
+
+    try {
+      const result = await submitReview({
+        restaurant_id: r.id,
+        author_name: authorVal,
+        rating: ratingVal,
+        comment: commentVal,
+      });
+
+      if (result.success) {
+        showToast('🎉 ' + (result.data?.message || 'Đã gửi đánh giá thành công!'));
+        formAddReview.reset();
+        setStarRating(5);
+        if (reviewFormWrap) reviewFormWrap.style.display = 'none';
+        if (btnToggleReview) btnToggleReview.textContent = '✍️ Viết đánh giá';
+        // Tải lại danh sách review và cập nhật số điểm
+        await loadReviews();
+      } else {
+        showToast('⚠️ ' + (result.error?.message || 'Không thể gửi đánh giá lúc này.'));
+      }
+    } catch (err) {
+      showToast('⚠️ Không thể gửi đánh giá. Vui lòng thử lại sau.');
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = origText;
+    }
+  });
+}
 
 // Nearby restaurants
 const nearby = MOCK_RESTAURANTS
