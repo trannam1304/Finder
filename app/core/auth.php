@@ -6,8 +6,12 @@ require_once __DIR__ . '/db.php';
 function start_secure_session(): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) return;
-    session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax', 'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')]);
-    session_start();
+    if (!headers_sent()) {
+        session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax', 'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')]);
+        session_start();
+    } else {
+        @session_start();
+    }
 }
 
 function client_ip_binary(): string
@@ -39,7 +43,10 @@ function attempt_login(string $username, string $password): bool
         record_login_attempt($pdo, $username);
         return false;
     }
-    start_secure_session(); session_regenerate_id(true);
+    start_secure_session();
+    if (session_status() === PHP_SESSION_ACTIVE && !headers_sent()) {
+        session_regenerate_id(true);
+    }
     $_SESSION['admin'] = ['id' => (int) $admin['id'], 'username' => $admin['username'], 'display_name' => $admin['display_name']];
     $pdo->prepare('UPDATE admins SET last_login_at = NOW() WHERE id = :id')->execute([':id' => $admin['id']]);
     return true;

@@ -1,6 +1,6 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Bảng điều khiển — Food Finder</title>
+    <title>Bảng điều khiển — Food & Trip Finder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
@@ -13,69 +13,67 @@
       <a href="#" class="admin-brand"><span style="color:#d22b1f;font-weight:900;">Food Finder</span> <small>Quản trị</small></a>
       <nav>
         <a href="#" style="font-weight:700;color:#d22b1f;">Tổng quan</a>
-        <a href="#">Quán ăn</a>
+        <a href="#">Địa điểm</a>
         <a href="#">Danh mục</a>
         <a href="#">Đánh giá</a>
-        <a href="#">+ Thêm quán</a>
+        <a href="#">+ Thêm địa điểm</a>
         <a href="#">Xem bản đồ</a>
         <button class="link-button">Đăng xuất</button>
       </nav>
     </header>
     <main class="admin-container">
       <div class="admin-heading">
-        <div><h1>Bảng điều khiển tổng quan</h1><p class="admin-note">Số liệu thống kê và hoạt động của hệ thống Food Finder</p></div>
-        <div style="display:flex;gap:0.5rem;"><a href="#" class="btn btn--primary">+ Thêm quán mới</a><a href="#" class="btn btn--ghost">Quản lý danh mục</a></div>
+        <div><h1>Bảng điều khiển tổng quan (Đa loại hình)</h1><p class="admin-note">Thống kê cơ cấu địa điểm (Ẩm thực, Du lịch, Vui chơi) và hoạt động tạo lộ trình thông minh</p></div>
+        <div style="display:flex;gap:0.5rem;"><a href="#" class="btn btn--primary">+ Thêm địa điểm mới</a><a href="#" class="btn btn--ghost">Quản lý danh mục</a></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
-          <span style="font-size:0.75rem;text-transform:uppercase;color:#65706a;font-weight:700;">Tổng số quán ăn</span>
-          <div style="font-size:2rem;font-weight:800;color:#d22b1f;margin:0.25rem 0;">48</div>
-          <small style="color:#65706a;">48 quán đang hoạt động</small>
+          <span style="font-size:0.75rem;text-transform:uppercase;color:#65706a;font-weight:700;">Tổng số địa điểm</span>
+          <div style="font-size:2rem;font-weight:800;color:#d22b1f;margin:0.25rem 0;">50</div>
+          <small style="color:#65706a;">18 Ẩm thực • 16 Du lịch • 16 Vui chơi</small>
         </div>
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
-          <span style="font-size:0.75rem;text-transform:uppercase;color:#65706a;font-weight:700;">Danh mục món ăn</span>
-          <div style="font-size:2rem;font-weight:800;color:#18231e;margin:0.25rem 0;">7</div>
-          <small style="color:#65706a;">Cơm, Bún, Phở, Lẩu, Chay...</small>
+          <span style="font-size:0.75rem;text-transform:uppercase;color:#65706a;font-weight:700;">Danh mục hệ thống</span>
+          <div style="font-size:2rem;font-weight:800;color:#18231e;margin:0.25rem 0;">15</div>
+          <small style="color:#65706a;">7 Ẩm thực • 4 Du lịch • 4 Vui chơi</small>
         </div>
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
           <span style="font-size:0.75rem;text-transform:uppercase;color:#65706a;font-weight:700;">Điểm sao trung bình</span>
-          <div style="font-size:2rem;font-weight:800;color:#f2b01b;margin:0.25rem 0;">★ 4.4</div>
-          <small style="color:#65706a;">Trên thang điểm 5.0</small>
+          <div style="font-size:2rem;font-weight:800;color:#f2b01b;margin:0.25rem 0;">★ 4.5</div>
+          <small style="color:#65706a;">Trên 52.840 lượt đánh giá</small>
         </div>
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
-          <span style="font-size:0.75rem;text-transform:uppercase;color:#65706a;font-weight:700;">Lượt khách đánh giá</span>
-          <div style="font-size:2rem;font-weight:800;color:#14705a;margin:0.25rem 0;">1.842</div>
-          <small style="color:#65706a;">Tổng phản hồi thu thập</small>
+          <span style="font-size:0.75rem;text-transform:uppercase;color:#65706a;font-weight:700;">Lộ trình đã tạo</span>
+          <div style="font-size:2rem;font-weight:800;color:#0284c7;margin:0.25rem 0;">128</div>
+          <small style="color:#65706a;">TB 5,4 km / chuyến đi chơi</small>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
-          <h3 style="margin:0 0 1rem;font-size:1.05rem;">Phân bố quán theo danh mục</h3>
-          <div style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.85rem;">
-            <div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><strong>🍚 Cơm (Cơm tấm, Cơm niêu)</strong><span>14 quán (29%)</span></div><div style="height:8px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:29%;height:100%;background:#d22b1f;"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><strong>🍜 Bún, Phở, Hủ tiếu</strong><span>11 quán (23%)</span></div><div style="height:8px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:23%;height:100%;background:#d22b1f;"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><strong>🥖 Bánh mì</strong><span>8 quán (17%)</span></div><div style="height:8px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:17%;height:100%;background:#d22b1f;"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><strong>🔥 Lẩu, Nướng</strong><span>6 quán (13%)</span></div><div style="height:8px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:13%;height:100%;background:#d22b1f;"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><strong>☕ Cà phê, Trà sữa</strong><span>5 quán (10%)</span></div><div style="height:8px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:10%;height:100%;background:#d22b1f;"></div></div></div>
+          <h3 style="margin:0 0 1rem;font-size:1.05rem;">Cơ cấu 3 nhóm loại hình địa điểm (ADM-02)</h3>
+          <div style="display:flex;flex-direction:column;gap:0.85rem;font-size:0.85rem;">
+            <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><strong>🍜 Ẩm thực & Đồ uống</strong><span>18 địa điểm (36%)</span></div><div style="height:10px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:36%;height:100%;background:#d22b1f;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><strong>🏛️ Du lịch & Tham quan</strong><span>16 địa điểm (32%)</span></div><div style="height:10px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:32%;height:100%;background:#0284c7;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><strong>🎡 Vui chơi & Giải trí</strong><span>16 địa điểm (32%)</span></div><div style="height:10px;background:#eee;border-radius:999px;overflow:hidden;"><div style="width:32%;height:100%;background:#d97706;"></div></div></div>
           </div>
         </div>
         <div style="background:#fff;border:1px solid #ddd;border-radius:.75rem;padding:1.25rem;">
-          <h3 style="margin:0 0 1rem;font-size:1.05rem;">Top quán ăn đánh giá cao nhất</h3>
+          <h3 style="margin:0 0 1rem;font-size:1.05rem;">Top địa điểm đánh giá cao nhất</h3>
           <div style="display:flex;flex-direction:column;gap:0.75rem;font-size:0.85rem;">
             <div style="display:flex;align-items:center;gap:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid #eee;">
               <span style="width:22px;height:22px;border-radius:50%;background:#ffd400;color:#000;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:0.75rem;">1</span>
-              <div style="flex:1;"><strong>Cơm tấm Phúc Lộc Thọ</strong><br><small style="color:#65706a;">Nguyễn Thị Thập, Q7 &bull; 420 đánh giá</small></div>
+              <div style="flex:1;"><strong>Landmark 81 SkyView & Central Park</strong> <small style="color:#0284c7;font-weight:700;">[🏛️ Du lịch]</small><br><small style="color:#65706a;">Bình Thạnh &bull; 3.500 đánh giá</small></div>
               <span style="font-weight:700;color:#f2b01b;">★ 4.8</span>
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid #eee;">
               <span style="width:22px;height:22px;border-radius:50%;background:#eee;color:#000;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:0.75rem;">2</span>
-              <div style="flex:1;"><strong>Phở Hương Quê</strong><br><small style="color:#65706a;">Lê Văn Lương, Q7 &bull; 234 đánh giá</small></div>
-              <span style="font-weight:700;color:#f2b01b;">★ 4.6</span>
+              <div style="flex:1;"><strong>Workshop Làm Gốm & Vẽ Tranh Tipsy Art Q7</strong> <small style="color:#d97706;font-weight:700;">[🎡 Vui chơi]</small><br><small style="color:#65706a;">Nguyễn Thị Thập, Q7 &bull; 280 đánh giá</small></div>
+              <span style="font-weight:700;color:#f2b01b;">★ 4.8</span>
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid #eee;">
               <span style="width:22px;height:22px;border-radius:50%;background:#eee;color:#000;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:0.75rem;">3</span>
-              <div style="flex:1;"><strong>Bánh mì Má Hai</strong><br><small style="color:#65706a;">Lâm Văn Bền, Q7 &bull; 189 đánh giá</small></div>
-              <span style="font-weight:700;color:#f2b01b;">★ 4.5</span>
+              <div style="flex:1;"><strong>Cầu Ánh Sao (Starlight Bridge)</strong> <small style="color:#0284c7;font-weight:700;">[🏛️ Du lịch]</small><br><small style="color:#65706a;">Phú Mỹ Hưng, Q7 &bull; 1.250 đánh giá</small></div>
+              <span style="font-weight:700;color:#f2b01b;">★ 4.7</span>
             </div>
           </div>
         </div>

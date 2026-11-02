@@ -81,7 +81,7 @@ ws_dash["A5"] = "=COUNTA('📋 Phân Công Task Chi Tiết'!A4:A24)"
 ws_dash["C5"] = "=COUNTIF('📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")"
 ws_dash["E5"] = "=COUNTIF('📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")"
 ws_dash["G5"] = "=COUNTIF('📋 Phân Công Task Chi Tiết'!G4:G24, \"In Review\")"
-ws_dash["I5"] = "=COUNTIF('📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")"
+ws_dash["I5"] = "=COUNTIF('📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")+COUNTIF('📋 Phân Công Task Chi Tiết'!G4:G24, \"Completed\")"
 ws_dash["K5"] = "=IF(A5>0, ROUND((I5/A5)*100, 1) & \"%\", \"0%\")"
 
 ws_dash["C5"].font = Font(name=FONT_FAMILY, size=18, bold=True, color="D97706")
@@ -107,12 +107,12 @@ for col_i, h in enumerate(module_headers, start=1):
     c.border = border_header
 
 modules_data = [
-    (1, "Database & Schema Migration", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C10>0, ROUND((D10/C10)*100, 0)&\"%\", \"0%\")"),
-    (2, "Backend API & Thuật toán Lộ trình", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C11>0, ROUND((D11/C11)*100, 0)&\"%\", \"0%\")"),
-    (3, "Frontend Giao diện & Bản đồ Lộ trình", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C12>0, ROUND((D12/C12)*100, 0)&\"%\", \"0%\")"),
-    (4, "Admin CMS Quản trị Mở rộng", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C13>0, ROUND((D13/C13)*100, 0)&\"%\", \"0%\")"),
-    (5, "Kiểm Thử Chất Lượng (QA & Testing)", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C14>0, ROUND((D14/C14)*100, 0)&\"%\", \"0%\")"),
-    (6, "Tài Liệu, Báo Cáo & Demo (Docs)", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C15>0, ROUND((D15/C15)*100, 0)&\"%\", \"0%\")"),
+    (1, "Database & Schema Migration", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")+COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Completed\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Database\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C10>0, ROUND((D10/C10)*100, 0)&\"%\", \"0%\")"),
+    (2, "Backend API & Thuật toán Lộ trình", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")+COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Completed\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Backend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C11>0, ROUND((D11/C11)*100, 0)&\"%\", \"0%\")"),
+    (3, "Frontend Giao diện & Bản đồ Lộ trình", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")+COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Completed\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Frontend\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C12>0, ROUND((D12/C12)*100, 0)&\"%\", \"0%\")"),
+    (4, "Admin CMS Quản trị Mở rộng", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")+COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Completed\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Admin\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C13>0, ROUND((D13/C13)*100, 0)&\"%\", \"0%\")"),
+    (5, "Kiểm Thử Chất Lượng (QA & Testing)", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")+COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Completed\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"QA & Testing\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C14>0, ROUND((D14/C14)*100, 0)&\"%\", \"0%\")"),
+    (6, "Tài Liệu, Báo Cáo & Demo (Docs)", "=COUNTIF('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Done\")+COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"Completed\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"In Progress\")", "=COUNTIFS('📋 Phân Công Task Chi Tiết'!B4:B24, \"Documentation\", '📋 Phân Công Task Chi Tiết'!G4:G24, \"To Do\")", "=IF(C15>0, ROUND((D15/C15)*100, 0)&\"%\", \"0%\")"),
 ]
 
 for row_idx, row_vals in enumerate(modules_data, start=10):
@@ -167,7 +167,7 @@ ws_tasks.views.sheetView[0].showGridLines = True
 
 ws_tasks["A1"] = "BẢNG PHÂN CÔNG VÀ THEO DÕI TIẾN ĐỘ CÔNG VIỆC CHI TIẾT"
 ws_tasks["A1"].font = font_title
-ws_tasks["A2"] = "Hướng dẫn: Cập nhật trạng thái (To Do, In Progress, In Review, Done) và Người phụ trách để Dashboard tự động tính toán"
+ws_tasks["A2"] = "Hướng dẫn: Cập nhật trạng thái (To Do, In Progress, In Review, Done, Completed) và Người phụ trách để Dashboard tự động tính toán"
 ws_tasks["A2"].font = font_subtitle
 
 task_cols = [
@@ -199,10 +199,10 @@ tasks_list = [
         "Mở rộng schema thêm cột: place_type ('food', 'tourism', 'entertainment'), ticket_price (giá vé), estimated_duration (thời lượng phút), best_time_slot ('morning', 'afternoon', 'evening').",
         "Backend Dev",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "12/10/2026",
         "14/10/2026",
-        "0%",
+        "100%",
         "MySQL / MariaDB, database/schema.sql"
     ),
     (
@@ -212,10 +212,10 @@ tasks_list = [
         "Thêm type_group vào bảng categories. Tạo danh mục Du lịch (Bảo tàng, Di tích, Công viên, Cảnh quan) & Vui chơi (Khu trò chơi, Rạp phim, Boardgame, Workshop).",
         "Backend Dev",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "12/10/2026",
         "14/10/2026",
-        "0%",
+        "100%",
         "database/seed_categories.sql"
     ),
     (
@@ -225,10 +225,10 @@ tasks_list = [
         "Thu thập toạ độ GPS chính xác quanh Q7 & TP.HCM: Cầu Ánh Sao, Hồ Bán Nguyệt, Bảo tàng tranh 3D Artinus, Jump Arena, Thảo Cầm Viên, Bến Bạch Đằng, Landmark 81...",
         "Data Lead",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "13/10/2026",
         "16/10/2026",
-        "0%",
+        "100%",
         "database/seed_places_expansion.sql"
     ),
     (
@@ -236,12 +236,12 @@ tasks_list = [
         "Frontend",
         "Cập nhật Dữ liệu Mock Data Frontend (mock-data.js)",
         "Đồng bộ toàn bộ danh sách điểm Du lịch và Vui chơi vào mock-data.js để app chạy chế độ demo độc lập không cần backend.",
-        "Frontend Dev",
+        "Tuấn Kiệt",
         "P2 - Trung bình",
-        "To Do",
+        "Completed",
         "14/10/2026",
         "16/10/2026",
-        "0%",
+        "100%",
         "public/assets/js/mock-data.js"
     ),
     (
@@ -251,10 +251,10 @@ tasks_list = [
         "Nâng cấp api/restaurants.php (hoặc api/places.php) hỗ trợ param: type=all|food|tourism|entertainment, min_price, max_price, tính khoảng cách Haversine.",
         "Backend Dev",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "15/10/2026",
         "17/10/2026",
-        "0%",
+        "100%",
         "public/api/restaurants.php, app/geo.php"
     ),
     (
@@ -264,10 +264,10 @@ tasks_list = [
         "Xây dựng thuật toán ghép lịch trình: Vị trí hiện tại -> [Ăn sáng/Cafe] -> [Khu vui chơi/Điểm tham quan] -> [Ăn trưa/tối] -> [Chill ngắm cảnh]. Sắp xếp theo khoảng cách ngắn nhất (Nearest Neighbor).",
         "Backend Dev",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "16/10/2026",
         "20/10/2026",
-        "0%",
+        "100%",
         "app/itinerary.php (Thuật toán định tuyến & heuristics)"
     ),
     (
@@ -277,10 +277,10 @@ tasks_list = [
         "API nhận: user_lat, user_lng, duration (half_day / full_day / evening), vibe, max_radius. Trả về JSON: tổng km, tổng giờ dự kiến, danh sách stops kèm thời gian đề xuất.",
         "Backend Dev",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "18/10/2026",
         "21/10/2026",
-        "0%",
+        "100%",
         "public/api/itinerary.php, JSON REST API"
     ),
     (
@@ -290,10 +290,10 @@ tasks_list = [
         "Cho phép người dùng bấm 'Đổi địa điểm' ở 1 chặng bất kỳ (không thích bảo tàng này thì đổi sang điểm giải trí khác tương đương gần đó) mà không vỡ toàn bộ lịch trình.",
         "Backend Dev",
         "P2 - Trung bình",
-        "To Do",
+        "Completed",
         "20/10/2026",
         "22/10/2026",
-        "0%",
+        "100%",
         "public/api/itinerary_reroll.php"
     ),
     (
@@ -301,12 +301,12 @@ tasks_list = [
         "Frontend",
         "Nâng cấp Bộ lọc Nhóm Địa Điểm Cấp 1 trên Bản đồ & Explore",
         "Thêm thanh Tabs phân loại: [Tất cả] [🍜 Ẩm thực] [🏛️ Du lịch] [🎡 Vui chơi giải trí] trên index.html và explore.html. Click tab lọc nhanh tức thì.",
-        "Frontend Dev",
+        "Tuấn Kiệt",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "17/10/2026",
         "19/10/2026",
-        "0%",
+        "100%",
         "public/index.html, public/explore.html, filters.js"
     ),
     (
@@ -314,12 +314,12 @@ tasks_list = [
         "Frontend",
         "Thiết kế Leaflet Marker & Popup Riêng Biệt theo Loại Hình",
         "Marker màu đỏ/cam cho Quán ăn; Xanh lam/tím cho Du lịch; Vàng/cam neon cho Khu vui chơi. Bổ sung icon vector SVG tương ứng trong icons.js.",
-        "Frontend Dev",
+        "Tuấn Kiệt",
         "P2 - Trung bình",
-        "To Do",
+        "Completed",
         "18/10/2026",
         "20/10/2026",
-        "0%",
+        "100%",
         "public/assets/js/map.js, icons.js"
     ),
     (
@@ -327,12 +327,12 @@ tasks_list = [
         "Frontend",
         "Cập nhật Card Địa Điểm & Trang Chi Tiết (restaurant.html)",
         "Hiển thị badge loại địa điểm, giá vé vào cổng (Vé miễn phí / Có phí), thời lượng trải nghiệm đề xuất (Ví dụ: 'Gợi ý: 90 phút').",
-        "Frontend Dev",
+        "Tuấn Kiệt",
         "P2 - Trung bình",
-        "To Do",
+        "Completed",
         "19/10/2026",
         "21/10/2026",
-        "0%",
+        "100%",
         "public/restaurant.html, format.js"
     ),
     (
@@ -392,12 +392,12 @@ tasks_list = [
         "Admin",
         "Cập nhật Admin CMS Quản trị Đa loại hình Địa điểm",
         "Thêm trường chọn Loại hình (Ăn uống / Du lịch / Vui chơi), nhập giá vé vào cổng, thời lượng ghé thăm trong trang thêm/sửa quán của Admin CMS.",
-        "Fullstack Dev",
+        "Tuấn Kiệt",
         "P2 - Trung bình",
-        "To Do",
+        "Completed",
         "24/10/2026",
         "26/10/2026",
-        "0%",
+        "100%",
         "public/admin/restaurants.php"
     ),
     (
@@ -405,12 +405,12 @@ tasks_list = [
         "Admin",
         "Thống kê Dashboard Admin theo Phân loại Mới",
         "Cập nhật biểu đồ Dashboard thống kê tỷ trọng 3 nhóm địa điểm và số lượt người dùng sử dụng tính năng tạo lộ trình.",
-        "Fullstack Dev",
+        "Tuấn Kiệt",
         "P3 - Thấp",
-        "To Do",
+        "Completed",
         "26/10/2026",
         "28/10/2026",
-        "0%",
+        "100%",
         "public/admin/dashboard.php, Chart.js"
     ),
     (
@@ -418,12 +418,12 @@ tasks_list = [
         "QA & Testing",
         "Kiểm thử Thuật toán Gợi ý Lộ trình với các Toạ độ thực tế",
         "Test các vị trí xuất phát: TDTU Quận 7, Bến Bạch Đằng Q1, Khu Sala Q2... Kiểm tra tính hợp lý của lịch trình, không bị đảo chiều vô lý, giờ mở cửa khớp.",
-        "Tester / QA",
+        "Tuấn Kiệt",
         "P1 - Cao",
-        "To Do",
+        "Completed",
         "26/10/2026",
         "28/10/2026",
-        "0%",
+        "100%",
         "Test cases, API testing (Postman)"
     ),
     (
@@ -431,12 +431,12 @@ tasks_list = [
         "QA & Testing",
         "Kiểm thử Giao diện Responsive Mobile & Hiệu năng Bản đồ",
         "Kiểm tra trải nghiệm trên thiết bị di động (Mobile Web / PWA), thao tác chạm vuốt bản đồ, độ mượt khi zoom và tải nhiều điểm dừng trên lộ trình.",
-        "Tester / QA",
+        "Tuấn Kiệt",
         "P2 - Trung bình",
-        "To Do",
+        "Completed",
         "28/10/2026",
         "30/10/2026",
-        "0%",
+        "100%",
         "Mobile browser test, Chrome DevTools"
     ),
     (
@@ -499,7 +499,7 @@ for row_idx, task in enumerate(tasks_list, start=4):
                 
         # Status badges
         if col_idx == 7:
-            if val == "Done":
+            if val in ("Done", "Completed"):
                 cell.fill = fill_done
                 cell.font = Font(name=FONT_FAMILY, size=9.5, bold=True, color="166534")
             elif val == "In Progress":
@@ -513,7 +513,7 @@ for row_idx, task in enumerate(tasks_list, start=4):
                 cell.font = Font(name=FONT_FAMILY, size=9.5, bold=True, color="92400E")
 
 # Add Data Validation for Status & Priority dropdowns
-dv_status = DataValidation(type="list", formula1='"To Do,In Progress,In Review,Done"', allow_blank=True)
+dv_status = DataValidation(type="list", formula1='"To Do,In Progress,In Review,Done,Completed"', allow_blank=True)
 ws_tasks.add_data_validation(dv_status)
 dv_status.add(f"G4:G{len(tasks_list)+3}")
 
@@ -550,10 +550,9 @@ for col_i, h in enumerate(mem_headers, start=1):
     c.border = border_header
 
 members = [
-    (1, "Thành viên 1 (Điền tên)", "Team Leader & Fullstack", "Quản lý tiến độ, Kiến trúc hệ thống, Backend Lộ trình, Tài liệu đồ án", "Phụ trách tổng"),
-    (2, "Thành viên 2 (Điền tên)", "Frontend Specialist", "Giao diện Lộ trình (Timeline, Modal), Bản đồ Leaflet Polyline, UX/UI", "Lead Frontend"),
-    (3, "Thành viên 3 (Điền tên)", "Backend & Database", "Database migration, API đề xuất lộ trình, Seed data Du lịch/Vui chơi", "Lead Backend"),
-    (4, "Thành viên 4 (Điền tên)", "QA, Testing & Data", "Kiểm thử thuật toán GPS, Thu thập 30+ địa điểm, Slide & Demo đồ án", "Lead QA & Demo"),
+    (1, "52400207 - Phạm Nguyễn Tuấn Kiệt", "Frontend & UI/UX Lead, Admin CMS, QA & Testing", "Mock Data (DB-04), Bộ lọc cấp 1 (FE-01), Marker & Popup (FE-02), Card & Chi tiết (FE-03), Admin CMS (ADM-01, ADM-02), Kiểm thử (QA-01, QA-02)", "Hoàn thành 100% (8/8 tasks)"),
+    (2, "52400230 - Nguyễn Trọng Quý", "Database Architect, Data Engineering & Docs", "Thiết kế Schema mở rộng (DB-01), Danh mục 3 nhóm (DB-02), Seed 50+ địa điểm thực tế (DB-03), Báo cáo kỹ thuật & ERD (DOC-01)", "Lead Database & Docs"),
+    (3, "52400217 - Trần Hữu Nam", "Backend API, Routing Algorithm & Itinerary UI", "REST API Địa điểm & Lộ trình (BE-01..BE-04), Giao diện Modal, Timeline, Leaflet Polyline & Chia sẻ Lộ trình (FE-04..FE-07)", "Lead Backend & Routing"),
 ]
 
 for row_idx, mem in enumerate(members, start=6):
@@ -572,7 +571,7 @@ for row_idx, mem in enumerate(members, start=6):
 ws_raci["A12"] = "MA TRẬN PHÂN CÔNG TRÁCH NHIỆM (RACI MATRIX)"
 ws_raci["A12"].font = font_section
 
-raci_headers = ["STT", "Hạng Mục Công Việc", "Leader", "Frontend Dev", "Backend Dev", "QA & Data"]
+raci_headers = ["STT", "Hạng Mục Công Việc", "Trọng Quý (DB/Docs)", "Tuấn Kiệt (FE/Admin/QA)", "Hữu Nam (BE/Routing)", "Ghi Chú"]
 for col_i, h in enumerate(raci_headers, start=1):
     c = ws_raci.cell(row=13, column=col_i, value=h)
     c.font = font_header
@@ -581,14 +580,14 @@ for col_i, h in enumerate(raci_headers, start=1):
     c.border = border_header
 
 raci_matrix = [
-    (1, "Thiết kế Schema CSDL & Thu thập dữ liệu Du lịch/Vui chơi", "A", "I", "R", "R"),
-    (2, "Xây dựng Thuật toán & API Đề xuất Lộ trình", "A", "C", "R", "C"),
-    (3, "Thiết kế Giao diện Timeline & Thiết lập lộ trình", "A", "R", "C", "I"),
-    (4, "Vẽ đường nối Leaflet Polyline & Mở Google Maps", "A", "R", "C", "I"),
-    (5, "Nâng cấp bộ lọc đa dạng (Ăn uống / Du lịch / Vui chơi)", "A", "R", "C", "I"),
-    (6, "Cập nhật Admin CMS & Thống kê", "A", "C", "R", "I"),
-    (7, "Kiểm thử Thuật toán GPS & Responsive Mobile", "A", "C", "C", "R"),
-    (8, "Viết báo cáo kỹ thuật, Slide & Video Demo", "R", "C", "C", "R"),
+    (1, "Thiết kế Schema CSDL & Thu thập dữ liệu Du lịch/Vui chơi", "R", "C", "C", "DB-01, DB-02, DB-03"),
+    (2, "Đồng bộ Mock Data Frontend 50 địa điểm & 15 danh mục", "C", "R", "I", "DB-04"),
+    (3, "Xây dựng Thuật toán & API Đề xuất Lộ trình", "C", "I", "R", "BE-01, BE-02, BE-03, BE-04"),
+    (4, "Nâng cấp bộ lọc đa dạng, Marker phân màu & Card chi tiết", "I", "R", "C", "FE-01, FE-02, FE-03"),
+    (5, "Thiết kế Giao diện Timeline, Polyline & Chia sẻ lộ trình", "I", "C", "R", "FE-04, FE-05, FE-06, FE-07"),
+    (6, "Cập nhật Admin CMS & Thống kê Dashboard mở rộng", "C", "R", "I", "ADM-01, ADM-02"),
+    (7, "Kiểm thử Thuật toán GPS & Responsive Mobile", "C", "R", "C", "QA-01, QA-02"),
+    (8, "Viết báo cáo kỹ thuật, Slide & Video Demo", "R", "C", "C", "DOC-01, DOC-02"),
 ]
 
 for row_idx, r in enumerate(raci_matrix, start=14):

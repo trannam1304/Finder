@@ -4,24 +4,28 @@
 
 import { CONFIG } from './config.js';
 import { getCurrentPosition } from './geo.js';
-import { fetchCategories, fetchRestaurants } from './api.js';
-import { initMap, setUserMarker, renderMarkers, flyTo, highlightMarker, setTheme as setMapTheme, invalidateSize, getDirectionsUrl } from './map.js';
+import { fetchCategories, fetchRestaurants, fetchItinerary } from './api.js';
+import { initMap, setUserMarker, renderMarkers, flyTo, highlightMarker, setTheme as setMapTheme, invalidateSize, getDirectionsUrl, clearItineraryRoute } from './map.js';
 import { renderList, renderSkeleton, renderError, updateCount, highlightRow, setRowClickHandler } from './list.js';
 import { initFilters, setFilterChangeHandler, getActiveFilters, renderCategoryChips } from './filters.js';
 import { rollRandom, showRandomCard, hideRandomCard } from './random.js';
 import { initSheet, setState as setSheetState } from './sheet.js';
 import { icon } from './icons.js';
+import { initItinerarySetup, deactivateItineraryMode, activateItineraryMode } from './itinerary-setup.js';
+import { setExitItineraryHandler } from './itinerary-view.js';
 
 // ══════════════ APP STATE ══════════════
 const state = {
   user:     { lat: CONFIG.FALLBACK_LAT, lng: CONFIG.FALLBACK_LNG, source: 'fallback' },
-  filters:  { radius: CONFIG.DEFAULT_RADIUS || 3, categoryId: null, priceLevel: null, minRating: null, openNow: false, q: '', sort: 'distance' },
+  filters:  { radius: CONFIG.DEFAULT_RADIUS || 3, type: 'all', categoryId: null, priceLevel: null, minRating: null, openNow: false, q: '', sort: 'distance' },
+  categories: [],
   results:  [],
   selectedId: null,
   sheet:    'peek',
   loading:  false,
   error:    null,
 };
+
 
 // ── DOM refs ──
 const sidebarList  = document.getElementById('sidebar-list');
@@ -87,11 +91,27 @@ async function loadRestaurants() {
       state.results = result.data;
       state.selectedId = null;
 
-      // Render list in both sidebar and sheet
-      renderList(sidebarList, state.results, state.selectedId);
-      renderList(sheetList, state.results, state.selectedId);
-      updateCount(sidebarCount, result.meta?.count ?? state.results.length);
-      updateCount(sheetCount, result.meta?.count ?? state.results.length);
+      // Tối ưu hiệu năng: Render ngay lập tức container thuộc viewport hiện tại, defer container phụ
+      const countVal = result.meta?.count ?? state.results.length;
+      if (window.innerWidth >= 768) {
+        renderList(sidebarList, state.results, state.selectedId);
+        updateCount(sidebarCount, countVal);
+        const deferFn = () => {
+          renderList(sheetList, state.results, state.selectedId);
+          updateCount(sheetCount, countVal);
+        };
+        if ('requestIdleCallback' in window) requestIdleCallback(deferFn);
+        else setTimeout(deferFn, 120);
+      } else {
+        renderList(sheetList, state.results, state.selectedId);
+        updateCount(sheetCount, countVal);
+        const deferFn = () => {
+          renderList(sidebarList, state.results, state.selectedId);
+          updateCount(sidebarCount, countVal);
+        };
+        if ('requestIdleCallback' in window) requestIdleCallback(deferFn);
+        else setTimeout(deferFn, 120);
+      }
 
       // Render markers
       renderMarkers(state.results, state.selectedId);
@@ -124,8 +144,8 @@ function selectRestaurant(restaurant) {
   highlightRow(sidebarList, restaurant.id);
   highlightRow(sheetList, restaurant.id);
 
-  // Highlight marker and fly to
-  highlightMarker(restaurant.id);
+  // Highlight marker and fly to with popup
+  highlightMarker(restaurant.id, true);
   flyTo(restaurant.lat, restaurant.lng);
 
   // On mobile, go to peek to see map
@@ -150,7 +170,7 @@ async function handleRandom() {
       });
       // Focus on the restaurant on the map
       flyTo(restaurant.lat, restaurant.lng);
-      highlightMarker(restaurant.id);
+      highlightMarker(restaurant.id, true);
     } else {
       showToast('Không tìm được quán nào phù hợp. Nới bán kính hoặc bỏ bớt bộ lọc.');
     }
@@ -171,25 +191,26 @@ async function bootstrap() {
   renderSkeleton(sidebarList, 5);
   renderSkeleton(sheetList, 5);
 
-  // 3. Load categories (with localStorage cache)
+  // 3. Load categories (with localStorage cache v2)
   let categories = [];
   try {
-    const cachedCats = localStorage.getItem('food-finder-categories');
-    const cachedTime = localStorage.getItem('food-finder-categories-ts');
+    const cachedCats = localStorage.getItem('food-finder-categories-v2');
+    const cachedTime = localStorage.getItem('food-finder-categories-v2-ts');
     if (cachedCats && cachedTime && (Date.now() - parseInt(cachedTime)) < 3600000) {
       categories = JSON.parse(cachedCats);
     } else {
       const catResult = await fetchCategories();
       if (catResult.success) {
         categories = catResult.data;
-        localStorage.setItem('food-finder-categories', JSON.stringify(categories));
-        localStorage.setItem('food-finder-categories-ts', String(Date.now()));
+        localStorage.setItem('food-finder-categories-v2', JSON.stringify(categories));
+        localStorage.setItem('food-finder-categories-v2-ts', String(Date.now()));
       }
     }
   } catch {
     // Non-fatal, chips just won't render
   }
 
+  state.categories = categories;
   // Render category chips
   renderCategoryChips(categories, state);
 
@@ -201,7 +222,7 @@ async function bootstrap() {
     zoom: CONFIG.DEFAULT_ZOOM,
     isDark: dark,
     onMarkerSelect: (id) => {
-      const r = state.results.find(r => r.id === id);
+      const r = state.results.find(r => String(r.id) === String(id));
       if (r) selectRestaurant(r);
     },
     onUserPositionChange: (lat, lng) => {
@@ -240,9 +261,44 @@ async function bootstrap() {
   // 8. Bind events
   bindEvents();
 
-  // 9. Xác định GPS của người dùng trong background (không chặn UI)
+  // 9. FE-04 -> FE-07: Khởi tạo Tính năng Lộ trình Đi chơi Thông minh
+  initItinerarySetup(state, showToast);
+  setExitItineraryHandler(() => {
+    deactivateItineraryMode();
+    renderMarkers(state.results, state.selectedId);
+  });
+
+  // Kiểm tra liên kết lộ trình từ URL (FE-07 & Saved Itineraries)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('itinerary') === '1') {
+    const duration = urlParams.get('duration') || 'half_day';
+    const vibe = urlParams.get('vibe') || 'chill';
+    fetchItinerary({ lat: state.user.lat, lng: state.user.lng, duration, vibe, radius: 10 })
+      .then(res => {
+        if (res.success && res.data) {
+          activateItineraryMode(res.data, state.user);
+          showToast('🔗 Đang mở lộ trình được chia sẻ!');
+        }
+      })
+      .catch(() => {});
+  } else if (urlParams.get('saved_itin')) {
+    const savedItinId = urlParams.get('saved_itin');
+    try {
+      const savedList = JSON.parse(localStorage.getItem('food_finder_saved_itineraries') || '[]');
+      const found = savedList.find(item => item.id === savedItinId);
+      if (found && found.stops) {
+        setTimeout(() => {
+          activateItineraryMode(found, found.user_pos || state.user);
+          showToast('⭐ Đang hiển thị lộ trình đã lưu của bạn!');
+        }, 150);
+      }
+    } catch (_) {}
+  }
+
+  // 10. Xác định GPS của người dùng trong background (không chặn UI)
   resolveUserLocation();
 }
+
 
 function haversineDistanceKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
@@ -278,6 +334,21 @@ async function resolveUserLocation() {
 
 // ══════════════ BIND EVENTS ══════════════
 function bindEvents() {
+  // Click vào logo Food Finder -> reload / quay về trang chủ ban đầu
+  const headerBrand = document.getElementById('header-brand');
+  if (headerBrand) {
+    headerBrand.addEventListener('click', (e) => {
+      if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        e.preventDefault();
+        if (window.location.pathname.endsWith('index.html') && !window.location.search && !window.location.hash) {
+          window.location.reload();
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
+    });
+  }
+
   // Dark mode toggle
   if (btnTheme) {
     btnTheme.addEventListener('click', () => {

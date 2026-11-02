@@ -40,7 +40,7 @@ api_guard(function (): void {
     );
 
     if ($candidate === null) {
-        json_error('Không tìm thấy địa điểm thay thế phù hợp trong khu vực lân cận.', 404);
+        json_error('NOT_FOUND', 'Không tìm thấy địa điểm thay thế phù hợp trong khu vực lân cận.', 404);
         return;
     }
 

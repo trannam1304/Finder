@@ -949,25 +949,25 @@ def create_report():
         run.font.size = Pt(9.5)
 
     all_20_tasks = [
-        ("DB-01", "Database", "Mở rộng Schema hỗ trợ Đa loại hình", "Trọng Quý", "P1 - Cao", "14/10/2026", "0%"),
-        ("DB-02", "Database", "Mở rộng Bảng Danh Mục theo 3 Nhóm", "Trọng Quý", "P1 - Cao", "14/10/2026", "0%"),
-        ("DB-03", "Database", "Thu thập dữ liệu & Seed 30+ Điểm Du lịch", "Trọng Quý", "P1 - Cao", "16/10/2026", "0%"),
-        ("DB-04", "Frontend", "Cập nhật Mock Data Frontend (mock-data.js)", "Tuấn Kiệt", "P2 - TB", "16/10/2026", "0%"),
-        ("BE-01", "Backend", "RESTful API Lấy địa điểm theo loại hình", "Hữu Nam", "P1 - Cao", "17/10/2026", "0%"),
-        ("BE-02", "Backend", "Thiết kế Thuật toán Đề xuất Lộ trình", "Hữu Nam", "P1 - Cao", "20/10/2026", "0%"),
-        ("BE-03", "Backend", "Endpoint API Đề xuất Lộ trình (/api/itinerary)", "Hữu Nam", "P1 - Cao", "21/10/2026", "0%"),
-        ("BE-04", "Backend", "API Đổi Chặng Linh Hoạt (/api/itinerary_reroll)", "Hữu Nam", "P2 - TB", "22/10/2026", "0%"),
-        ("FE-01", "Frontend", "Nâng cấp Bộ lọc Nhóm Địa Điểm Cấp 1", "Tuấn Kiệt", "P1 - Cao", "19/10/2026", "0%"),
-        ("FE-02", "Frontend", "Thiết kế Leaflet Marker & Popup Riêng", "Tuấn Kiệt", "P2 - TB", "20/10/2026", "0%"),
-        ("FE-03", "Frontend", "Cập nhật Card Địa Điểm & Chi Tiết", "Tuấn Kiệt", "P2 - TB", "21/10/2026", "0%"),
+        ("DB-01", "Database", "Mở rộng Schema hỗ trợ Đa loại hình", "Trọng Quý", "P1 - Cao", "14/10/2026", "100%"),
+        ("DB-02", "Database", "Mở rộng Bảng Danh Mục theo 3 Nhóm", "Trọng Quý", "P1 - Cao", "14/10/2026", "100%"),
+        ("DB-03", "Database", "Thu thập dữ liệu & Seed 30+ Điểm Du lịch", "Trọng Quý", "P1 - Cao", "16/10/2026", "100%"),
+        ("DB-04", "Frontend", "Cập nhật Mock Data Frontend (mock-data.js)", "Tuấn Kiệt", "P2 - TB", "16/10/2026", "100%"),
+        ("BE-01", "Backend", "RESTful API Lấy địa điểm theo loại hình", "Hữu Nam", "P1 - Cao", "17/10/2026", "100%"),
+        ("BE-02", "Backend", "Thiết kế Thuật toán Đề xuất Lộ trình", "Hữu Nam", "P1 - Cao", "20/10/2026", "100%"),
+        ("BE-03", "Backend", "Endpoint API Đề xuất Lộ trình (/api/itinerary)", "Hữu Nam", "P1 - Cao", "21/10/2026", "100%"),
+        ("BE-04", "Backend", "API Đổi Chặng Linh Hoạt (/api/itinerary_reroll)", "Hữu Nam", "P2 - TB", "22/10/2026", "100%"),
+        ("FE-01", "Frontend", "Nâng cấp Bộ lọc Nhóm Địa Điểm Cấp 1", "Tuấn Kiệt", "P1 - Cao", "19/10/2026", "100%"),
+        ("FE-02", "Frontend", "Thiết kế Leaflet Marker & Popup Riêng", "Tuấn Kiệt", "P2 - TB", "20/10/2026", "100%"),
+        ("FE-03", "Frontend", "Cập nhật Card Địa Điểm & Chi Tiết", "Tuấn Kiệt", "P2 - TB", "21/10/2026", "100%"),
         ("FE-04", "Frontend", "Modal Thiết lập Lộ trình Đi chơi", "Hữu Nam", "P1 - Cao", "23/10/2026", "0%"),
         ("FE-05", "Frontend", "Giao diện Timeline Lịch trình Thông minh", "Hữu Nam", "P1 - Cao", "25/10/2026", "0%"),
         ("FE-06", "Frontend", "Vẽ Tuyến Đường Đa Điểm trên Leaflet", "Hữu Nam", "P1 - Cao", "26/10/2026", "0%"),
         ("FE-07", "Frontend", "Tính năng Lưu & Chia Sẻ Lộ Trình", "Hữu Nam", "P3 - Thấp", "27/10/2026", "0%"),
-        ("ADM-01", "Admin", "Cập nhật Quản Trị Đa Loại Hình (Admin CMS)", "Tuấn Kiệt", "P2 - TB", "26/10/2026", "0%"),
-        ("ADM-02", "Admin", "Thống kê Dashboard Admin Mở Rộng", "Tuấn Kiệt", "P3 - Thấp", "28/10/2026", "0%"),
-        ("QA-01", "QA & Test", "Kiểm thử Logic Thuật toán Lộ trình GPS", "Tuấn Kiệt", "P1 - Cao", "28/10/2026", "0%"),
-        ("QA-02", "QA & Test", "Kiểm thử Responsive Mobile & Hiệu năng Bản đồ", "Tuấn Kiệt", "P2 - TB", "30/10/2026", "0%"),
+        ("ADM-01", "Admin", "Cập nhật Quản Trị Đa Loại Hình (Admin CMS)", "Tuấn Kiệt", "P2 - TB", "26/10/2026", "100%"),
+        ("ADM-02", "Admin", "Thống kê Dashboard Admin Mở Rộng", "Tuấn Kiệt", "P3 - Thấp", "28/10/2026", "100%"),
+        ("QA-01", "QA & Test", "Kiểm thử Logic Thuật toán Lộ trình GPS", "Tuấn Kiệt", "P1 - Cao", "28/10/2026", "100%"),
+        ("QA-02", "QA & Test", "Kiểm thử Responsive Mobile & Hiệu năng Bản đồ", "Tuấn Kiệt", "P2 - TB", "30/10/2026", "100%"),
         ("DOC-01", "Docs", "Cập nhật Báo Cáo Kỹ Thuật, Sơ Đồ ERD", "Trọng Quý", "P2 - TB", "31/10/2026", "0%"),
     ]
 
@@ -1198,8 +1198,9 @@ def create_report():
     # -------------------------------------------------------------
     # Save files
     # -------------------------------------------------------------
-    output_docs_path = r"d:\PROJECT-Mid-final\WEB-FINAL-foodfinder\Finder\docs\BAO_CAO_MO_TA_DU_AN_FOOD_FINDER.docx"
-    output_root_path = r"d:\PROJECT-Mid-final\WEB-FINAL-foodfinder\Finder\BAO_CAO_MO_TA_DU_AN_FOOD_FINDER.docx"
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    output_docs_path = os.path.join(base_dir, "docs", "BAO_CAO_MO_TA_DU_AN_FOOD_FINDER.docx")
+    output_root_path = os.path.join(base_dir, "BAO_CAO_MO_TA_DU_AN_FOOD_FINDER.docx")
     
     doc.save(output_docs_path)
     shutil.copyfile(output_docs_path, output_root_path)

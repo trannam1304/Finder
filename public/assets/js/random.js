@@ -1,10 +1,10 @@
 /* ============================================================
-   RANDOM.JS — Tính năng "Hôm nay ăn gì?"
+   RANDOM.JS — Tính năng "Hôm nay ăn gì / đi đâu?" (Đa loại hình)
    ============================================================ */
 
 import { CONFIG } from './config.js';
 import { fetchRandom } from './api.js';
-import { formatDistance, formatPrice, isOpenNow } from './format.js';
+import { formatDistance, formatTicketOrPrice, formatDuration, getPlaceTypeInfo, isOpenNow } from './format.js';
 import { categoryIcon, icon } from './icons.js';
 
 const STORAGE_KEY = 'food-finder-random-exclude';
@@ -50,7 +50,7 @@ export async function rollRandom(filters) {
 }
 
 /**
- * Hiển thị overlay randomizer
+ * Hiển thị overlay randomizer (Task FE-03: hỗ trợ cả Ẩm thực, Du lịch, Vui chơi)
  */
 export function showRandomCard(restaurant, { onReroll, onClose, getDirectionsUrl }) {
   const overlay = document.getElementById('random-overlay');
@@ -60,8 +60,22 @@ export function showRandomCard(restaurant, { onReroll, onClose, getDirectionsUrl
   const dirBtn = document.getElementById('random-directions');
   const rerollBtn = document.getElementById('random-reroll');
   const closeBtn = document.getElementById('random-close');
+  const labelEl = overlay?.querySelector('.random-card__label');
 
   if (!overlay || !restaurant) return;
+
+  const placeType = restaurant.place_type || restaurant.category?.type_group || 'food';
+  const typeInfo = getPlaceTypeInfo(placeType);
+
+  if (labelEl) {
+    if (placeType === 'tourism') {
+      labelEl.textContent = '🏛️ Tham quan ở đây đi';
+    } else if (placeType === 'entertainment') {
+      labelEl.textContent = '🎡 Đi chơi ở đây đi';
+    } else {
+      labelEl.textContent = '🍜 Ăn ở đây đi';
+    }
+  }
 
   // Set data (textContent for XSS safety)
   nameEl.textContent = restaurant.name;
@@ -72,6 +86,12 @@ export function showRandomCard(restaurant, { onReroll, onClose, getDirectionsUrl
   // Meta info
   metaEl.innerHTML = '';
   const openStatus = isOpenNow(restaurant.open_time, restaurant.close_time, restaurant.is_24h);
+
+  // Place Type badge
+  const typeBadge = document.createElement('span');
+  typeBadge.className = `badge ${typeInfo.badgeClass}`;
+  typeBadge.textContent = `${typeInfo.emoji} ${typeInfo.label}`;
+  metaEl.appendChild(typeBadge);
 
   // Category
   if (restaurant.category?.name) {
@@ -89,12 +109,22 @@ export function showRandomCard(restaurant, { onReroll, onClose, getDirectionsUrl
     metaEl.appendChild(badge);
   }
 
-  // Price
-  const price = formatPrice(restaurant.price_min, restaurant.price_max);
-  if (price) {
+  // Price / Ticket price
+  const priceText = formatTicketOrPrice(restaurant);
+  if (priceText) {
     const priceEl = document.createElement('span');
-    priceEl.textContent = price;
+    priceEl.className = placeType !== 'food' ? 'badge badge--ticket' : '';
+    priceEl.textContent = priceText;
     metaEl.appendChild(priceEl);
+  }
+
+  // Estimated duration
+  const durationText = formatDuration(restaurant.estimated_duration);
+  if (durationText) {
+    const durEl = document.createElement('span');
+    durEl.className = 'badge badge--duration';
+    durEl.textContent = durationText;
+    metaEl.appendChild(durEl);
   }
 
   // Distance

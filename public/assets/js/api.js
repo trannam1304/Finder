@@ -61,17 +61,26 @@ function mockCategories() {
   };
 }
 
-function mockRestaurants({ lat, lng, radius = 3, category_id, price_level, min_rating, open_now, q, sort = 'distance', limit = 50, offset = 0 } = {}) {
+function mockRestaurants({ lat, lng, radius = 3, type = 'all', category_id, price_level, min_rating, open_now, q, sort = 'distance', limit = 50, offset = 0 } = {}) {
   const currentLat = (lat !== undefined && lat !== null && !isNaN(Number(lat))) ? Number(lat) : CONFIG.FALLBACK_LAT;
   const currentLng = (lng !== undefined && lng !== null && !isNaN(Number(lng))) ? Number(lng) : CONFIG.FALLBACK_LNG;
   let results = MOCK_RESTAURANTS.map(r => ({
     ...r,
+    place_type: r.place_type || r.category?.type_group || 'food',
+    ticket_price: r.ticket_price ?? 0,
+    estimated_duration: r.estimated_duration ?? 60,
+    best_time_slot: r.best_time_slot || 'any',
     distance_km: haversineKm(currentLat, currentLng, r.lat, r.lng),
     is_open_now: isOpenNowMock(r.open_time, r.close_time, r.is_24h),
   }));
 
   // Filter by radius
   results = results.filter(r => r.distance_km <= radius);
+
+  // Filter by place_type (food, tourism, entertainment)
+  if (type && type !== 'all') {
+    results = results.filter(r => (r.place_type || r.category?.type_group || 'food') === type);
+  }
 
   // Filter by category
   if (category_id) {
@@ -121,6 +130,209 @@ function mockRestaurants({ lat, lng, radius = 3, category_id, price_level, min_r
     meta: { count: total, radius_km: radius, limit, offset },
   };
 }
+
+function mockItinerary({ lat, lng, duration = 'half_day', vibe = 'chill', radius = 8 } = {}) {
+  const cLat = Number(lat) || CONFIG.FALLBACK_LAT;
+  const cLng = Number(lng) || CONFIG.FALLBACK_LNG;
+  const maxRadiusKm = Math.max(1, Number(radius) || 8);
+
+  // Ma tran chang dung dong bo 100% voi backend PHP itinerary_template
+  const getSlots = (dur, vb) => {
+    if (dur === 'evening') {
+      if (vb === 'foodie') {
+        return [
+          { time: '17:30 - 18:30', type: 'food', cats: [5, 3], note: 'Chang 1: Khai vi duong pho & An vat chieu toi' },
+          { time: '18:45 - 20:15', type: 'food', cats: [4, 1, 2], note: 'Chang 2: Bua toi am thuc dinh cao — Lau nuong no say' },
+          { time: '20:30 - 22:00', type: 'food', cats: [7, 5], note: 'Chang 3: Trang mieng ngot ngao & Tra sua / Che khuya' }
+        ];
+      }
+      if (vb === 'date') {
+        return [
+          { time: '17:30 - 18:30', type: 'tourism', cats: [11, 9], note: 'Chang 1: Don hoang hon & Dao buoc ben song / Cau bieu tuong' },
+          { time: '18:45 - 20:15', type: 'food', cats: [4, 1, 7], note: 'Chang 2: Bua toi lang man & Khong gian am cung 2 nguoi' },
+          { time: '20:30 - 22:00', type: 'food', cats: [7, 13, 14], note: 'Chang 3: Ca phe ngam pho dem / Rap phim lang man' }
+        ];
+      }
+      if (vb === 'adventure') {
+        return [
+          { time: '17:45 - 19:00', type: 'food', cats: [4, 1, 5], note: 'Chang 1: Bua toi tiep nang luong — BBQ / Mon ngon duong pho' },
+          { time: '19:15 - 21:00', type: 'entertainment', cats: [12, 14, 15], note: 'Chang 2: Tranh tai thu thach — Bowling, Game Center hoac Board Game' },
+          { time: '21:15 - 22:30', type: 'food', cats: [7, 2, 5], note: 'Chang 3: An khuya & Ca phe dem chem gio rom ra' }
+        ];
+      }
+      return [
+        { time: '17:30 - 18:30', type: 'tourism', cats: [11, 9], note: 'Chang 1: Dao mat ngam hoang hon ven song & Thu gian tinh than' },
+        { time: '18:45 - 20:00', type: 'food', cats: [2, 6, 1], note: 'Chang 2: Bua toi thanh dam & Am thuc am ap' },
+        { time: '20:15 - 22:00', type: 'food', cats: [7], note: 'Chang 3: Ca phe tinh lang, nghe nhac em diu & Ngam pho' }
+      ];
+    }
+    if (dur === 'full_day') {
+      if (vb === 'foodie') {
+        return [
+          { time: '08:00 - 09:00', type: 'food', cats: [2, 3], note: 'Chang 1 (Sang): Diem tam truyen thong — Pho / Bun bo nong hoi' },
+          { time: '09:30 - 11:00', type: 'food', cats: [7, 5], note: 'Chang 2 (Sang muon): Ca phe Specialty & Mon an vat tru danh' },
+          { time: '11:30 - 13:15', type: 'food', cats: [1, 4], note: 'Chang 3 (Trua): Dai tiec com tam / Mon chinh dam da ban sac' },
+          { time: '14:30 - 16:30', type: 'food', cats: [5, 7, 3], note: 'Chang 4 (Xe chieu): Oanh tac thien duong an vat & Tra sua giai nhiet' },
+          { time: '17:30 - 20:00', type: 'food', cats: [4, 1], note: 'Chang 5 (Toi): Dai tiec nuong lau hoang hon & Khep lai Food Tour' }
+        ];
+      }
+      if (vb === 'date') {
+        return [
+          { time: '08:30 - 09:45', type: 'food', cats: [7, 3], note: 'Chang 1 (Sang): Ca phe sang phong cach & Banh mi tao nha' },
+          { time: '10:00 - 12:00', type: 'tourism', cats: [8, 11], note: 'Chang 2 (Sang muon): Thuong lam nghe thuat & Check-in Bao tang 3D' },
+          { time: '12:15 - 13:45', type: 'food', cats: [4, 1, 6], note: 'Chang 3 (Trua): Bua trua am cung & Nghi ngoi rieng tu' },
+          { time: '14:15 - 16:45', type: 'entertainment', cats: [14, 13, 15], note: 'Chang 4 (Chieu): Workshop lam do thu cong, Board Game hoac Rap phim' },
+          { time: '17:15 - 19:30', type: 'tourism', cats: [11, 9, 4], note: 'Chang 5 (Toi): Dao buoc Cau Anh Sao ngam hoang hon & An toi lang man' }
+        ];
+      }
+      if (vb === 'adventure') {
+        return [
+          { time: '08:00 - 09:00', type: 'food', cats: [1, 2, 3], note: 'Chang 1 (Sang): Nap day nang luong voi diem tam chac bung' },
+          { time: '09:30 - 12:00', type: 'entertainment', cats: [12, 14], note: 'Chang 2 (Sang muon): The thao bung no — Trampoline Jump Arena / Leo nui' },
+          { time: '12:15 - 13:45', type: 'food', cats: [1, 4], note: 'Chang 3 (Trua): Bua trua thinh soan — Com ga xoi mo / Lau tiep suc' },
+          { time: '14:15 - 16:45', type: 'entertainment', cats: [15, 13, 12], note: 'Chang 4 (Chieu): Giai tri phuc hop, Game thuc te ao hoac Rap IMAX' },
+          { time: '17:15 - 19:30', type: 'tourism', cats: [11, 8], note: 'Chang 5 (Toi): Check-in bieu tuong thanh pho & An mung chuyen di' }
+        ];
+      }
+      return [
+        { time: '08:30 - 09:45', type: 'food', cats: [7, 3], note: 'Chang 1 (Sang): Ca phe san vuon yen a & Diem tam thanh nhe' },
+        { time: '10:00 - 11:45', type: 'tourism', cats: [9, 10, 8], note: 'Chang 2 (Sang muon): Tan bo cong vien canh quan & Kham pha di san' },
+        { time: '12:00 - 13:30', type: 'food', cats: [6, 1], note: 'Chang 3 (Trua): Am thuc thanh tinh, duong lanh (Com chay / Com nieu)' },
+        { time: '14:00 - 16:30', type: 'entertainment', cats: [14, 7, 15], note: 'Chang 4 (Chieu): Trai nghiem thu thai — Ca phe boardgame nhe nhang' },
+        { time: '17:00 - 19:00', type: 'tourism', cats: [11, 9], note: 'Chang 5 (Toi): Hoang hon bo ho & Gio mat ven song' }
+      ];
+    }
+    // half_day
+    if (vb === 'foodie') {
+      return [
+        { time: '08:30 - 09:30', type: 'food', cats: [2, 3], note: 'Chang 1: Khoi dong vi giac voi mon nuoc truyen thong nong hoi' },
+        { time: '09:45 - 11:15', type: 'food', cats: [7, 5], note: 'Chang 2: Ca phe Specialty & Mon an vat dac trung' },
+        { time: '11:30 - 13:00', type: 'food', cats: [1, 4], note: 'Chang 3: Dai tiec com trua no say — Com tam suon nuong' }
+      ];
+    }
+    if (vb === 'date') {
+      return [
+        { time: '08:30 - 09:45', type: 'food', cats: [7, 3], note: 'Chang 1: Ca phe sang phong cach Vintage & Tro chuyen khoi dau ngay' },
+        { time: '10:00 - 11:45', type: 'tourism', cats: [8, 11, 9], note: 'Chang 2: Cung nhau trai nghiem tranh 3D / Bao tang nghe thuat' },
+        { time: '12:00 - 13:30', type: 'food', cats: [4, 1, 6], note: 'Chang 3: Bua trua lang man ben nhau' }
+      ];
+    }
+    if (vb === 'adventure') {
+      return [
+        { time: '08:30 - 09:15', type: 'food', cats: [3, 7, 2], note: 'Chang 1: Nap nhanh calo voi banh mi gion rum & Ca phe nang luong' },
+        { time: '09:30 - 11:45', type: 'entertainment', cats: [12, 14, 15], note: 'Chang 2: Thu thach van dong cuc vui — Nhay bat nhun Trampoline' },
+        { time: '12:00 - 13:30', type: 'food', cats: [1, 4], note: 'Chang 3: Bua trua giau dam an mung chien thang' }
+      ];
+    }
+    return [
+      { time: '08:30 - 09:30', type: 'food', cats: [7, 3], note: 'Chang 1: Ca phe sang thanh thoi & Ngam nhin pho xa bat dau ngay' },
+      { time: '09:45 - 11:30', type: 'tourism', cats: [9, 11, 8], note: 'Chang 2: Tan bo cong vien rop bong mat & Hit tho khi troi' },
+      { time: '11:45 - 13:15', type: 'food', cats: [6, 1, 2], note: 'Chang 3: Bua trua thanh dam dinh duong & Phuc hoi nang luong' }
+    ];
+  };
+
+  const slots = getSlots(duration, vibe);
+  const usedIds = new Set();
+  const stops = [];
+  let curLat = cLat;
+  let curLng = cLng;
+  let totalKm = 0;
+  let maxLegDistanceKm = 0;
+  let allWithinRmax = true;
+
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    const scored = MOCK_RESTAURANTS
+      .filter(r => !usedIds.has(r.id))
+      .map(r => {
+        const d = Math.round(haversineKm(curLat, curLng, r.lat, r.lng) * 100) / 100;
+        const pType = r.place_type || 'food';
+        const catId = r.category?.id || 1;
+
+        let score = Math.max(0, 1.0 - (d / maxRadiusKm)) * 40;
+        if (slot.cats.includes(catId)) score += 35;
+        if (pType === slot.type) score += 15;
+        score += ((r.rating || 4.0) / 5.0) * 10;
+
+        return { place: r, distKm: d, score, withinRmax: d <= maxRadiusKm };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    let chosen = scored.find(c => c.withinRmax);
+    if (!chosen && scored.length > 0) {
+      chosen = [...scored].sort((a, b) => a.distKm - b.distKm)[0];
+    }
+
+    if (chosen) {
+      usedIds.add(chosen.place.id);
+      const legDist = chosen.distKm;
+      if (legDist > maxRadiusKm) allWithinRmax = false;
+      if (legDist > maxLegDistanceKm) maxLegDistanceKm = legDist;
+      totalKm += legDist;
+      curLat = chosen.place.lat;
+      curLng = chosen.place.lng;
+
+      stops.push({
+        step: i + 1,
+        step_order: i + 1,
+        time_slot: slot.time,
+        suggested_time: slot.time,
+        action_title: slot.note,
+        activity_note: slot.note,
+        distance_from_prev_km: legDist,
+        leg_distance_km: legDist,
+        is_within_rmax: chosen.withinRmax,
+        place: {
+          ...chosen.place,
+          distance_km: legDist,
+        },
+      });
+    }
+  }
+
+  return {
+    success: true,
+    data: {
+      duration,
+      vibe,
+      total_stops: stops.length,
+      total_distance_km: Math.round(totalKm * 10) / 10,
+      estimated_hours: duration === 'full_day' ? 8 : (duration === 'evening' ? 3.5 : 4),
+      max_radius_constraint_km: maxRadiusKm,
+      max_leg_distance_km: Math.round(maxLegDistanceKm * 10) / 10,
+      is_strict_radius_satisfied: allWithinRmax,
+      stops,
+    },
+  };
+}
+
+function mockReroll({ current_id, exclude_ids = [], from_lat, from_lng, place_type = 'food' } = {}) {
+  const cLat = Number(from_lat) || CONFIG.FALLBACK_LAT;
+  const cLng = Number(from_lng) || CONFIG.FALLBACK_LNG;
+  const rawEx = Array.isArray(exclude_ids) ? exclude_ids : (typeof exclude_ids === 'string' && exclude_ids.length ? exclude_ids.split(',') : []);
+  const excludes = new Set(rawEx.map(Number));
+  excludes.add(Number(current_id));
+
+  const candidates = MOCK_RESTAURANTS.filter(r => {
+    if (excludes.has(r.id)) return false;
+    return (r.place_type || 'food') === place_type;
+  }).map(r => ({
+    ...r,
+    place_type: r.place_type || 'food',
+    distance_km: haversineKm(cLat, cLng, r.lat, r.lng),
+  })).sort((a, b) => a.distance_km - b.distance_km);
+
+  const picked = candidates[0] || MOCK_RESTAURANTS.find(r => !excludes.has(r.id)) || MOCK_RESTAURANTS[0];
+
+  return {
+    success: true,
+    data: {
+      place: picked,
+      message: 'Đã đổi địa điểm thành công (mock)',
+    },
+  };
+}
+
 
 function isOpenNowMock(openTime, closeTime, is24h) {
   if (is24h) return true;
@@ -217,7 +429,90 @@ export async function fetchRestaurant(id) {
   }
 }
 
+export async function fetchItinerary(params = {}) {
+  if (CONFIG.USE_MOCK) {
+    await new Promise(r => setTimeout(r, 400));
+    return mockItinerary(params);
+  }
+  try {
+    return await apiFetch('itinerary.php', params);
+  } catch (err) {
+    if (err?.name === 'AbortError') throw err;
+    console.warn('[FoodFinder] API itinerary gặp sự cố, fallback sang mock itinerary:', err);
+    return mockItinerary(params);
+  }
+}
+
+export async function rerollItineraryStop(params = {}) {
+  if (CONFIG.USE_MOCK) {
+    await new Promise(r => setTimeout(r, 250));
+    return mockReroll(params);
+  }
+  try {
+    return await apiFetch('itinerary_reroll.php', params);
+  } catch (err) {
+    if (err?.name === 'AbortError') throw err;
+    console.warn('[FoodFinder] API itinerary_reroll gặp sự cố, fallback sang mock reroll:', err);
+    return mockReroll(params);
+  }
+}
+
+export async function fetchReviews(restaurantId) {
+  if (CONFIG.USE_MOCK) {
+    return {
+      success: true,
+      data: {
+        summary: { average_rating: 4.8, total_reviews: 4, distribution: { 5: 3, 4: 1, 3: 0, 2: 0, 1: 0 } },
+        reviews: [
+          { id: 1, author_name: 'Nguyễn Minh Tuấn', rating: 5, comment: 'Quán ngon lắm! Thức ăn tươi, phục vụ nhiệt tình.', time_ago: '2 ngày trước' },
+          { id: 2, author_name: 'Trần Thị Lan', rating: 4, comment: 'Đồ ăn vừa miệng, giá cả sinh viên hợp lý.', time_ago: '1 tuần trước' }
+        ]
+      }
+    };
+  }
+  try {
+    return await apiFetch('reviews.php', { restaurant_id: restaurantId });
+  } catch (err) {
+    console.warn('[FoodFinder] Lỗi tải đánh giá, dùng mock:', err);
+    return {
+      success: true,
+      data: {
+        summary: { average_rating: 4.8, total_reviews: 2, distribution: { 5: 1, 4: 1, 3: 0, 2: 0, 1: 0 } },
+        reviews: [
+          { id: 1, author_name: 'Nguyễn Minh Tuấn', rating: 5, comment: 'Quán ăn ngon, phục vụ nhanh.', time_ago: 'Gần đây' }
+        ]
+      }
+    };
+  }
+}
+
+export async function submitReview(reviewData) {
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}/reviews.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(reviewData)
+    });
+    return await res.json();
+  } catch (err) {
+    return {
+      success: true,
+      data: {
+        message: 'Đã ghi nhận đánh giá (chế độ cục bộ)!',
+        review: {
+          id: Date.now(),
+          author_name: reviewData.author_name,
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+          time_ago: 'Vừa xong'
+        }
+      }
+    };
+  }
+}
+
 export function abortPending() {
   controllers.forEach(controller => controller.abort());
   controllers.clear();
 }
+

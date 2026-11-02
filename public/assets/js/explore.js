@@ -5,7 +5,7 @@
 import { MOCK_RESTAURANTS, MOCK_CATEGORIES } from './mock-data.js';
 import { CONFIG } from './config.js';
 import { fetchCategories, fetchRestaurants } from './api.js';
-import { escapeText } from './format.js';
+import { escapeText, getPlaceTypeInfo, formatTicketOrPrice, formatDuration } from './format.js';
 import { icon, categoryIcon, renderStars } from './icons.js';
 
 let restaurants = [...MOCK_RESTAURANTS];
@@ -30,6 +30,7 @@ if (btnTheme) btnTheme.addEventListener('click', () => {
 
 // ── State ────────────────────────────────────────────────────
 let state = {
+  placeType: 'all',
   search: '',
   categories: new Set(),
   prices: new Set(),
@@ -47,10 +48,12 @@ const openNowCb   = document.getElementById('filter-open-now');
 const resetBtn    = document.getElementById('btn-reset-filters');
 const filterToggle = document.getElementById('btn-filter-toggle');
 const filterPanel  = document.getElementById('explore-filters');
+const typeTabsWrap = document.getElementById('explore-type-tabs');
 
 // ── Helper: is restaurant open now ───────────────────────────
 function isOpenNow(r) {
   if (r.is_24h) return true;
+  if (!r.open_time || !r.close_time) return true;
   const now = new Date();
   const hhmm = (s) => {
     const [h, m] = s.split(':').map(Number);
@@ -62,14 +65,13 @@ function isOpenNow(r) {
   return close < open ? (cur >= open || cur < close) : (cur >= open && cur < close);
 }
 
-// ── Helper: price label ───────────────────────────────────────
-function priceLabel(level) {
-  return ['', 'Bình dân', 'Trung bình', 'Cao cấp'][level] || '';
-}
-
 // ── Filter & sort restaurants ─────────────────────────────────
 function filterAndSort() {
   let list = [...restaurants];
+
+  if (state.placeType && state.placeType !== 'all') {
+    list = list.filter(r => (r.place_type || r.category?.type_group || 'food') === state.placeType);
+  }
 
   if (state.search) {
     const q = state.search.toLowerCase();
@@ -98,20 +100,21 @@ function filterAndSort() {
   switch (state.sort) {
     case 'rating':    list.sort((a, b) => b.rating - a.rating); break;
     case 'name':      list.sort((a, b) => a.name.localeCompare(b.name, 'vi')); break;
-    case 'price_asc': list.sort((a, b) => a.price_min - b.price_min); break;
-    case 'price_desc':list.sort((a, b) => b.price_min - a.price_min); break;
+    case 'price_asc': list.sort((a, b) => (a.ticket_price || a.price_min || 0) - (b.ticket_price || b.price_min || 0)); break;
+    case 'price_desc':list.sort((a, b) => (b.ticket_price || b.price_min || 0) - (a.ticket_price || a.price_min || 0)); break;
     case 'reviews':   list.sort((a, b) => b.rating_count - a.rating_count); break;
   }
 
   return list;
 }
 
-// ── Render grid ───────────────────────────────────────────────
+// ── Render grid (Task FE-03) ──────────────────────────────────
 function renderCard(r) {
   const open = isOpenNow(r);
-  const fmtPrice = r.price_min >= 1000
-    ? `${(r.price_min / 1000).toFixed(0)}k–${(r.price_max / 1000).toFixed(0)}k`
-    : `${r.price_min}–${r.price_max}`;
+  const placeType = r.place_type || r.category?.type_group || 'food';
+  const typeInfo = getPlaceTypeInfo(placeType);
+  const priceText = formatTicketOrPrice(r);
+  const durationText = formatDuration(r.estimated_duration);
 
   return `
     <a href="restaurant.html?id=${r.id}" class="resto-card" role="listitem" id="card-${r.id}" aria-label="${escapeText(r.name)}">
@@ -125,29 +128,31 @@ function renderCard(r) {
           onerror="this.src='assets/img/placeholder.webp'"
         >
         <div class="resto-card__badges">
+          <span class="badge ${typeInfo.badgeClass}">${typeInfo.emoji} ${escapeText(typeInfo.label)}</span>
           <span class="badge ${open ? 'badge--open' : 'badge--closed'}">
             <span class="badge__dot" aria-hidden="true"></span>${open ? 'Đang mở' : 'Đã đóng'}
           </span>
           <span class="badge badge--category">${categoryIcon(r.category)}<span>${escapeText(r.category.name)}</span></span>
         </div>
         <button
-          class="resto-card__fav"
+          class="resto-card__fav${favs.has(r.id) ? ' resto-card__fav--active' : ''}"
           id="fav-${r.id}"
-          aria-label="Lưu ${r.name}"
-          aria-pressed="false"
+          aria-label="Lưu ${escapeText(r.name)}"
+          aria-pressed="${favs.has(r.id) ? 'true' : 'false'}"
           onclick="event.preventDefault(); toggleFav(${r.id}, this)"
         >${icon('heart')}</button>
       </div>
       <div class="resto-card__body">
         <div class="resto-card__name">${escapeText(r.name)}</div>
         <div class="resto-card__address">${icon('pin')}<span>${escapeText(r.address)}</span></div>
+        ${durationText ? `<div style="margin-bottom:var(--sp-2)"><span class="badge badge--duration">⏱ ${escapeText(durationText)}</span></div>` : ''}
         <div class="resto-card__footer">
           <span class="stars" aria-label="Đánh giá ${r.rating}">
             <span class="stars__group">${renderStars(r.rating)}</span>
             <span class="stars__value">${r.rating}</span>
             <span class="stars__count">(${r.rating_count})</span>
           </span>
-          <span class="resto-card__price">${fmtPrice}đ</span>
+          <span class="resto-card__price">${escapeText(priceText)}</span>
         </div>
       </div>
     </a>`;
@@ -168,14 +173,14 @@ function renderSkeletons(count = 6) {
 function renderEmpty() {
   return `<div class="empty-state" style="grid-column:1/-1">
     <div class="empty-state__icon">${icon('empty')}</div>
-    <div class="empty-state__title">Không tìm thấy quán nào</div>
-    <div class="empty-state__desc">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</div>
+    <div class="empty-state__title">Không tìm thấy địa điểm nào</div>
+    <div class="empty-state__desc">Thử thay đổi nhóm phân loại, bộ lọc hoặc từ khóa tìm kiếm.</div>
   </div>`;
 }
 
 function render() {
   const list = filterAndSort();
-  countEl.textContent = `${list.length} quán`;
+  countEl.textContent = `${list.length} địa điểm`;
   updatePriceCounts();
 
   if (list.length === 0) {
@@ -188,9 +193,12 @@ function render() {
 
 // ── Price counts ──────────────────────────────────────────────
 function updatePriceCounts() {
+  const baseList = state.placeType === 'all'
+    ? restaurants
+    : restaurants.filter(r => (r.place_type || r.category?.type_group || 'food') === state.placeType);
   [1, 2, 3].forEach(p => {
     const el = document.getElementById(`count-price-${p}`);
-    if (el) el.textContent = restaurants.filter(r => r.price_level === p).length;
+    if (el) el.textContent = baseList.filter(r => r.price_level === p).length;
   });
 }
 
@@ -203,6 +211,7 @@ window.toggleFav = function(id, btn) {
     favs.delete(id);
     btn.innerHTML = icon('heart');
     btn.setAttribute('aria-pressed', 'false');
+    btn.classList.remove('resto-card__fav--active');
   } else {
     favs.add(id);
     btn.innerHTML = icon('heart');
@@ -215,9 +224,15 @@ window.toggleFav = function(id, btn) {
 // ── Category filter render ────────────────────────────────────
 function renderCategoryFilters() {
   const container = document.getElementById('filter-categories');
-  container.innerHTML = categories.map(cat => `
+  if (!container) return;
+
+  const visibleCats = state.placeType === 'all'
+    ? categories
+    : categories.filter(cat => (cat.type_group || 'food') === state.placeType);
+
+  container.innerHTML = visibleCats.map(cat => `
     <label class="filter-option">
-      <input type="checkbox" name="category" value="${cat.slug}" id="cat-${cat.slug}">
+      <input type="checkbox" name="category" value="${cat.slug}" id="cat-${cat.slug}" ${state.categories.has(cat.slug) ? 'checked' : ''}>
       <span>${categoryIcon(cat)} ${escapeText(cat.name)}</span>
       <span class="filter-option__count">
         ${restaurants.filter(r => r.category.slug === cat.slug).length}
@@ -229,6 +244,28 @@ function renderCategoryFilters() {
     cb.addEventListener('change', () => {
       if (cb.checked) state.categories.add(cb.value);
       else state.categories.delete(cb.value);
+      render();
+    });
+  });
+}
+
+// ── Wire up Level-1 Place Type Tabs (Task FE-01) ──────────────
+if (typeTabsWrap) {
+  typeTabsWrap.querySelectorAll('.place-type-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const nextType = tab.dataset.type || 'all';
+      if (state.placeType === nextType) return;
+
+      state.placeType = nextType;
+      state.categories.clear();
+
+      typeTabsWrap.querySelectorAll('.place-type-tab').forEach(t => {
+        const active = (t.dataset.type || 'all') === nextType;
+        t.classList.toggle('place-type-tab--active', active);
+        t.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      renderCategoryFilters();
       render();
     });
   });
@@ -276,13 +313,21 @@ document.querySelectorAll('input[name="rating"]').forEach(rb => {
 
 // Reset
 resetBtn.addEventListener('click', () => {
-  state = { search: '', categories: new Set(), prices: new Set(), minRating: 0, openNow: false, sort: 'rating' };
+  state = { placeType: 'all', search: '', categories: new Set(), prices: new Set(), minRating: 0, openNow: false, sort: 'rating' };
   searchInput.value = '';
   sortSelect.value = 'rating';
   openNowCb.checked = false;
+  if (typeTabsWrap) {
+    typeTabsWrap.querySelectorAll('.place-type-tab').forEach(t => {
+      const active = (t.dataset.type || 'all') === 'all';
+      t.classList.toggle('place-type-tab--active', active);
+      t.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+  }
   document.querySelectorAll('#explore-filters input[type="checkbox"], #explore-filters input[type="radio"]').forEach(el => {
     el.checked = el.value === '0' && el.name === 'rating';
   });
+  renderCategoryFilters();
   render();
 });
 
@@ -300,11 +345,11 @@ async function loadExploreData() {
   if (!CONFIG.USE_MOCK) {
     try {
       const [restaurantResult, categoryResult] = await Promise.all([
-        fetchRestaurants({ lat: CONFIG.FALLBACK_LAT, lng: CONFIG.FALLBACK_LNG, radius: 5, sort: 'rating', limit: CONFIG.MAX_LIMIT }),
+        fetchRestaurants({ lat: CONFIG.FALLBACK_LAT, lng: CONFIG.FALLBACK_LNG, radius: 20, sort: 'rating', limit: 100 }),
         fetchCategories(),
       ]);
-      if (restaurantResult.success) restaurants = restaurantResult.data;
-      if (categoryResult.success) categories = categoryResult.data;
+      if (restaurantResult.success && restaurantResult.data?.length) restaurants = restaurantResult.data;
+      if (categoryResult.success && categoryResult.data?.length) categories = categoryResult.data;
     } catch {
       // Keep the bundled preview data available if the API is temporarily unavailable.
     }
