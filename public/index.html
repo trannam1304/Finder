@@ -30,13 +30,14 @@
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/map.css">
   <link rel="stylesheet" href="assets/css/brutal.css">
+  <link rel="stylesheet" href="assets/css/itinerary.css">
 </head>
 <body class="page-map">
   <div class="app" id="app">
 
     <!-- ══════════════ HEADER ══════════════ -->
     <header class="header" id="header">
-      <div class="header__brand">
+      <a href="index.html" class="header__brand" id="header-brand" aria-label="Food Finder — Về trang chủ" title="Food Finder — Về trang chủ">
         <svg class="header__logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="16" cy="16" r="14" fill="var(--c-primary)"/>
           <path d="M10 20c0-4 2-8 6-8s6 4 6 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
@@ -44,7 +45,7 @@
           <path d="M9 22h14" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <h1 class="header__title">Food Finder</h1>
-      </div>
+      </a>
 
       <!-- Filter chips (scrollable) -->
       <div class="header__filters" id="header-filters">
@@ -83,6 +84,11 @@
 
       <!-- Header actions -->
       <div class="header__actions">
+        <!-- FE-04: Nút Lập Lộ Trình Đi Chơi -->
+        <button type="button" class="btn btn--itinerary btn--sm" id="btn-open-itinerary" title="Tự động đề xuất lịch trình đi chơi quanh bạn">
+          <span class="itinerary-pulse" aria-hidden="true"></span>
+          <span>🗺️ Lộ trình</span>
+        </button>
         <a href="explore.html" class="btn btn--ghost btn--sm" id="btn-explore" title="Xem danh sách dạng lưới" style="text-decoration:none">
           <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M8 12h8M8 16h5"/></svg> Khám phá
         </a>
@@ -103,6 +109,7 @@
         </button>
       </div>
     </header>
+
 
     <!-- ══════════════ MAIN ══════════════ -->
     <main class="main">
@@ -132,6 +139,10 @@
           <ul class="sidebar__list" id="sidebar-list" role="list">
             <!-- Restaurant rows rendered by JS -->
           </ul>
+        </div>
+        <!-- FE-05: Sidebar Itinerary Timeline View -->
+        <div class="sidebar__itinerary-view" id="sidebar-itinerary-view" style="display:none">
+          <!-- Rendered by itinerary-view.js -->
         </div>
       </aside>
 
@@ -170,6 +181,10 @@
           <!-- Restaurant rows rendered by JS -->
         </ul>
       </div>
+      <!-- FE-05: Sheet Itinerary Timeline View -->
+      <div class="sheet__itinerary-view" id="sheet-itinerary-view" style="display:none">
+        <!-- Rendered by itinerary-view.js -->
+      </div>
     </div>
 
     <!-- ══════════════ FAB RANDOMIZER ══════════════ -->
@@ -201,10 +216,110 @@
       </div>
     </div>
 
+    <!-- ══════════════ FE-04: ITINERARY SETUP MODAL ══════════════ -->
+    <div class="itinerary-modal-backdrop" id="itinerary-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="itinerary-modal-title">
+      <div class="itinerary-modal">
+        <div class="itinerary-modal__header">
+          <div class="itinerary-modal__title-wrap">
+            <span class="itinerary-modal__badge">✨ Smart Generator</span>
+            <h2 class="itinerary-modal__title" id="itinerary-modal-title">Thiết Lập Lộ Trình Đi Chơi</h2>
+            <p class="itinerary-modal__desc">Tự động kết hợp quán ăn, điểm tham quan & vui chơi gần bạn</p>
+          </div>
+          <button type="button" class="itinerary-modal__close" id="btn-close-itinerary-modal" aria-label="Đóng">✕</button>
+        </div>
+
+        <div class="itinerary-modal__body">
+          <!-- 1. Thời lượng -->
+          <div class="itinerary-field">
+            <label class="itinerary-field__label">
+              <span>1. Thời lượng chuyến đi</span>
+              <span class="itinerary-field__hint">Chọn quỹ thời gian</span>
+            </label>
+            <div class="duration-grid">
+              <div class="duration-card is-active" data-duration="half_day">
+                <span class="duration-card__icon">☀️</span>
+                <span class="duration-card__title">Nửa ngày</span>
+                <span class="duration-card__time">~3 - 4 tiếng (3 chặng)</span>
+              </div>
+              <div class="duration-card" data-duration="full_day">
+                <span class="duration-card__icon">🌅</span>
+                <span class="duration-card__title">Cả ngày</span>
+                <span class="duration-card__time">~7 - 8 tiếng (5 chặng)</span>
+              </div>
+              <div class="duration-card" data-duration="evening">
+                <span class="duration-card__icon">🌙</span>
+                <span class="duration-card__title">Buổi tối</span>
+                <span class="duration-card__time">~3 - 4 tiếng (3 chặng)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Phong cách (Vibe) -->
+          <div class="itinerary-field">
+            <label class="itinerary-field__label">
+              <span>2. Phong cách trải nghiệm (Vibe)</span>
+              <span class="itinerary-field__hint">Mục đích chuyến đi</span>
+            </label>
+            <div class="vibe-grid">
+              <div class="vibe-card is-active" data-vibe="chill">
+                <span class="vibe-card__icon">🌿</span>
+                <div class="vibe-card__text">
+                  <span class="vibe-card__name">Chill thư thái</span>
+                  <span class="vibe-card__desc">Cà phê đẹp, công viên, dạo bộ</span>
+                </div>
+              </div>
+              <div class="vibe-card" data-vibe="date">
+                <span class="vibe-card__icon">💖</span>
+                <div class="vibe-card__text">
+                  <span class="vibe-card__name">Hẹn hò lãng mạn</span>
+                  <span class="vibe-card__desc">View hoàng hôn, ăn ngon, ấm cúng</span>
+                </div>
+              </div>
+              <div class="vibe-card" data-vibe="adventure">
+                <span class="vibe-card__icon">⚡</span>
+                <div class="vibe-card__text">
+                  <span class="vibe-card__name">Vui chơi trải nghiệm</span>
+                  <span class="vibe-card__desc">Bạt nhún, bowling, bảo tàng 3D</span>
+                </div>
+              </div>
+              <div class="vibe-card" data-vibe="foodie">
+                <span class="vibe-card__icon">🍜</span>
+                <div class="vibe-card__text">
+                  <span class="vibe-card__name">Ăn sập Sài Gòn</span>
+                  <span class="vibe-card__desc">Tour món ngon đặc sản nức tiếng</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Bán kính -->
+          <div class="itinerary-field">
+            <label class="itinerary-field__label">
+              <span>3. Bán kính di chuyển tối đa</span>
+              <span class="itinerary-field__hint">Quanh tọa độ của bạn</span>
+            </label>
+            <div class="radius-pills">
+              <button type="button" class="radius-pill" data-radius="3">3 km</button>
+              <button type="button" class="radius-pill" data-radius="5">5 km</button>
+              <button type="button" class="radius-pill is-active" data-radius="8">8 km</button>
+              <button type="button" class="radius-pill" data-radius="12">12 km</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="itinerary-modal__footer">
+          <button type="button" class="btn--generate-itinerary" id="btn-submit-itinerary">
+            <span>🚀 Tạo lộ trình ngay</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ══════════════ TOAST CONTAINER ══════════════ -->
     <div class="toast-container" id="toast-container" aria-live="status"></div>
 
   </div><!-- /.app -->
+
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

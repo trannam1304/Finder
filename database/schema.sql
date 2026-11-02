@@ -79,6 +79,11 @@ CREATE TABLE admins (
   UNIQUE KEY uq_admins_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tai khoan Admin mac dinh: admin / Admin@123456 (dam bao chay ca qua CLI va PHP)
+INSERT INTO admins (id, username, password_hash, display_name) VALUES
+(1, 'admin', '$2y$10$4TJc9Ej.6cEVpiO4yxiYX.XR3kqa3lORK/MeQ1mXPaRc0JO12Hx32', 'Quan tri vien')
+ON DUPLICATE KEY UPDATE display_name = VALUES(display_name);
+
 CREATE TABLE login_attempts (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   ip VARBINARY(16) NOT NULL,
@@ -109,4 +114,31 @@ CREATE TABLE itinerary_logs (
   vibe VARCHAR(30) NOT NULL DEFAULT 'chill',             -- 'chill', 'adventure', 'foodie', 'date'
   stops_count TINYINT UNSIGNED NOT NULL DEFAULT 3,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Bảng lưu đề xuất địa điểm từ người dùng (Chờ Admin phê duyệt)
+CREATE TABLE IF NOT EXISTS place_suggestions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  place_type ENUM('food', 'tourism', 'entertainment') NOT NULL DEFAULT 'food',
+  category_id INT UNSIGNED NOT NULL,
+  address VARCHAR(255) NOT NULL,
+  phone VARCHAR(20) NULL,
+  latitude DECIMAL(10,8) NOT NULL,
+  longitude DECIMAL(11,8) NOT NULL,
+  price_min INT UNSIGNED NOT NULL DEFAULT 0,
+  price_max INT UNSIGNED NOT NULL DEFAULT 0,
+  ticket_price INT UNSIGNED NOT NULL DEFAULT 0,
+  estimated_duration SMALLINT UNSIGNED NOT NULL DEFAULT 60,
+  open_time TIME NULL,
+  close_time TIME NULL,
+  note TEXT NULL,
+  submitter_ip VARBINARY(16) NULL,
+  status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+  admin_note VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at DATETIME NULL,
+  KEY idx_status (status),
+  KEY idx_category (category_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

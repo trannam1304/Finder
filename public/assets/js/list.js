@@ -29,6 +29,24 @@ export function renderList(listEl, restaurants, selectedId = null) {
     return;
   }
 
+  // Cache danh sách địa điểm phục vụ event delegation (O(1) memory per container)
+  listEl._currentRestaurants = restaurants;
+
+  // Gắn event delegation 1 lần duy nhất trên container thay vì N listener trên từng button
+  if (!listEl._hasDelegation) {
+    listEl._hasDelegation = true;
+    listEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.resto-row');
+      if (!btn || !onRowClick) return;
+      const id = btn.getAttribute('data-id');
+      const found = listEl._currentRestaurants?.find(item => String(item.id) === String(id));
+      if (found) onRowClick(found);
+    });
+  }
+
+  // Gom toàn bộ DOM nodes vào DocumentFragment để kích hoạt 1 lần layout reflow duy nhất
+  const fragment = document.createDocumentFragment();
+
   restaurants.forEach(r => {
     const li = document.createElement('li');
 
@@ -135,14 +153,11 @@ export function renderList(listEl, restaurants, selectedId = null) {
     btn.appendChild(body);
     btn.appendChild(distEl);
 
-    // Click handler
-    btn.addEventListener('click', () => {
-      if (onRowClick) onRowClick(r);
-    });
-
     li.appendChild(btn);
-    listEl.appendChild(li);
+    fragment.appendChild(li);
   });
+
+  listEl.appendChild(fragment);
 }
 
 /**

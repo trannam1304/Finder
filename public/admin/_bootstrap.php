@@ -70,7 +70,13 @@ function admin_header(string $title): void { $flash = admin_flash(); ?>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/tokens.css"><link rel="stylesheet" href="../assets/css/base.css"><link rel="stylesheet" href="../assets/css/components.css"><link rel="stylesheet" href="assets/admin.css"></head><body>
-<header class="admin-header"><a href="dashboard.php" class="admin-brand"><?= admin_svg_icon('logo') ?> Finder <small>Quản trị</small></a><nav><a href="dashboard.php">Tổng quan</a><a href="index.php">Địa điểm</a><a href="categories.php">Danh mục</a><a href="reviews.php">Đánh giá</a><a href="restaurant_form.php">+ Thêm địa điểm</a><a href="../index.html" target="_blank" rel="noopener">Xem bản đồ</a><form action="logout.php" method="post" class="inline"><input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>"><button class="link-button">Đăng xuất</button></form></nav></header><main class="admin-container">
+<header class="admin-header"><a href="dashboard.php" class="admin-brand"><?= admin_svg_icon('logo') ?> Finder <small>Quản trị</small></a><?php
+$pendingSugCount = 0;
+try {
+    $pendingSugCount = (int) db()->query('SELECT COUNT(*) FROM place_suggestions WHERE status = "pending"')->fetchColumn();
+} catch (Throwable) {}
+?>
+<nav><a href="dashboard.php">Tổng quan</a><a href="index.php">Địa điểm</a><a href="categories.php">Danh mục</a><a href="reviews.php">Đánh giá</a><a href="suggestions.php">Đề xuất <?= $pendingSugCount > 0 ? '<span style="background:#e11d48;color:#fff;border-radius:10px;padding:1px 6px;font-size:0.75rem;font-weight:800;margin-left:3px;">' . $pendingSugCount . '</span>' : '' ?></a><a href="restaurant_form.php">+ Thêm địa điểm</a><a href="../index.html" target="_blank" rel="noopener">Xem bản đồ</a><form action="logout.php" method="post" class="inline"><input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>"><button class="link-button">Đăng xuất</button></form></nav></header><main class="admin-container">
 <?php if ($flash): ?><div class="admin-flash admin-flash--<?= h($flash['type']) ?>" role="status"><?= h($flash['message']) ?></div><?php endif; ?>
 <?php }
 function admin_footer(): void { ?></main></body></html><?php }

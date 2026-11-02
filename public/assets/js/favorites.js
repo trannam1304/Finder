@@ -1,32 +1,33 @@
 /* ============================================================
-   FAVORITES.JS — Quản lý địa điểm yêu thích đã lưu (Đa loại hình)
+   FAVORITES.JS — Quản lý Mục Đã Lưu (Địa điểm & Lộ trình Thông Minh)
    Hoạt động độc lập bằng localStorage trên Web tĩnh & Backend API
    ============================================================ */
 
 import { MOCK_RESTAURANTS, MOCK_CATEGORIES } from './mock-data.js';
 import { fetchRestaurants, fetchCategories } from './api.js';
 import { CONFIG } from './config.js';
-import { escapeText, formatTicketOrPrice, formatDuration, getPlaceTypeInfo, getDirectionsUrl } from './format.js';
+import { escapeText, formatTicketOrPrice, formatDuration, getPlaceTypeInfo, getDirectionsUrl, getMultiStopDirectionsUrl } from './format.js';
 import { icon, categoryIcon } from './icons.js';
 
-const STORAGE_KEY = 'food_finder_favorites';
+const STORAGE_KEY_PLACES = 'food_finder_favorites';
+const STORAGE_KEY_ITINERARIES = 'food_finder_saved_itineraries';
 
-// ── Lấy danh sách ID đã lưu ──
+// ── Lấy danh sách ID địa điểm đã lưu ──
 export function getFavoriteIds() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [1, 19, 35]; // Mặc định gợi ý 3 địa điểm (Ẩm thực, Du lịch, Vui chơi) khi mới mở
+    const raw = localStorage.getItem(STORAGE_KEY_PLACES);
+    return raw ? JSON.parse(raw) : [1, 19, 35]; // Mặc định gợi ý 3 địa điểm khi mới mở
   } catch {
     return [1, 19, 35];
   }
 }
 
-// ── Lưu danh sách ID ──
+// ── Lưu danh sách ID địa điểm ──
 export function saveFavoriteIds(ids) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+    localStorage.setItem(STORAGE_KEY_PLACES, JSON.stringify(ids));
   } catch (e) {
-    console.error('Không thể lưu vào localStorage', e);
+    console.error('Không thể lưu địa điểm vào localStorage', e);
   }
 }
 
@@ -52,17 +53,93 @@ export function toggleFavorite(id) {
   return saved;
 }
 
+// ── Lấy danh sách Lộ trình đã lưu ──
+export function getSavedItineraries() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ITINERARIES);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+// ── Lưu toàn bộ danh sách Lộ trình ──
+export function saveItinerariesList(list) {
+  try {
+    localStorage.setItem(STORAGE_KEY_ITINERARIES, JSON.stringify(list));
+  } catch (e) {
+    console.error('Không thể lưu lộ trình vào localStorage', e);
+  }
+}
+
+// ── Xóa một lộ trình đã lưu ──
+export function deleteSavedItinerary(id) {
+  const list = getSavedItineraries().filter(item => item.id !== id);
+  saveItinerariesList(list);
+}
+
+// ── Format thời gian lưu ──
+function formatSavedDate(isoString) {
+  if (!isoString) return 'Gần đây';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return 'Gần đây';
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${hours}:${minutes} • ${day}/${month}/${year}`;
+  } catch {
+    return 'Gần đây';
+  }
+}
+
+// ── Format Vibe Badge ──
+function getVibeBadge(vibe) {
+  const map = {
+    foodie: { text: '🍜 Ăn sập Sài Gòn', class: 'badge--food' },
+    date: { text: '💖 Hẹn hò lãng mạn', class: 'badge--tourism' },
+    chill: { text: '🌿 Chill thư thái', class: 'badge--category' },
+    adventure: { text: '⚡ Vui chơi năng động', class: 'badge--entertainment' },
+  };
+  return map[vibe] || { text: '✨ Khám phá', class: 'badge--category' };
+}
+
 // ── Khởi tạo trang favorites.html ──
 async function initFavoritesPage() {
-  const listEl = document.getElementById('favorites-list');
-  const emptyEl = document.getElementById('favorites-empty');
+  // Elements chung
+  const countBadgePlaces = document.getElementById('count-badge-places');
+  const countBadgeItin = document.getElementById('count-badge-itineraries');
+  const mainHeading = document.getElementById('page-main-heading');
+  const mainDesc = document.getElementById('page-main-desc');
   const countEl = document.getElementById('favorites-count');
-  const filterCatEl = document.getElementById('filter-category');
   const btnClearAll = document.getElementById('btn-clear-all');
+
+  // Tabs chính
+  const tabBtnPlaces = document.getElementById('tab-btn-places');
+  const tabBtnItin = document.getElementById('tab-btn-itineraries');
+  const viewPlaces = document.getElementById('view-places');
+  const viewItin = document.getElementById('view-itineraries');
+
+  // Elements của phần Địa điểm
+  const listPlacesEl = document.getElementById('favorites-list');
+  const emptyPlacesEl = document.getElementById('favorites-empty');
+  const filterCatEl = document.getElementById('filter-category');
   const searchInput = document.getElementById('search-favorites');
   const typeTabsContainer = document.getElementById('favorites-type-tabs');
 
-  if (!listEl) return;
+  // Elements của phần Lộ trình
+  const listItinEl = document.getElementById('itineraries-list');
+  const emptyItinEl = document.getElementById('itineraries-empty');
+
+  if (!listPlacesEl || !listItinEl) return;
+
+  // Trạng thái tab hiện tại
+  const urlParams = new URLSearchParams(window.location.search);
+  let activeMainTab = (urlParams.get('tab') === 'itinerary' || urlParams.get('tab') === 'itineraries')
+    ? 'itineraries'
+    : 'places';
 
   let activePlaceType = 'all';
 
@@ -115,25 +192,24 @@ async function initFavoritesPage() {
 
   populateCategories();
 
-  function render() {
+  // ── Render danh sách Địa điểm đã lưu ──
+  function renderPlaces() {
     const favoriteIds = getFavoriteIds();
+    if (countBadgePlaces) countBadgePlaces.textContent = favoriteIds.length;
+
     const query = (searchInput?.value || '').trim().toLowerCase();
     const selectedCat = filterCatEl?.value ? Number(filterCatEl.value) : null;
 
-    // Lọc các địa điểm có trong danh sách yêu thích
     let items = allRestaurants.filter(r => favoriteIds.includes(r.id));
 
-    // Lọc theo nhóm loại hình cấp 1 (Task FE-01)
     if (activePlaceType !== 'all') {
       items = items.filter(r => (r.place_type || r.category?.type_group || 'food') === activePlaceType);
     }
 
-    // Lọc theo danh mục
     if (selectedCat) {
       items = items.filter(r => r.category && r.category.id === selectedCat);
     }
 
-    // Lọc theo từ khóa tìm kiếm
     if (query) {
       items = items.filter(r =>
         r.name.toLowerCase().includes(query) ||
@@ -141,21 +217,25 @@ async function initFavoritesPage() {
       );
     }
 
-    if (countEl) {
+    if (activeMainTab === 'places' && countEl) {
       countEl.textContent = `${items.length} địa điểm`;
     }
 
     if (items.length === 0) {
-      listEl.innerHTML = '';
-      emptyEl.style.display = 'block';
-      if (btnClearAll) btnClearAll.style.display = favoriteIds.length > 0 ? 'inline-flex' : 'none';
+      listPlacesEl.innerHTML = '';
+      emptyPlacesEl.style.display = 'block';
+      if (activeMainTab === 'places' && btnClearAll) {
+        btnClearAll.style.display = favoriteIds.length > 0 ? 'inline-flex' : 'none';
+      }
       return;
     }
 
-    emptyEl.style.display = 'none';
-    if (btnClearAll) btnClearAll.style.display = 'inline-flex';
+    emptyPlacesEl.style.display = 'none';
+    if (activeMainTab === 'places' && btnClearAll) {
+      btnClearAll.style.display = 'inline-flex';
+    }
 
-    listEl.innerHTML = items.map(r => {
+    listPlacesEl.innerHTML = items.map(r => {
       const placeType = r.place_type || r.category?.type_group || 'food';
       const typeInfo = getPlaceTypeInfo(placeType);
       const durationStr = formatDuration(r.estimated_duration);
@@ -203,17 +283,183 @@ async function initFavoritesPage() {
     `;
     }).join('');
 
-    // Gắn sự kiện xóa từng địa điểm
-    listEl.querySelectorAll('.fav-card__btn-remove').forEach(btn => {
+    // Sự kiện xóa từng địa điểm
+    listPlacesEl.querySelectorAll('.fav-card__btn-remove').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = Number(e.currentTarget.dataset.id);
         toggleFavorite(id);
-        render();
+        renderPlaces();
       });
     });
   }
 
-  // Sự kiện Tabs phân loại địa điểm cấp 1 (Task FE-01)
+  // ── Render danh sách Lộ trình đã lưu ──
+  function renderItineraries() {
+    const savedItins = getSavedItineraries();
+    if (countBadgeItin) countBadgeItin.textContent = savedItins.length;
+
+    if (activeMainTab === 'itineraries' && countEl) {
+      countEl.textContent = `${savedItins.length} lộ trình`;
+    }
+
+    if (savedItins.length === 0) {
+      listItinEl.innerHTML = '';
+      emptyItinEl.style.display = 'block';
+      if (activeMainTab === 'itineraries' && btnClearAll) {
+        btnClearAll.style.display = 'none';
+      }
+      return;
+    }
+
+    emptyItinEl.style.display = 'none';
+    if (activeMainTab === 'itineraries' && btnClearAll) {
+      btnClearAll.style.display = 'inline-flex';
+    }
+
+    listItinEl.innerHTML = savedItins.map(item => {
+      const vibeBadge = getVibeBadge(item.vibe);
+      const totalKm = item.total_distance_km ?? item.summary?.total_distance_km ?? 0;
+      const totalStops = item.total_stops || item.stops?.length || 0;
+      const estHours = item.total_time_minutes
+        ? (item.total_time_minutes / 60).toFixed(1)
+        : (item.summary?.total_time_minutes ? (item.summary.total_time_minutes / 60).toFixed(1) : 4);
+      const dateStr = formatSavedDate(item.saved_at);
+      const gmapsUrl = item.google_maps_url || item.summary?.google_maps_url || getMultiStopDirectionsUrl(item.user_pos, (item.stops || []).map(s => s.place));
+
+      return `
+        <article class="saved-itin-card" id="saved-itin-${item.id}">
+          <div class="saved-itin-card__header">
+            <div>
+              <h3 class="saved-itin-card__title">✨ ${escapeText(item.title || 'Lộ trình khám phá')}</h3>
+              <div class="saved-itin-card__date">
+                <span>⏰ Đã lưu: ${escapeText(dateStr)}</span>
+              </div>
+            </div>
+            <span class="badge ${vibeBadge.class}">${vibeBadge.text}</span>
+          </div>
+
+          <div class="saved-itin-card__body">
+            <div class="saved-itin-card__stats">
+              <span class="stat-chip">📍 ${totalStops} chặng</span>
+              <span class="stat-chip">🚗 ~${totalKm} km</span>
+              <span class="stat-chip">⏱️ ~${estHours} giờ</span>
+            </div>
+
+            <!-- Danh sách chặng tóm tắt -->
+            <div class="saved-itin-card__timeline">
+              ${(item.stops || []).slice(0, 5).map((stop, sIdx) => {
+                const p = stop.place || {};
+                const stepNum = stop.step || stop.step_order || (sIdx + 1);
+                return `
+                  <div class="saved-itin-stop">
+                    <span class="saved-itin-stop__badge">${stepNum}</span>
+                    <span class="saved-itin-stop__name" title="${escapeText(p.name || '')}">${escapeText(p.name || 'Điểm ghé thăm')}</span>
+                    <span class="saved-itin-stop__time">${escapeText(stop.time_slot || stop.suggested_time || '')}</span>
+                  </div>
+                `;
+              }).join('')}
+              ${(item.stops?.length > 5) ? `<div style="font-size:11px;color:var(--c-ink-faint);text-align:center;">+ ${item.stops.length - 5} chặng nữa...</div>` : ''}
+            </div>
+
+            <!-- Hành động -->
+            <div class="saved-itin-card__actions">
+              <a href="index.html?saved_itin=${item.id}" class="btn btn--primary btn--sm" title="Mở và vẽ tuyến đường trên Bản đồ">
+                🗺️ Xem trên Bản đồ
+              </a>
+              <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--sm" title="Mở toàn bộ lộ trình trên ứng dụng Google Maps">
+                🚗 Google Maps
+              </a>
+              <button type="button" class="btn btn--ghost btn--sm btn-copy-itin" data-id="${item.id}" title="Sao chép tóm tắt lộ trình">
+                📋 Sao chép
+              </button>
+              <button type="button" class="btn btn--ghost btn--sm btn-delete-itin" data-id="${item.id}" style="color:var(--c-primary)" title="Xóa lộ trình này">
+                🗑️ Xóa
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    // Gắn sự kiện Xóa từng lộ trình
+    listItinEl.querySelectorAll('.btn-delete-itin').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.dataset.id;
+        if (confirm('Bạn có chắc muốn xóa lộ trình này khỏi danh sách đã lưu?')) {
+          deleteSavedItinerary(id);
+          renderItineraries();
+        }
+      });
+    });
+
+    // Gắn sự kiện Sao chép tóm tắt lộ trình
+    listItinEl.querySelectorAll('.btn-copy-itin').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.dataset.id;
+        const savedList = getSavedItineraries();
+        const found = savedList.find(it => it.id === id);
+        if (found) {
+          const lines = [
+            `✨ ${found.title || 'Lộ trình khám phá Food & Trip Finder'}`,
+            `📍 Quy mô: ${found.total_stops || found.stops?.length} chặng (~${found.total_distance_km} km)`,
+            `⏱️ Thời lượng: ~${found.total_time_minutes ? (found.total_time_minutes/60).toFixed(1) : 4} giờ`,
+            `-----------------------------`,
+          ];
+          (found.stops || []).forEach((st, idx) => {
+            const p = st.place || {};
+            lines.push(`${idx + 1}. [${st.time_slot || ''}] ${p.name || ''} — ${p.address || ''}`);
+          });
+          lines.push(`-----------------------------`);
+          if (found.google_maps_url) {
+            lines.push(`🚗 Điều hướng Google Maps: ${found.google_maps_url}`);
+          }
+          try {
+            await navigator.clipboard.writeText(lines.join('\n'));
+            alert('📋 Đã sao chép tóm tắt lộ trình vào bộ nhớ tạm!');
+          } catch {
+            alert('Không thể sao chép tự động.');
+          }
+        }
+      });
+    });
+  }
+
+  // ── Chuyển đổi Tab Chính (Địa điểm vs Lộ trình) ──
+  function switchMainTab(tab) {
+    activeMainTab = tab;
+    if (tab === 'places') {
+      tabBtnPlaces?.classList.add('fav-main-tab--active');
+      tabBtnPlaces?.setAttribute('aria-selected', 'true');
+      tabBtnItin?.classList.remove('fav-main-tab--active');
+      tabBtnItin?.setAttribute('aria-selected', 'false');
+
+      viewPlaces.style.display = 'block';
+      viewItin.style.display = 'none';
+
+      if (mainHeading) mainHeading.textContent = 'Địa Điểm Đã Lưu';
+      if (mainDesc) mainDesc.textContent = 'Lưu lại những quán ăn, điểm du lịch và khu vui chơi yêu thích để dễ dàng xem lại, gọi điện và chỉ đường.';
+
+      renderPlaces();
+    } else {
+      tabBtnItin?.classList.add('fav-main-tab--active');
+      tabBtnItin?.setAttribute('aria-selected', 'true');
+      tabBtnPlaces?.classList.remove('fav-main-tab--active');
+      tabBtnPlaces?.setAttribute('aria-selected', 'false');
+
+      viewPlaces.style.display = 'none';
+      viewItin.style.display = 'block';
+
+      if (mainHeading) mainHeading.textContent = 'Lộ Trình Đã Lưu';
+      if (mainDesc) mainDesc.textContent = 'Các hành trình đi chơi & ẩm thực thông minh quanh TP.HCM bạn đã lập kế hoạch và lưu lại.';
+
+      renderItineraries();
+    }
+  }
+
+  tabBtnPlaces?.addEventListener('click', () => switchMainTab('places'));
+  tabBtnItin?.addEventListener('click', () => switchMainTab('itineraries'));
+
+  // Sự kiện Tabs phân loại địa điểm cấp 1
   if (typeTabsContainer) {
     typeTabsContainer.querySelectorAll('.place-type-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -225,24 +471,36 @@ async function initFavoritesPage() {
         tab.setAttribute('aria-selected', 'true');
         activePlaceType = tab.dataset.type || 'all';
         populateCategories();
-        render();
+        renderPlaces();
       });
     });
   }
 
-  // Sự kiện tìm kiếm & lọc
-  searchInput?.addEventListener('input', () => render());
-  filterCatEl?.addEventListener('change', () => render());
+  // Sự kiện tìm kiếm & lọc địa điểm
+  searchInput?.addEventListener('input', () => renderPlaces());
+  filterCatEl?.addEventListener('change', () => renderPlaces());
 
   // Xóa toàn bộ
   btnClearAll?.addEventListener('click', () => {
-    if (confirm('Bạn có chắc muốn xóa tất cả các địa điểm đã lưu không?')) {
-      saveFavoriteIds([]);
-      render();
+    if (activeMainTab === 'places') {
+      if (confirm('Bạn có chắc muốn xóa tất cả các địa điểm đã lưu không?')) {
+        saveFavoriteIds([]);
+        renderPlaces();
+      }
+    } else {
+      if (confirm('Bạn có chắc muốn xóa tất cả các lộ trình đã lưu không?')) {
+        saveItinerariesList([]);
+        renderItineraries();
+      }
     }
   });
 
-  render();
+  // Render khởi tạo ban đầu cho cả hai
+  renderPlaces();
+  renderItineraries();
+
+  // Áp dụng tab active
+  switchMainTab(activeMainTab);
 }
 
 if (document.readyState === 'loading') {

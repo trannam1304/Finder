@@ -70,6 +70,28 @@ export function formatTime(timeStr) {
 }
 
 /**
+ * Định dạng nhãn loại hình địa điểm
+ */
+export function formatPlaceType(type) {
+  switch (type) {
+    case 'tourism': return 'Du lịch & Tham quan';
+    case 'entertainment': return 'Vui chơi giải trí';
+    default: return 'Ẩm thực & Quán ăn';
+  }
+}
+
+/**
+ * Định dạng giá vé / vé vào cổng
+ */
+export function formatTicketPrice(ticketPrice) {
+  const price = Number(ticketPrice) || 0;
+  if (price <= 0) return 'Vé miễn phí';
+  if (price >= 1000000) return `${(price / 1000000).toFixed(1).replace('.0', '')}tr đ/vé`;
+  if (price >= 1000) return `${Math.round(price / 1000)}k đ/vé`;
+  return `${price.toLocaleString('vi-VN')} đ/vé`;
+}
+
+/**
  * Tạo URL chỉ đường (Google Maps / Apple Maps) ưu tiên toạ độ chính xác (lat, lng) khớp với marker
  * Tuyệt đối không ghép restaurant.name vào đầu chuỗi tìm kiếm để tránh Google Maps fuzzy-match sai địa điểm
  */
@@ -96,6 +118,30 @@ export function getDirectionsUrl(restaurant) {
     return `https://maps.apple.com/?daddr=${encodeURIComponent(fallbackAddr)}&dirflg=d`;
   }
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fallbackAddr)}&travelmode=driving`;
+}
+
+/**
+ * Tạo URL chỉ đường toàn bộ lộ trình đa điểm (Multi-waypoint Route) trên Google Maps (Task FE-06)
+ */
+export function getMultiStopDirectionsUrl(origin, stops = []) {
+  if (!stops || stops.length === 0) return '#';
+
+  const originQuery = origin && origin.lat && origin.lng
+    ? `${origin.lat},${origin.lng}`
+    : `${stops[0].lat},${stops[0].lng}`;
+
+  const lastStop = stops[stops.length - 1];
+  const destQuery = `${lastStop.lat},${lastStop.lng}`;
+
+  // Các điểm dừng trung gian (waypoints)
+  const waypointStops = stops.slice(0, stops.length - 1);
+  const waypointsQuery = waypointStops.map(s => `${s.lat},${s.lng}`).join('|');
+
+  let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(originQuery)}&destination=${encodeURIComponent(destQuery)}&travelmode=driving`;
+  if (waypointsQuery) {
+    url += `&waypoints=${encodeURIComponent(waypointsQuery)}`;
+  }
+  return url;
 }
 
 /**
@@ -198,5 +244,3 @@ export function formatBestTimeSlot(slot) {
     default:          return 'Mọi khung giờ trong ngày';
   }
 }
-
-
