@@ -7,8 +7,10 @@ import { rerollItineraryStop } from './api.js';
 import { formatDistance, formatPrice, formatTime, formatPlaceType, formatTicketPrice, formatDuration, getMultiStopDirectionsUrl, getDirectionsUrl, escapeText } from './format.js';
 import { renderItineraryRoute, clearItineraryRoute, flyTo } from './map.js';
 import { icon, categoryIcon } from './icons.js';
+import { auth } from './auth.js';
+import { getSavedItineraries, saveItinerariesList, deleteSavedItinerary } from './favorites.js';
 
-const STORAGE_KEY = 'food_finder_saved_itineraries';
+// STORAGE_KEY được quản lý động theo từng User trong favorites.js
 
 let currentItinerary = null;
 let currentUserPos = null;
@@ -25,14 +27,8 @@ export function setExitItineraryHandler(callback) {
 /**
  * Lấy danh sách lộ trình đã lưu trong LocalStorage
  */
-export function getSavedItineraries() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (_) {
-    return [];
-  }
-}
+// Re-export từ favorites.js
+export { getSavedItineraries, deleteSavedItinerary };
 
 /**
  * Lưu lộ trình hiện tại vào LocalStorage
@@ -103,7 +99,15 @@ export function saveCurrentItinerary() {
       saved.unshift(entry);
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved.slice(0, 50)));
+    saveItinerariesList(saved.slice(0, 50));
+    if (auth.isLoggedIn()) {
+      fetch('/api/user_itineraries.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ itinerary: entry }),
+      }).catch(err => console.warn('Lỗi đồng bộ lộ trình:', err));
+    }
     return true;
   } catch (e) {
     console.error('Lỗi khi lưu lộ trình:', e);
@@ -111,15 +115,7 @@ export function saveCurrentItinerary() {
   }
 }
 
-export function deleteSavedItinerary(id) {
-  try {
-    const saved = getSavedItineraries().filter(item => item.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
+
 
 /**
  * Sao chép tóm tắt lộ trình vào Clipboard

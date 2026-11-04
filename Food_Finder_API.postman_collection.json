@@ -1,0 +1,1750 @@
+{
+    "info": {
+        "_postman_id": "food-finder-api-collection-v2",
+        "name": "Food Finder API — Automated Test Suite",
+        "description": "Bộ kiểm thử API tự động toàn diện cho dự án Food Finder:\n- Xác thực JWT (Access & Refresh Token trong HttpOnly Cookie)\n- Quên mật khẩu & Đặt lại mật khẩu với OTP\n- Tìm kiếm, lọc và gợi ý địa điểm (Ẩm thực, Du lịch, Giải trí)\n- Lập lộ trình thông minh & Đổi chặng\n- Đồng bộ Địa điểm yêu thích & Lộ trình theo từng tài khoản\n- Đánh giá & Đề xuất địa điểm từ người dùng",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "01. Xác Thực & Thành Viên (JWT & Cookies)",
+            "item": [
+                {
+                    "name": "1.1 Đăng ký tài khoản mới",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"{{test_username}}\",\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\",\n    \"full_name\": \"Thành Viên Postman\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (!pm.environment.get('test_username')) {",
+                                    "    var ts = Date.now();",
+                                    "    pm.environment.set('test_username', 'user_pm_' + ts);",
+                                    "    pm.environment.set('test_email', 'user_pm_' + ts + '@example.com');",
+                                    "    pm.environment.set('test_password', 'SecurePass@123');",
+                                    "}"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "pm.test(\"Trả về success true và thông tin user\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.user.id).to.be.a(\"number\");",
+                                    "    pm.expect(json.data.user.username).to.eql(pm.environment.get(\"test_username\"));",
+                                    "    pm.environment.set(\"current_user_id\", json.data.user.id);",
+                                    "    if (json.data.access_token) {",
+                                    "        pm.environment.set(\"access_token\", json.data.access_token);",
+                                    "    }",
+                                    "});",
+                                    "pm.test(\"Server cấp Access và Refresh Token trong Cookie\", function () {",
+                                    "    pm.expect(pm.cookies.has(\"access_token\") || pm.response.text.includes(\"access_token\")).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.2 Đăng nhập bằng tài khoản vừa tạo",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"identifier\": \"{{test_username}}\",\n    \"password\": \"{{test_password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Đăng nhập thành công, nhận token và profile\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.user.id).to.eql(pm.environment.get(\"current_user_id\"));",
+                                    "    if (json.data.access_token) {",
+                                    "        pm.environment.set(\"access_token\", json.data.access_token);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.3 Đăng nhập thất bại (Sai mật khẩu - Expect 401)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"identifier\": \"{{test_username}}\",\n    \"password\": \"WrongPassword123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 401 Unauthorized\", function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "pm.test(\"Mã lỗi trả về INVALID_CREDENTIALS\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.false;",
+                                    "    pm.expect(json.error.code).to.eql(\"INVALID_CREDENTIALS\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.4 Lấy thông tin cá nhân hiện tại (Protected)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/me.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "me.php"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Thông tin cá nhân đúng với tài khoản đang đăng nhập\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.user.id).to.eql(pm.environment.get(\"current_user_id\"));",
+                                    "    pm.expect(json.data.user.email).to.eql(pm.environment.get(\"test_email\"));",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.5 Làm mới Access Token (Token Rotation)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/refresh.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "refresh.php"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Làm mới token thành công (HTTP 200)\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    if (json.data && json.data.access_token) {",
+                                    "        pm.environment.set(\"access_token\", json.data.access_token);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.6 Quên mật khẩu - Yêu cầu mã OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/forgot_password.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "forgot_password.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"identifier\": \"{{test_email}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Mã xác nhận OTP 6 số được sinh thành công\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.reset_code).to.be.a(\"string\");",
+                                    "    pm.expect(json.data.reset_code.length).to.be.at.least(4);",
+                                    "    pm.environment.set(\"reset_code\", json.data.reset_code);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.7 Đặt lại mật khẩu mới bằng mã OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/reset_password.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "reset_password.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"identifier\": \"{{test_email}}\",\n    \"reset_code\": \"{{reset_code}}\",\n    \"new_password\": \"NewSecurePass@2026\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Đặt lại mật khẩu thành công (HTTP 200)\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.environment.set(\"test_password\", \"NewSecurePass@2026\");",
+                                    "    if (json.data && json.data.access_token) {",
+                                    "        pm.environment.set(\"access_token\", json.data.access_token);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.8 Đăng xuất tài khoản",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/logout.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "logout.php"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Đăng xuất thành công (HTTP 200)\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "1.9 Kiểm tra sau khi đăng xuất - Expect 401",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/me.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "me.php"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Từ chối truy cập vì đã đăng xuất (HTTP 401)\", function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "02. Địa Điểm & Khám Phá (Places & Categories)",
+            "item": [
+                {
+                    "name": "2.1 Lấy toàn bộ danh mục địa điểm",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/categories.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "categories.php"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Trả về danh sách 15 danh mục thuộc 3 nhóm\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.length).to.be.at.least(10);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.2 Tìm kiếm địa điểm bán kính 3km quanh ĐH Tôn Đức Thắng",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/restaurants.php?lat=10.7326&lng=106.6996&radius=3",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "restaurants.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "3"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Tìm thấy danh sách địa điểm trong bán kính 3km\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.length).to.be.above(0);",
+                                    "    pm.environment.set(\"first_place_id\", json.data[0].id);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.3 Lọc riêng nhóm Ẩm thực (type=food)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/restaurants.php?lat=10.7326&lng=106.6996&radius=5&type=food",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "restaurants.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "5"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "food"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Toàn bộ kết quả đều là nhóm food\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    json.data.forEach(function(item) {",
+                                    "        pm.expect(item.place_type).to.eql(\"food\");",
+                                    "    });",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.4 Lọc riêng nhóm Du lịch (type=tourism)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/restaurants.php?lat=10.7326&lng=106.6996&radius=10&type=tourism",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "restaurants.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "tourism"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Có ít nhất 10 điểm du lịch\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.length).to.be.at.least(10);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.5 Lọc riêng nhóm Vui chơi giải trí (type=entertainment)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/restaurants.php?lat=10.7326&lng=106.6996&radius=10&type=entertainment",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "restaurants.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "entertainment"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Có ít nhất 10 điểm vui chơi giải trí\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.length).to.be.at.least(10);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.6 Chi tiết địa điểm ID=1",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/restaurant.php?id=1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "restaurant.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Chi tiết quán có đầy đủ tên, tọa độ, địa chỉ\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.id).to.eql(1);",
+                                    "    pm.expect(json.data.name).to.be.a(\"string\");",
+                                    "    pm.expect(json.data.lat).to.be.a(\"number\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.7 Chi tiết địa điểm không tồn tại (Expect 404)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/restaurant.php?id=999999",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "restaurant.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "999999"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 404 Not Found\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.8 Gợi ý ngẫu nhiên địa điểm (Random)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/random.php?lat=10.7326&lng=106.6996&radius=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "random.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Trả về một địa điểm ngẫu nhiên hợp lệ\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.id).to.be.above(0);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.9 Tìm kiếm tọa độ theo tên đường (Geocoding)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/geocode.php?q=Nguy%E1%BB%85n+H%E1%BB%AFu+Th%E1%BB%8D+Qu%E1%BA%ADn+7",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "geocode.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "Nguyễn Hữu Thọ Quận 7"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "03. Lập Lộ Trình Đi Chơi Thông Minh",
+            "item": [
+                {
+                    "name": "3.1 Lộ trình Nửa ngày Chill (half_day + chill)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/itinerary.php?lat=10.7326&lng=106.6996&duration=half_day&vibe=chill&radius=8",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "itinerary.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "duration",
+                                    "value": "half_day"
+                                },
+                                {
+                                    "key": "vibe",
+                                    "value": "chill"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "8"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Lộ trình có từ 3 chặng dừng hợp lý\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.stops.length).to.be.at.least(2);",
+                                    "    pm.environment.set(\"first_stop_id\", json.data.stops[0].place.id);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3.2 Lộ trình Cả ngày Trải nghiệm (full_day + adventure)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/itinerary.php?lat=10.7326&lng=106.6996&duration=full_day&vibe=adventure&radius=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "itinerary.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "duration",
+                                    "value": "full_day"
+                                },
+                                {
+                                    "key": "vibe",
+                                    "value": "adventure"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Lộ trình cả ngày có 4 đến 5 chặng dừng\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.stops.length).to.be.at.least(3);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3.3 Lộ trình Buổi tối Hẹn hò (evening + date)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/itinerary.php?lat=10.7326&lng=106.6996&duration=evening&vibe=date&radius=8",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "itinerary.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "duration",
+                                    "value": "evening"
+                                },
+                                {
+                                    "key": "vibe",
+                                    "value": "date"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "8"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "3.4 Đổi chặng dừng lộ trình (Reroll)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/itinerary_reroll.php?current_id=1&from_lat=10.7326&from_lng=106.6996&place_type=food&vibe=chill&radius=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "itinerary_reroll.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "current_id",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "from_lat",
+                                    "value": "10.7326"
+                                },
+                                {
+                                    "key": "from_lng",
+                                    "value": "106.6996"
+                                },
+                                {
+                                    "key": "place_type",
+                                    "value": "food"
+                                },
+                                {
+                                    "key": "vibe",
+                                    "value": "chill"
+                                },
+                                {
+                                    "key": "radius",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Trả về chặng thay thế khác ID ban đầu\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.place.id).to.not.eql(1);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "04. Mục Đã Lưu Theo Tài Khoản (Favorites & Saved Itineraries)",
+            "item": [
+                {
+                    "name": "4.0 Đăng nhập lại để có quyền thao tác dữ liệu User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"identifier\": \"{{test_username}}\",\n    \"password\": \"{{test_password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Đăng nhập thành công\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    if (json.data && json.data.access_token) {",
+                                    "        pm.environment.set(\"access_token\", json.data.access_token);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4.1 Thêm địa điểm vào danh sách yêu thích",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/favorites.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "favorites.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"restaurant_id\": 1,\n    \"action\": \"add\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Thêm yêu thích thành công (HTTP 200)\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.saved).to.be.true;",
+                                    "    pm.expect(json.data.ids).to.include(1);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4.2 Lấy danh sách địa điểm yêu thích của tài khoản",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/favorites.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "favorites.php"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Danh sách yêu thích chứa đúng địa điểm ID=1\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.ids).to.include(1);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4.3 Lưu một lộ trình mới vào tài khoản",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user_itineraries.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "user_itineraries.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"itinerary\": {\n        \"id\": \"itin_test_pm\",\n        \"title\": \"Lộ trình Chill Quận 7 Test\",\n        \"duration\": \"half_day\",\n        \"vibe\": \"chill\",\n        \"summary\": {\n            \"duration\": \"half_day\",\n            \"vibe\": \"chill\",\n            \"total_distance_km\": 4.5\n        },\n        \"stops\": [\n            {\n                \"place\": {\n                    \"id\": 1,\n                    \"name\": \"Phở Bắc Hai Thiền\"\n                }\n            },\n            {\n                \"place\": {\n                    \"id\": 2,\n                    \"name\": \"Highlands Coffee Crescent Mall\"\n                }\n            }\n        ]\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Lưu lộ trình thành công (HTTP 200)\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4.4 Lấy danh sách lộ trình đã lưu của tài khoản",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user_itineraries.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "user_itineraries.php"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Lấy danh sách lộ trình thành công\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.list.length).to.be.above(0);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4.5 Xóa lộ trình vừa lưu",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user_itineraries.php?id=itin_test_pm",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "user_itineraries.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "id",
+                                    "value": "itin_test_pm"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Xóa lộ trình thành công\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "4.6 Xóa địa điểm khỏi yêu thích",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/favorites.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "favorites.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"restaurant_id\": 1,\n    \"action\": \"remove\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Bỏ lưu yêu thích thành công\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.saved).to.be.false;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "05. Đánh Giá & Đề Xuất Quán (Community)",
+            "item": [
+                {
+                    "name": "5.1 Lấy danh sách đánh giá của quán ID=1",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reviews.php?restaurant_id=1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reviews.php"
+                            ],
+                            "query": [
+                                {
+                                    "key": "restaurant_id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code là 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Cấu trúc trả về gồm reviews, avg_rating và rating_distribution\", function () {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "    pm.expect(json.data.reviews).to.be.an(\"array\");",
+                                    "    pm.expect(json.data.avg_rating).to.be.a(\"number\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "5.2 Gửi đánh giá mới cho quán ID=1",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reviews.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reviews.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"restaurant_id\": 1,\n    \"author_name\": \"Tester Postman\",\n    \"rating\": 5,\n    \"comment\": \"Món ăn rất ngon, phục vụ nhanh chóng!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Gửi đánh giá thành công (HTTP 200 hoặc 201)\", function () {",
+                                    "    pm.expect([200, 201]).to.include(pm.response.code);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "5.3 Gửi đề xuất địa điểm mới từ cộng đồng",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/suggest.php",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "suggest.php"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Quán Ăn Thử Nghiệm Postman\",\n    \"place_type\": \"food\",\n    \"category_id\": 1,\n    \"address\": \"123 Đường Số 7, Phường Tân Phong, Quận 7\",\n    \"phone\": \"0901234567\",\n    \"latitude\": 10.7326,\n    \"longitude\": 106.6996,\n    \"price_min\": 30000,\n    \"price_max\": 60000,\n    \"note\": \"Đề xuất tự động từ Postman collection\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Gửi đề xuất thành công (HTTP 200 hoặc 201)\", function () {",
+                                    "    pm.expect([200, 201]).to.include(pm.response.code);",
+                                    "    var json = pm.response.json();",
+                                    "    pm.expect(json.success).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

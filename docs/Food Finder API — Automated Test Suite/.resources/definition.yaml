@@ -1,0 +1,9 @@
+$kind: collection
+description: |-
+  Bộ kiểm thử API tự động toàn diện cho dự án Food Finder:
+  - Xác thực JWT (Access & Refresh Token trong HttpOnly Cookie)
+  - Quên mật khẩu & Đặt lại mật khẩu với OTP
+  - Tìm kiếm, lọc và gợi ý địa điểm (Ẩm thực, Du lịch, Giải trí)
+  - Lập lộ trình thông minh & Đổi chặng
+  - Đồng bộ Địa điểm yêu thích & Lộ trình theo từng tài khoản
+  - Đánh giá & Đề xuất địa điểm từ người dùng

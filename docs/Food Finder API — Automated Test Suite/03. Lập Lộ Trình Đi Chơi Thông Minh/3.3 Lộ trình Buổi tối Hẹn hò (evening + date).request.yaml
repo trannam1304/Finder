@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/itinerary.php?lat=10.7326&lng=106.6996&duration=evening&vibe=date&radius=8"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  lat: "10.7326"
+  lng: "106.6996"
+  duration: evening
+  vibe: date
+  radius: "8"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+    language: text/javascript
+order: 3000

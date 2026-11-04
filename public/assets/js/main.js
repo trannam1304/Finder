@@ -13,6 +13,7 @@ import { initSheet, setState as setSheetState } from './sheet.js';
 import { icon } from './icons.js';
 import { initItinerarySetup, deactivateItineraryMode, activateItineraryMode } from './itinerary-setup.js';
 import { setExitItineraryHandler } from './itinerary-view.js';
+import { getSavedItineraries } from './favorites.js';
 
 // ══════════════ APP STATE ══════════════
 const state = {
@@ -284,7 +285,7 @@ async function bootstrap() {
   } else if (urlParams.get('saved_itin')) {
     const savedItinId = urlParams.get('saved_itin');
     try {
-      const savedList = JSON.parse(localStorage.getItem('food_finder_saved_itineraries') || '[]');
+      const savedList = getSavedItineraries();
       const found = savedList.find(item => item.id === savedItinId);
       if (found && found.stops) {
         setTimeout(() => {

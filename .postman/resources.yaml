@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: ""
+
+localResources:
+  collections:
+    - ../docs/Food Finder API — Automated Test Suite
+  environments:
+    - ../docs/Food_Finder_Environment.postman_environment.json
+    - ../docs/Food Finder — Localhost (8000).environment.yaml

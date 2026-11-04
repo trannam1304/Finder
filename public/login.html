@@ -1,10 +1,459 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=admin/login.php">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Đăng nhập quản trị — Food Finder</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Đăng nhập & Đăng ký thành viên Food Finder — Tìm kiếm và lưu lại các quán ăn ngon quanh bạn.">
+  <title>Đăng nhập / Đăng ký — Food Finder</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/brutal.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
 </head>
-<body><p>Đang mở <a href="admin/login.php">trang đăng nhập quản trị</a>…</p></body>
+<body class="page-auth">
+  <div class="auth-page-container">
+    <div class="auth-card">
+      
+      <!-- Header Card -->
+      <div class="auth-card__header">
+        <a href="index.html" class="auth-card__logo" title="Về trang chủ Food Finder">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="16" cy="16" r="14" fill="#ffffff"/>
+            <path d="M10 20c0-4 2-8 6-8s6 4 6 8" stroke="var(--c-primary)" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="16" cy="11" r="2.5" fill="var(--c-primary)"/>
+            <path d="M9 22h14" stroke="var(--c-primary)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </a>
+        <h1 class="auth-card__title">Food Finder</h1>
+        <p class="auth-card__subtitle" id="auth-subtitle">Chào mừng bạn quay trở lại!</p>
+      </div>
+
+      <!-- Alert thông báo lỗi / thành công -->
+      <div id="auth-alert" class="auth-alert" role="alert"></div>
+
+      <!-- Tab Switcher (Chỉ hiện khi ở tab Đăng nhập hoặc Đăng ký) -->
+      <div class="auth-tabs" id="auth-tabs-bar" role="tablist">
+        <button type="button" class="auth-tab-btn auth-tab-btn--active" id="tab-login" role="tab" aria-selected="true">
+          Đăng nhập
+        </button>
+        <button type="button" class="auth-tab-btn" id="tab-register" role="tab" aria-selected="false">
+          Đăng ký mới
+        </button>
+      </div>
+
+      <!-- ══════════════ 1. FORM ĐĂNG NHẬP ══════════════ -->
+      <form id="form-login" novalidate>
+        <div class="auth-form-group">
+          <label class="auth-label" for="login-identifier">Tên đăng nhập hoặc Email</label>
+          <input type="text" id="login-identifier" class="auth-input" placeholder="ví dụ: nguyenvana hoặc email@gmail.com" required autocomplete="username">
+        </div>
+
+        <div class="auth-form-group" style="margin-bottom: 6px;">
+          <label class="auth-label" for="login-password">Mật khẩu</label>
+          <div class="auth-input-wrapper">
+            <input type="password" id="login-password" class="auth-input" placeholder="Nhập mật khẩu..." required autocomplete="current-password">
+            <button type="button" class="auth-password-toggle" data-target="login-password" aria-label="Hiện/Ẩn mật khẩu">👁️</button>
+          </div>
+        </div>
+
+        <!-- Quên mật khẩu link -->
+        <div class="auth-extra-row">
+          <button type="button" class="auth-link" id="btn-to-forgot">Quên mật khẩu?</button>
+        </div>
+
+        <button type="submit" class="auth-submit-btn" id="btn-submit-login">
+          <span>Đăng nhập ngay</span>
+        </button>
+      </form>
+
+      <!-- ══════════════ 2. FORM ĐĂNG KÝ ══════════════ -->
+      <form id="form-register" style="display: none;" novalidate>
+        <div class="auth-form-group">
+          <label class="auth-label" for="reg-fullname">Họ và tên của bạn</label>
+          <input type="text" id="reg-fullname" class="auth-input" placeholder="ví dụ: Nguyễn Văn A" required>
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="reg-username">Tên đăng nhập (Username)</label>
+          <input type="text" id="reg-username" class="auth-input" placeholder="ví dụ: foodie_saigon" required autocomplete="username">
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="reg-email">Địa chỉ Email</label>
+          <input type="email" id="reg-email" class="auth-input" placeholder="ví dụ: foodie@gmail.com" required autocomplete="email">
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="reg-password">Mật khẩu</label>
+          <div class="auth-input-wrapper">
+            <input type="password" id="reg-password" class="auth-input" placeholder="Tối thiểu 6 ký tự..." required autocomplete="new-password">
+            <button type="button" class="auth-password-toggle" data-target="reg-password" aria-label="Hiện/Ẩn mật khẩu">👁️</button>
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-label" for="reg-password-confirm">Xác nhận lại mật khẩu</label>
+          <div class="auth-input-wrapper">
+            <input type="password" id="reg-password-confirm" class="auth-input" placeholder="Nhập lại mật khẩu..." required autocomplete="new-password">
+            <button type="button" class="auth-password-toggle" data-target="reg-password-confirm" aria-label="Hiện/Ẩn mật khẩu">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit-btn" id="btn-submit-register">
+          <span>Tạo tài khoản thành viên</span>
+        </button>
+      </form>
+
+      <!-- ══════════════ 3. FORM QUÊN MẬT KHẨU ══════════════ -->
+      <div id="section-forgot" style="display: none;">
+        
+        <!-- Bước 1: Nhập Email/Username để nhận mã OTP -->
+        <form id="form-forgot-step1" novalidate>
+          <span class="auth-step-pill">Bước 1 / 2</span>
+          <p style="font-size: 13px; color: var(--c-ink-soft); margin-bottom: 16px;">
+            Nhập email hoặc tên đăng nhập của tài khoản để nhận mã xác nhận đặt lại mật khẩu.
+          </p>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="forgot-identifier">Email hoặc Tên đăng nhập</label>
+            <input type="text" id="forgot-identifier" class="auth-input" placeholder="Nhập email hoặc username..." required>
+          </div>
+
+          <button type="submit" class="auth-submit-btn" id="btn-submit-forgot1">
+            <span>Gửi mã xác nhận (OTP)</span>
+          </button>
+        </form>
+
+        <!-- Bước 2: Nhập OTP & Mật khẩu mới -->
+        <form id="form-forgot-step2" style="display: none;" novalidate>
+          <span class="auth-step-pill">Bước 2 / 2</span>
+          
+          <div class="auth-code-box" id="forgot-otp-display">
+            <div>Mã xác thực của bạn là:</div>
+            <div class="auth-code-highlight" id="forgot-otp-code">------</div>
+            <div style="font-size: 11px; color: var(--c-ink-soft); margin-top: 4px;">(Mã có hiệu lực trong 15 phút)</div>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="forgot-code">Nhập mã xác nhận (OTP 6 số)</label>
+            <input type="text" id="forgot-code" class="auth-input" placeholder="ví dụ: 123456" maxlength="10" required style="font-weight: 800; letter-spacing: 2px;">
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="forgot-new-password">Mật khẩu mới</label>
+            <div class="auth-input-wrapper">
+              <input type="password" id="forgot-new-password" class="auth-input" placeholder="Tối thiểu 6 ký tự..." required autocomplete="new-password">
+              <button type="button" class="auth-password-toggle" data-target="forgot-new-password" aria-label="Hiện/Ẩn mật khẩu">👁️</button>
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="forgot-confirm-password">Xác nhận mật khẩu mới</label>
+            <div class="auth-input-wrapper">
+              <input type="password" id="forgot-confirm-password" class="auth-input" placeholder="Nhập lại mật khẩu mới..." required autocomplete="new-password">
+              <button type="button" class="auth-password-toggle" data-target="forgot-confirm-password" aria-label="Hiện/Ẩn mật khẩu">👁️</button>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-submit-btn" id="btn-submit-forgot2">
+            <span>Đổi mật khẩu & Đăng nhập</span>
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 16px;">
+          <button type="button" class="auth-link" id="btn-back-to-login">← Quay lại Đăng nhập</button>
+        </div>
+      </div>
+
+      <!-- Footer & Admin link -->
+      <div class="auth-card__footer">
+        <p><a href="index.html">← Quay lại trang chủ bản đồ</a></p>
+        <p style="margin-top: 8px;">Dành cho Quản trị viên: <a href="admin/login.php">Đăng nhập Admin</a></p>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from './assets/js/auth.js';
+
+    // DOM Elements
+    const authTabsBar = document.getElementById('auth-tabs-bar');
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+    const sectionForgot = document.getElementById('section-forgot');
+    const formForgotStep1 = document.getElementById('form-forgot-step1');
+    const formForgotStep2 = document.getElementById('form-forgot-step2');
+    const authSubtitle = document.getElementById('auth-subtitle');
+    const authAlert = document.getElementById('auth-alert');
+
+    const btnToForgot = document.getElementById('btn-to-forgot');
+    const btnBackToLogin = document.getElementById('btn-back-to-login');
+    const btnSubmitLogin = document.getElementById('btn-submit-login');
+    const btnSubmitRegister = document.getElementById('btn-submit-register');
+    const btnSubmitForgot1 = document.getElementById('btn-submit-forgot1');
+    const btnSubmitForgot2 = document.getElementById('btn-submit-forgot2');
+
+    let forgotUserIdentifier = '';
+
+    function showAlert(message, type = 'error') {
+      authAlert.className = `auth-alert auth-alert--${type}`;
+      authAlert.textContent = message;
+      authAlert.style.display = 'block';
+    }
+
+    function hideAlert() {
+      authAlert.style.display = 'none';
+      authAlert.textContent = '';
+    }
+
+    function switchView(view) {
+      hideAlert();
+      if (view === 'register') {
+        authTabsBar.style.display = 'grid';
+        tabLogin.classList.remove('auth-tab-btn--active');
+        tabLogin.setAttribute('aria-selected', 'false');
+        tabRegister.classList.add('auth-tab-btn--active');
+        tabRegister.setAttribute('aria-selected', 'true');
+        formLogin.style.display = 'none';
+        formRegister.style.display = 'block';
+        sectionForgot.style.display = 'none';
+        authSubtitle.textContent = 'Tham gia cộng đồng khám phá ẩm thực';
+      } else if (view === 'forgot') {
+        authTabsBar.style.display = 'none';
+        formLogin.style.display = 'none';
+        formRegister.style.display = 'none';
+        sectionForgot.style.display = 'block';
+        formForgotStep1.style.display = 'block';
+        formForgotStep2.style.display = 'none';
+        authSubtitle.textContent = 'Khôi phục mật khẩu tài khoản';
+      } else {
+        authTabsBar.style.display = 'grid';
+        tabRegister.classList.remove('auth-tab-btn--active');
+        tabRegister.setAttribute('aria-selected', 'false');
+        tabLogin.classList.add('auth-tab-btn--active');
+        tabLogin.setAttribute('aria-selected', 'true');
+        formRegister.style.display = 'none';
+        formLogin.style.display = 'block';
+        sectionForgot.style.display = 'none';
+        authSubtitle.textContent = 'Chào mừng bạn quay trở lại!';
+      }
+    }
+
+    tabLogin.addEventListener('click', () => switchView('login'));
+    tabRegister.addEventListener('click', () => switchView('register'));
+    btnToForgot.addEventListener('click', () => switchView('forgot'));
+    btnBackToLogin.addEventListener('click', () => switchView('login'));
+
+    // Kiểm tra URL param (?tab=register hoặc ?tab=forgot)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'register') {
+      switchView('register');
+    } else if (tabParam === 'forgot') {
+      switchView('forgot');
+    } else {
+      switchView('login');
+    }
+
+    // Toggle ẩn/hiện mật khẩu
+    document.querySelectorAll('.auth-password-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const input = document.getElementById(targetId);
+        if (input) {
+          const isPwd = input.type === 'password';
+          input.type = isPwd ? 'text' : 'password';
+          btn.textContent = isPwd ? '🙈' : '👁️';
+        }
+      });
+    });
+
+    // ── 1. SUBMIT ĐĂNG NHẬP ──
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const identifier = document.getElementById('login-identifier').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!identifier) {
+        showAlert('Vui lòng nhập tên đăng nhập hoặc email.');
+        return;
+      }
+      if (!password) {
+        showAlert('Vui lòng nhập mật khẩu.');
+        return;
+      }
+
+      btnSubmitLogin.disabled = true;
+      btnSubmitLogin.innerHTML = '<span>Đang xác thực...</span>';
+
+      const result = await auth.login(identifier, password);
+      btnSubmitLogin.disabled = false;
+      btnSubmitLogin.innerHTML = '<span>Đăng nhập ngay</span>';
+
+      if (result.success) {
+        showAlert('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+        setTimeout(() => {
+          const redirect = urlParams.get('redirect') || 'index.html';
+          window.location.href = redirect;
+        }, 500);
+      } else {
+        showAlert(result.error || 'Tên đăng nhập hoặc mật khẩu không chính xác.');
+      }
+    });
+
+    // ── 2. SUBMIT ĐĂNG KÝ ──
+    formRegister.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const fullName = document.getElementById('reg-fullname').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm = document.getElementById('reg-password-confirm').value;
+
+      if (fullName.length < 2) {
+        showAlert('Vui lòng nhập họ và tên (tối thiểu 2 ký tự).');
+        return;
+      }
+      if (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username)) {
+        showAlert('Tên đăng nhập phải từ 3 đến 30 ký tự, không dấu và không chứa ký tự đặc biệt.');
+        return;
+      }
+      if (!email || !email.includes('@')) {
+        showAlert('Địa chỉ email không hợp lệ.');
+        return;
+      }
+      if (password.length < 6) {
+        showAlert('Mật khẩu phải có độ dài tối thiểu 6 ký tự.');
+        return;
+      }
+      if (password !== confirm) {
+        showAlert('Mật khẩu xác nhận không khớp. Vui lòng nhập lại.');
+        return;
+      }
+
+      btnSubmitRegister.disabled = true;
+      btnSubmitRegister.innerHTML = '<span>Đang tạo tài khoản...</span>';
+
+      const result = await auth.register({
+        username,
+        email,
+        password,
+        full_name: fullName,
+      });
+
+      btnSubmitRegister.disabled = false;
+      btnSubmitRegister.innerHTML = '<span>Tạo tài khoản thành viên</span>';
+
+      if (result.success) {
+        showAlert('Đăng ký tài khoản thành công! Đang chuyển về trang chủ...', 'success');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 600);
+      } else {
+        showAlert(result.error || 'Đăng ký không thành công. Vui lòng thử lại.');
+      }
+    });
+
+    // ── 3. SUBMIT QUÊN MẬT KHẨU - BƯỚC 1: LẤY MÃ OTP ──
+    formForgotStep1.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const identifier = document.getElementById('forgot-identifier').value.trim();
+      if (!identifier) {
+        showAlert('Vui lòng nhập Email hoặc Tên đăng nhập của bạn.');
+        return;
+      }
+
+      btnSubmitForgot1.disabled = true;
+      btnSubmitForgot1.innerHTML = '<span>Đang kiểm tra tài khoản...</span>';
+
+      const res = await auth.forgotPassword(identifier);
+      btnSubmitForgot1.disabled = false;
+      btnSubmitForgot1.innerHTML = '<span>Gửi mã xác nhận (OTP)</span>';
+
+      if (res.success) {
+        forgotUserIdentifier = identifier;
+        document.getElementById('forgot-otp-code').textContent = res.data.reset_code;
+        document.getElementById('forgot-code').value = res.data.reset_code;
+
+        formForgotStep1.style.display = 'none';
+        formForgotStep2.style.display = 'block';
+        showAlert(`Mã xác thực đã được gửi tới ${res.data.email}. Vui lòng nhập mã và mật khẩu mới bên dưới.`, 'success');
+      } else {
+        showAlert(res.error || 'Không tìm thấy tài khoản với thông tin này.');
+      }
+    });
+
+    // ── 4. SUBMIT QUÊN MẬT KHẨU - BƯỚC 2: ĐỔI MẬT KHẨU MỚI ──
+    formForgotStep2.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const code = document.getElementById('forgot-code').value.trim();
+      const newPassword = document.getElementById('forgot-new-password').value;
+      const confirmPassword = document.getElementById('forgot-confirm-password').value;
+
+      if (!code) {
+        showAlert('Vui lòng nhập mã xác nhận 6 chữ số.');
+        return;
+      }
+      if (newPassword.length < 6) {
+        showAlert('Mật khẩu mới phải có ít nhất 6 ký tự.');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showAlert('Mật khẩu xác nhận không khớp.');
+        return;
+      }
+
+      btnSubmitForgot2.disabled = true;
+      btnSubmitForgot2.innerHTML = '<span>Đang cập nhật mật khẩu...</span>';
+
+      const res = await auth.resetPassword({
+        identifier: forgotUserIdentifier,
+        reset_code: code,
+        new_password: newPassword,
+      });
+
+      btnSubmitForgot2.disabled = false;
+      btnSubmitForgot2.innerHTML = '<span>Đổi mật khẩu & Đăng nhập</span>';
+
+      if (res.success) {
+        showAlert('Đặt lại mật khẩu thành công! Đang chuyển hướng về trang chủ...', 'success');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 700);
+      } else {
+        showAlert(res.error || 'Không thể đổi mật khẩu. Mã xác nhận có thể đã hết hạn.');
+      }
+    });
+
+    // Nếu đã đăng nhập từ trước, tự động chuyển về trang chủ (chỉ khi không có tab query)
+    auth.init().then(() => {
+      if (auth.isLoggedIn() && !tabParam) {
+        const redirect = urlParams.get('redirect') || 'index.html';
+        window.location.href = redirect;
+      }
+    });
+  </script>
+</body>
 </html>

@@ -1,0 +1,25 @@
+$kind: http-request
+name: 3.2 Lộ trình Cả ngày Trải nghiệm (full_day + adventure)
+url: "{{baseUrl}}/api/itinerary.php?lat=10.7326&lng=106.6996&duration=full_day&vibe=adventure&radius=10"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  lat: "10.7326"
+  lng: "106.6996"
+  duration: full_day
+  vibe: adventure
+  radius: "10"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Lộ trình cả ngày có 4 đến 5 chặng dừng", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.stops.length).to.be.at.least(3);
+      });
+    language: text/javascript
+order: 2000
