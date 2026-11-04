@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/restaurants.php?lat=10.7326&lng=106.6996&radius=5&type=food"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  lat: "10.7326"
+  lng: "106.6996"
+  radius: "5"
+  type: food
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Toàn bộ kết quả đều là nhóm food", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          json.data.forEach(function(item) {
+              pm.expect(item.place_type).to.eql("food");
+          });
+      });
+    language: text/javascript
+order: 3000

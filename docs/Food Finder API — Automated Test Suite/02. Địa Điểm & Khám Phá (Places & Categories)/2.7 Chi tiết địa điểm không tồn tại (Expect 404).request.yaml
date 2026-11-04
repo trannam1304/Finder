@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/restaurant.php?id=999999"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  id: "999999"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 404 Not Found", function () {
+          pm.response.to.have.status(404);
+      });
+    language: text/javascript
+order: 7000

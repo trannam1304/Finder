@@ -1,0 +1,47 @@
+$kind: http-request
+url: "{{baseUrl}}/api/user_itineraries.php"
+method: POST
+headers:
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "itinerary": {
+            "id": "itin_test_pm",
+            "title": "Lộ trình Chill Quận 7 Test",
+            "duration": "half_day",
+            "vibe": "chill",
+            "summary": {
+                "duration": "half_day",
+                "vibe": "chill",
+                "total_distance_km": 4.5
+            },
+            "stops": [
+                {
+                    "place": {
+                        "id": 1,
+                        "name": "Phở Bắc Hai Thiền"
+                    }
+                },
+                {
+                    "place": {
+                        "id": 2,
+                        "name": "Highlands Coffee Crescent Mall"
+                    }
+                }
+            ]
+        }
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Lưu lộ trình thành công (HTTP 200)", function () {
+          pm.response.to.have.status(200);
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+      });
+    language: text/javascript
+order: 4000

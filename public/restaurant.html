@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="assets/css/pages.css">
   <link rel="stylesheet" href="assets/css/brutal.css">
   <link rel="stylesheet" href="assets/css/itinerary.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 
 <body>
@@ -46,9 +47,10 @@
       <a href="admin/index.php" class="page-nav__link"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3m10-10h-3M5 12H2m17.1-7.1-2.1 2.1M7 17l-2.1 2.1m14.2 0L17 17M7 7 4.9 4.9"/></svg> Admin</a>
     </div>
     <div class="page-nav__action">
-      <a href="admin/login.php" class="btn btn--primary btn--sm">Quản trị</a>
+      <a href="admin/login.php" class="btn btn--ghost btn--sm" title="Dành cho Quản trị viên">Quản trị</a>
     </div>
-    <button class="theme-toggle" id="btn-theme" aria-label="Đổi giao diện" title="Đổi giao diện"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20.5 15.2A8.6 8.6 0 0 1 8.8 3.5 8.7 8.7 0 1 0 20.5 15.2Z"/></svg></button>
+    <div id="user-nav-container" class="user-nav"></div>
+        <button class="theme-toggle" id="btn-theme" aria-label="Đổi giao diện" title="Đổi giao diện"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20.5 15.2A8.6 8.6 0 0 1 8.8 3.5 8.7 8.7 0 1 0 20.5 15.2Z"/></svg></button>
   </nav>
 
   <!-- ══ HERO ══ -->
@@ -174,5 +176,6 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script type="module" src="assets/js/restaurant.js"></script>
+  <script type="module" src="assets/js/auth.js"></script>
 </body>
 </html>

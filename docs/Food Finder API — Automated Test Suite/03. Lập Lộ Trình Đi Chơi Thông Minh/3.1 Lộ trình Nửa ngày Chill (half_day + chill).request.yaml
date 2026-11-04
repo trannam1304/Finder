@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/itinerary.php?lat=10.7326&lng=106.6996&duration=half_day&vibe=chill&radius=8"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  lat: "10.7326"
+  lng: "106.6996"
+  duration: half_day
+  vibe: chill
+  radius: "8"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Lộ trình có từ 3 chặng dừng hợp lý", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.stops.length).to.be.at.least(2);
+          pm.environment.set("first_stop_id", json.data.stops[0].place.id);
+      });
+    language: text/javascript
+order: 1000

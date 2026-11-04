@@ -1,0 +1,16 @@
+name: Food Finder — Localhost (8000)
+values:
+  - key: baseUrl
+    value: 'http://127.0.0.1:8000'
+  - key: test_username
+    value: postman_tester
+  - key: test_email
+    value: postman_tester@example.com
+  - key: test_password
+    value: SecurePass@123
+  - key: access_token
+    value: ''
+  - key: reset_code
+    value: ''
+  - key: current_user_id
+    value: ''

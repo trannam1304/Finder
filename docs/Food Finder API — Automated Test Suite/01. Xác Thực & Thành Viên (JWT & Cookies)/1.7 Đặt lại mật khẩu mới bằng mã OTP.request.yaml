@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/reset_password.php"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "identifier": "{{test_email}}",
+        "reset_code": "{{reset_code}}",
+        "new_password": "NewSecurePass@2026"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Đặt lại mật khẩu thành công (HTTP 200)", function () {
+          pm.response.to.have.status(200);
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.environment.set("test_password", "NewSecurePass@2026");
+          if (json.data && json.data.access_token) {
+              pm.environment.set("access_token", json.data.access_token);
+          }
+      });
+    language: text/javascript
+order: 7000

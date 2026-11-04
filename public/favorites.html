@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="assets/css/pages.css">
   <link rel="stylesheet" href="assets/css/brutal.css">
   <link rel="stylesheet" href="assets/css/itinerary.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body class="page-favorites">
 
@@ -55,10 +56,11 @@
     </div>
 
     <div class="page-nav__action">
-      <a href="admin/login.php" class="btn btn--primary btn--sm">Quản trị</a>
+      <a href="admin/login.php" class="btn btn--ghost btn--sm" title="Dành cho Quản trị viên">Quản trị</a>
     </div>
 
-    <button class="theme-toggle" id="btn-theme" aria-label="Đổi giao diện" title="Đổi giao diện">
+    <div id="user-nav-container" class="user-nav"></div>
+        <button class="theme-toggle" id="btn-theme" aria-label="Đổi giao diện" title="Đổi giao diện">
       <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20.5 15.2A8.6 8.6 0 0 1 8.8 3.5 8.7 8.7 0 1 0 20.5 15.2Z"/></svg>
     </button>
   </nav>
@@ -172,5 +174,6 @@
   </main>
 
   <script type="module" src="assets/js/favorites.js"></script>
+  <script type="module" src="assets/js/auth.js"></script>
 </body>
 </html>

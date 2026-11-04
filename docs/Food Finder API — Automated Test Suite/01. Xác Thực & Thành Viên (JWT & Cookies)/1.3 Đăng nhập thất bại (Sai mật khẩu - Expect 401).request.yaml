@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/login.php"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "identifier": "{{test_username}}",
+        "password": "WrongPassword123!"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 401 Unauthorized", function () {
+          pm.response.to.have.status(401);
+      });
+      pm.test("Mã lỗi trả về INVALID_CREDENTIALS", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.false;
+          pm.expect(json.error.code).to.eql("INVALID_CREDENTIALS");
+      });
+    language: text/javascript
+order: 3000

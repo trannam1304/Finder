@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/reviews.php"
+method: POST
+headers:
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "restaurant_id": 1,
+        "author_name": "Tester Postman",
+        "rating": 5,
+        "comment": "Món ăn rất ngon, phục vụ nhanh chóng!"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Gửi đánh giá thành công (HTTP 200 hoặc 201)", function () {
+          pm.expect([200, 201]).to.include(pm.response.code);
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+      });
+    language: text/javascript
+order: 2000

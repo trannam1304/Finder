@@ -1,0 +1,24 @@
+$kind: http-request
+name: 2.2 Tìm kiếm địa điểm bán kính 3km quanh ĐH Tôn Đức Thắng
+url: "{{baseUrl}}/api/restaurants.php?lat=10.7326&lng=106.6996&radius=3"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  lat: "10.7326"
+  lng: "106.6996"
+  radius: "3"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Tìm thấy danh sách địa điểm trong bán kính 3km", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.length).to.be.above(0);
+          pm.environment.set("first_place_id", json.data[0].id);
+      });
+    language: text/javascript
+order: 2000

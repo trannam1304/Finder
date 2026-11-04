@@ -1,0 +1,419 @@
+/* ============================================================
+   AUTH.CSS — Giao diện Xác thực Thành viên (JWT & Cookie)
+   Phong cách Neo-brutalist đồng bộ với Food Finder
+   ============================================================ */
+
+/* ── Khu vực User trong Header ── */
+.user-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  position: relative;
+}
+
+.user-nav__guest-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+}
+
+.user-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--c-surface, #fffdf7);
+  border: 2px solid var(--c-border, #181818);
+  padding: 4px 12px 4px 6px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm, 14px);
+  font-weight: 700;
+  color: var(--c-ink, #181818);
+  box-shadow: 2px 2px 0 var(--c-border, #181818);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  border-radius: var(--r-md, 0);
+}
+
+.user-profile-btn:hover {
+  background: var(--c-surface-sunk, #eadfca);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--c-border, #181818);
+}
+
+.user-profile-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--c-border, #181818);
+}
+
+.user-avatar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--c-primary, #ff4d2e);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  border: 1.5px solid var(--c-border, #181818);
+  border-radius: 4px;
+}
+
+.user-name-text {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Dropdown Menu User ── */
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: var(--c-surface, #fffdf7);
+  border: 2.5px solid var(--c-border, #181818);
+  box-shadow: 4px 4px 0 var(--c-border, #181818);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  border-radius: var(--r-md, 0);
+  animation: userMenuPop 0.12s ease-out;
+}
+
+@keyframes userMenuPop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.user-menu-header {
+  padding: 10px 16px;
+  border-bottom: 2px dashed var(--c-border, #181818);
+  margin-bottom: 6px;
+}
+
+.user-menu-header__name {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--c-ink, #181818);
+}
+
+.user-menu-header__email {
+  font-size: 12px;
+  color: var(--c-ink-soft, #555555);
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+.user-menu-header__badge {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--c-accent, #ffd400);
+  color: #181818;
+  padding: 2px 6px;
+  border: 1px solid var(--c-border, #181818);
+}
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-ink, #181818);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.user-menu-item:hover {
+  background: var(--c-surface-sunk, #eadfca);
+  color: var(--c-primary, #ff4d2e);
+}
+
+.user-menu-item--logout {
+  color: #b91c1c;
+  border-top: 1px solid var(--c-border, #181818);
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
+.user-menu-item--logout:hover {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ── Trang Auth Container (login.html) ── */
+.auth-page-container {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background: var(--c-bg, #f6f1e4);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--c-surface, #fffdf7);
+  border: 3px solid var(--c-border, #181818);
+  box-shadow: 6px 6px 0 var(--c-border, #181818);
+  padding: 32px 28px;
+  position: relative;
+}
+
+.auth-card__header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-card__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  background: var(--c-primary, #ff4d2e);
+  border: 2px solid var(--c-border, #181818);
+  box-shadow: 2px 2px 0 var(--c-border, #181818);
+  margin-bottom: 12px;
+}
+
+.auth-card__title {
+  font-family: var(--font-display, "Plus Jakarta Sans");
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--c-ink, #181818);
+  margin-bottom: 6px;
+}
+
+.auth-card__subtitle {
+  font-size: 13px;
+  color: var(--c-ink-soft, #555555);
+}
+
+/* ── Switcher Tabs: Đăng nhập / Đăng ký ── */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid var(--c-border, #181818);
+  background: var(--c-surface-sunk, #eadfca);
+  margin-bottom: 24px;
+}
+
+.auth-tab-btn {
+  padding: 10px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-ink-soft, #555555);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.auth-tab-btn--active {
+  background: var(--c-surface, #fffdf7);
+  color: var(--c-ink, #181818);
+  box-shadow: inset 0 -3px 0 var(--c-primary, #ff4d2e);
+}
+
+/* ── Form Inputs ── */
+.auth-form-group {
+  margin-bottom: 16px;
+}
+
+.auth-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-ink, #181818);
+  margin-bottom: 6px;
+}
+
+.auth-input-wrapper {
+  position: relative;
+}
+
+.auth-input {
+  width: 100%;
+  height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--c-border, #181818);
+  background: var(--c-surface, #fffdf7);
+  color: var(--c-ink, #181818);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--c-primary, #ff4d2e);
+  box-shadow: 2px 2px 0 var(--c-border, #181818);
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--c-ink-soft, #555);
+  padding: 4px;
+}
+
+/* ── Nút Submit ── */
+.auth-submit-btn {
+  width: 100%;
+  height: 46px;
+  background: var(--c-primary, #ff4d2e);
+  color: #ffffff;
+  border: 2.5px solid var(--c-border, #181818);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 4px 4px 0 var(--c-border, #181818);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.auth-submit-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--c-border, #181818);
+  background: var(--c-primary-dark, #d92d12);
+}
+
+.auth-submit-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--c-border, #181818);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ── Alert Thông báo Lỗi / Thành công ── */
+.auth-alert {
+  padding: 10px 14px;
+  border: 2px solid var(--c-border, #181818);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: none;
+  animation: authFadeIn 0.2s ease-out;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-alert--error {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #991b1b;
+  display: block;
+}
+
+.auth-alert--success {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #166534;
+  display: block;
+}
+
+.auth-card__footer {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--c-border, #181818);
+  font-size: 12px;
+  color: var(--c-ink-soft, #555555);
+}
+
+.auth-card__footer a {
+  color: var(--c-primary, #ff4d2e);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+
+
+/* ── Quên mật khẩu & Extra Links ── */
+.auth-extra-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.auth-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-primary, #ff4d2e);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.auth-link:hover {
+  opacity: 0.8;
+}
+
+.auth-code-box {
+  background: var(--c-surface-sunk, #eadfca);
+  border: 2px dashed var(--c-border, #181818);
+  padding: 12px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.auth-code-highlight {
+  display: inline-block;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--c-primary, #ff4d2e);
+  margin-top: 4px;
+  user-select: all;
+}
+
+.auth-step-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--c-primary, #ff4d2e);
+  color: #fff;
+  padding: 2px 8px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--c-border, #181818);
+}

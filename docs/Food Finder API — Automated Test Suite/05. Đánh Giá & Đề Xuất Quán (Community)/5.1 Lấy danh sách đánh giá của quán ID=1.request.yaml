@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/reviews.php?restaurant_id=1"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  restaurant_id: "1"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Cấu trúc trả về gồm reviews, avg_rating và rating_distribution", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.reviews).to.be.an("array");
+          pm.expect(json.data.avg_rating).to.be.a("number");
+      });
+    language: text/javascript
+order: 1000

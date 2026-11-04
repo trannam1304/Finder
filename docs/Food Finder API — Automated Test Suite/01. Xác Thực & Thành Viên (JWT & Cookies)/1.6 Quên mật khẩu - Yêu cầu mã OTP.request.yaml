@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/forgot_password.php"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "identifier": "{{test_email}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Mã xác nhận OTP 6 số được sinh thành công", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.reset_code).to.be.a("string");
+          pm.expect(json.data.reset_code.length).to.be.at.least(4);
+          pm.environment.set("reset_code", json.data.reset_code);
+      });
+    language: text/javascript
+order: 6000

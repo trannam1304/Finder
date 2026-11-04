@@ -1,0 +1,20 @@
+$kind: http-request
+name: 4.2 Lấy danh sách địa điểm yêu thích của tài khoản
+url: "{{baseUrl}}/api/favorites.php"
+method: GET
+headers:
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Danh sách yêu thích chứa đúng địa điểm ID=1", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.ids).to.include(1);
+      });
+    language: text/javascript
+order: 3000

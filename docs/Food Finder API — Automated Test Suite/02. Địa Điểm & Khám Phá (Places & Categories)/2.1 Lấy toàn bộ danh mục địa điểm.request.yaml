@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/categories.php"
+method: GET
+headers:
+  Accept: application/json
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("Trả về danh sách 15 danh mục thuộc 3 nhóm", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.length).to.be.at.least(10);
+      });
+    language: text/javascript
+order: 1000

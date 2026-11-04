@@ -1,6 +1,7 @@
 /* ============================================================
-   FAVORITES.JS — Quản lý Mục Đã Lưu (Địa điểm & Lộ trình Thông Minh)
-   Hoạt động độc lập bằng localStorage trên Web tĩnh & Backend API
+   FAVORITES.JS — Quản lý Mục Đã Lưu (Địa điểm & Lộ trình)
+   - Phân tách độc lập theo từng tài khoản đăng nhập (User Scoped)
+   - Khách vãng lai (Guest): Xóa sạch dữ liệu lưu sau mỗi lần reload trang web
    ============================================================ */
 
 import { MOCK_RESTAURANTS, MOCK_CATEGORIES } from './mock-data.js';
@@ -8,26 +9,78 @@ import { fetchRestaurants, fetchCategories } from './api.js';
 import { CONFIG } from './config.js';
 import { escapeText, formatTicketOrPrice, formatDuration, getPlaceTypeInfo, getDirectionsUrl, getMultiStopDirectionsUrl } from './format.js';
 import { icon, categoryIcon } from './icons.js';
+import { auth } from './auth.js';
 
-const STORAGE_KEY_PLACES = 'food_finder_favorites';
-const STORAGE_KEY_ITINERARIES = 'food_finder_saved_itineraries';
+// ── XÓA DỮ LIỆU CỦA KHÁCH SAU MỖI LẦN RELOAD TRANG WEB (Theo yêu cầu) ──
+// Dữ liệu khách chỉ lưu tạm trong sessionStorage của tab hiện tại, xóa sạch khi reload/mở lại
+(function clearGuestDataOnReload() {
+  try {
+    sessionStorage.removeItem('food_finder_guest_favorites');
+    sessionStorage.removeItem('food_finder_guest_itineraries');
+    // Xóa dữ liệu cũ toàn cục nếu có để tránh lẫn lộn với tài khoản
+    localStorage.removeItem('food_finder_favorites');
+    localStorage.removeItem('food_finder_saved_itineraries');
+  } catch (_) {}
+})();
+
+/**
+ * Lấy storage key tương ứng với trạng thái đăng nhập
+ */
+function getStorageKeys() {
+  const user = auth.getUser();
+  if (user && user.id) {
+    return {
+      isGuest: false,
+      placesKey: `food_finder_fav_user_${user.id}`,
+      itinsKey: `food_finder_itin_user_${user.id}`,
+    };
+  }
+  return {
+    isGuest: true,
+    placesKey: 'food_finder_guest_favorites',
+    itinsKey: 'food_finder_guest_itineraries',
+  };
+}
 
 // ── Lấy danh sách ID địa điểm đã lưu ──
 export function getFavoriteIds() {
+  const { isGuest, placesKey } = getStorageKeys();
+
+  if (isGuest) {
+    try {
+      const raw = sessionStorage.getItem(placesKey);
+      return raw ? JSON.parse(raw) : []; // Khách mặc định luôn là rỗng [] (không có dữ liệu mẫu)
+    } catch {
+      return [];
+    }
+  }
+
+  // Tài khoản đã đăng nhập
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_PLACES);
-    return raw ? JSON.parse(raw) : [1, 19, 35]; // Mặc định gợi ý 3 địa điểm khi mới mở
+    const raw = localStorage.getItem(placesKey);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return [1, 19, 35];
+    return [];
   }
 }
 
 // ── Lưu danh sách ID địa điểm ──
 export function saveFavoriteIds(ids) {
+  const { isGuest, placesKey } = getStorageKeys();
+
+  if (isGuest) {
+    try {
+      sessionStorage.setItem(placesKey, JSON.stringify(ids));
+    } catch (e) {
+      console.warn('Lỗi lưu favorite khách:', e);
+    }
+    return;
+  }
+
   try {
-    localStorage.setItem(STORAGE_KEY_PLACES, JSON.stringify(ids));
+    localStorage.setItem(placesKey, JSON.stringify(ids));
   } catch (e) {
-    console.error('Không thể lưu địa điểm vào localStorage', e);
+    console.error('Lỗi lưu địa điểm vào localStorage:', e);
   }
 }
 
@@ -42,6 +95,7 @@ export function toggleFavorite(id) {
   const ids = getFavoriteIds();
   const index = ids.indexOf(numId);
   let saved = false;
+
   if (index >= 0) {
     ids.splice(index, 1);
     saved = false;
@@ -49,14 +103,40 @@ export function toggleFavorite(id) {
     ids.unshift(numId);
     saved = true;
   }
+
   saveFavoriteIds(ids);
+
+  // Đồng bộ với Backend API nếu đã đăng nhập
+  if (auth.isLoggedIn()) {
+    fetch('/api/favorites.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ restaurant_id: numId, action: saved ? 'add' : 'remove' }),
+    }).catch(err => console.warn('Lỗi đồng bộ favorite lên server:', err));
+  }
+
+  // Phát event thông báo để các view khác tự cập nhật (map markers, list, ...)
+  window.dispatchEvent(new CustomEvent('favorites:changed', { detail: { id: numId, saved, ids } }));
+
   return saved;
 }
 
 // ── Lấy danh sách Lộ trình đã lưu ──
 export function getSavedItineraries() {
+  const { isGuest, itinsKey } = getStorageKeys();
+
+  if (isGuest) {
+    try {
+      const raw = sessionStorage.getItem(itinsKey);
+      return raw ? JSON.parse(raw) : []; // Khách mặc định luôn là rỗng []
+    } catch {
+      return [];
+    }
+  }
+
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_ITINERARIES);
+    const raw = localStorage.getItem(itinsKey);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -65,10 +145,21 @@ export function getSavedItineraries() {
 
 // ── Lưu toàn bộ danh sách Lộ trình ──
 export function saveItinerariesList(list) {
+  const { isGuest, itinsKey } = getStorageKeys();
+
+  if (isGuest) {
+    try {
+      sessionStorage.setItem(itinsKey, JSON.stringify(list));
+    } catch (e) {
+      console.warn('Lỗi lưu lộ trình khách:', e);
+    }
+    return;
+  }
+
   try {
-    localStorage.setItem(STORAGE_KEY_ITINERARIES, JSON.stringify(list));
+    localStorage.setItem(itinsKey, JSON.stringify(list));
   } catch (e) {
-    console.error('Không thể lưu lộ trình vào localStorage', e);
+    console.error('Lỗi lưu lộ trình vào localStorage:', e);
   }
 }
 
@@ -76,6 +167,16 @@ export function saveItinerariesList(list) {
 export function deleteSavedItinerary(id) {
   const list = getSavedItineraries().filter(item => item.id !== id);
   saveItinerariesList(list);
+
+  // Xóa trên Server nếu đã đăng nhập
+  if (auth.isLoggedIn()) {
+    fetch(`/api/user_itineraries.php?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+    }).catch(err => console.warn('Lỗi xóa lộ trình trên server:', err));
+  }
+
+  window.dispatchEvent(new CustomEvent('itineraries:changed', { detail: { id, list } }));
 }
 
 // ── Format thời gian lưu ──
@@ -106,8 +207,52 @@ function getVibeBadge(vibe) {
   return map[vibe] || { text: '✨ Khám phá', class: 'badge--category' };
 }
 
-// ── Khởi tạo trang favorites.html ──
+// ── Đồng bộ dữ liệu yêu thích và lộ trình từ Server về Client khi đăng nhập ──
+export async function syncUserDataFromServer() {
+  if (!auth.isLoggedIn()) return;
+  const user = auth.getUser();
+  if (!user || !user.id) return;
+
+  const placesKey = `food_finder_fav_user_${user.id}`;
+  const itinsKey = `food_finder_itin_user_${user.id}`;
+
+  try {
+    // 1. Tải danh sách Địa điểm yêu thích từ MySQL
+    const resFav = await fetch('/api/favorites.php', { credentials: 'same-origin' });
+    if (resFav.ok) {
+      const dataFav = await resFav.json();
+      if (dataFav.success && Array.isArray(dataFav.data?.ids)) {
+        localStorage.setItem(placesKey, JSON.stringify(dataFav.data.ids));
+      }
+    }
+
+    // 2. Tải danh sách Lộ trình từ MySQL
+    const resItin = await fetch('/api/user_itineraries.php', { credentials: 'same-origin' });
+    if (resItin.ok) {
+      const dataItin = await resItin.json();
+      if (dataItin.success && Array.isArray(dataItin.data?.list)) {
+        localStorage.setItem(itinsKey, JSON.stringify(dataItin.data.list));
+      }
+    }
+  } catch (err) {
+    console.warn('Không thể đồng bộ dữ liệu từ server:', err);
+  }
+}
+
+// ── KHỞI TẠO TRANG FAVORITES.HTML ──
 async function initFavoritesPage() {
+  const listPlacesEl = document.getElementById('favorites-list');
+  const listItinEl = document.getElementById('itineraries-list');
+  if (!listPlacesEl || !listItinEl) return;
+
+  // Đảm bảo auth đã khởi tạo xong
+  await auth.init();
+
+  // Nếu là thành viên đã đăng nhập: Đồng bộ dữ liệu mới nhất từ CSDL
+  if (auth.isLoggedIn()) {
+    await syncUserDataFromServer();
+  }
+
   // Elements chung
   const countBadgePlaces = document.getElementById('count-badge-places');
   const countBadgeItin = document.getElementById('count-badge-itineraries');
@@ -123,17 +268,13 @@ async function initFavoritesPage() {
   const viewItin = document.getElementById('view-itineraries');
 
   // Elements của phần Địa điểm
-  const listPlacesEl = document.getElementById('favorites-list');
   const emptyPlacesEl = document.getElementById('favorites-empty');
   const filterCatEl = document.getElementById('filter-category');
   const searchInput = document.getElementById('search-favorites');
   const typeTabsContainer = document.getElementById('favorites-type-tabs');
 
   // Elements của phần Lộ trình
-  const listItinEl = document.getElementById('itineraries-list');
   const emptyItinEl = document.getElementById('itineraries-empty');
-
-  if (!listPlacesEl || !listItinEl) return;
 
   // Trạng thái tab hiện tại
   const urlParams = new URLSearchParams(window.location.search);
@@ -143,20 +284,45 @@ async function initFavoritesPage() {
 
   let activePlaceType = 'all';
 
-  // Theme toggle
-  const btnTheme = document.getElementById('btn-theme');
-  const root = document.documentElement;
-  function applyTheme(theme) {
-    root.dataset.theme = theme;
-    if (btnTheme) btnTheme.innerHTML = icon(theme === 'dark' ? 'sun' : 'moon');
-    localStorage.setItem('ff-theme', theme);
+  // Hiển thị banner trạng thái Người dùng / Khách
+  function renderUserBanner() {
+    let banner = document.getElementById('fav-user-status-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'fav-user-status-banner';
+      banner.style.cssText = 'padding: 12px 16px; margin-bottom: 20px; border: 2px solid var(--c-border); font-size: 13.5px; font-weight: 600;';
+      const pageHeader = document.querySelector('.page-header');
+      if (pageHeader && pageHeader.parentNode) {
+        pageHeader.parentNode.insertBefore(banner, pageHeader);
+      }
+    }
+
+    if (auth.isLoggedIn()) {
+      const u = auth.getUser();
+      banner.style.background = 'var(--c-surface)';
+      banner.style.borderColor = 'var(--c-border)';
+      banner.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            👤 Đang xem mục đã lưu của tài khoản: <strong>${escapeText(u.full_name || u.username)}</strong> (${escapeText(u.email)})
+          </div>
+          <span class="badge" style="background:var(--c-accent); color:#181818; border:1px solid #181818; font-weight:800;">ĐÃ ĐỒNG BỘ CSDL</span>
+        </div>
+      `;
+    } else {
+      banner.style.background = '#fef3c7';
+      banner.style.borderColor = '#d97706';
+      banner.innerHTML = `
+        <div style="color: #92400e;">
+          ⚠️ <strong>Bạn đang duyệt với tư cách Khách:</strong> Mọi địa điểm và lộ trình lưu tạm sẽ <strong>tự động bị xóa sạch sau mỗi lần tải lại trang (reload)</strong>.
+          <a href="login.html" style="font-weight: 800; color: #b45309; text-decoration: underline; margin-left: 6px;">Đăng nhập</a> hoặc
+          <a href="login.html?tab=register" style="font-weight: 800; color: #b45309; text-decoration: underline; margin-left: 4px;">Đăng ký ngay</a> để lưu vĩnh viễn vào tài khoản của bạn!
+        </div>
+      `;
+    }
   }
-  const savedTheme = localStorage.getItem('ff-theme') ||
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  applyTheme(savedTheme);
-  if (btnTheme) btnTheme.addEventListener('click', () => {
-    applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
-  });
+
+  renderUserBanner();
 
   // Tải danh sách địa điểm
   let allRestaurants = [...MOCK_RESTAURANTS];
@@ -481,18 +647,34 @@ async function initFavoritesPage() {
   filterCatEl?.addEventListener('change', () => renderPlaces());
 
   // Xóa toàn bộ
-  btnClearAll?.addEventListener('click', () => {
+  btnClearAll?.addEventListener('click', async () => {
     if (activeMainTab === 'places') {
       if (confirm('Bạn có chắc muốn xóa tất cả các địa điểm đã lưu không?')) {
         saveFavoriteIds([]);
+        if (auth.isLoggedIn()) {
+          fetch('/api/favorites.php', { method: 'DELETE', credentials: 'same-origin' }).catch(() => {});
+        }
         renderPlaces();
       }
     } else {
       if (confirm('Bạn có chắc muốn xóa tất cả các lộ trình đã lưu không?')) {
         saveItinerariesList([]);
+        if (auth.isLoggedIn()) {
+          fetch('/api/user_itineraries.php', { method: 'DELETE', credentials: 'same-origin' }).catch(() => {});
+        }
         renderItineraries();
       }
     }
+  });
+
+  // Lắng nghe khi có sự thay đổi đăng nhập/đăng xuất để tự động nạp lại đúng tài khoản
+  window.addEventListener('auth:change', async () => {
+    renderUserBanner();
+    if (auth.isLoggedIn()) {
+      await syncUserDataFromServer();
+    }
+    renderPlaces();
+    renderItineraries();
   });
 
   // Render khởi tạo ban đầu cho cả hai
@@ -503,8 +685,10 @@ async function initFavoritesPage() {
   switchMainTab(activeMainTab);
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initFavoritesPage);
-} else {
-  initFavoritesPage();
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFavoritesPage);
+  } else {
+    initFavoritesPage();
+  }
 }
