@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/logout.php"
+method: POST
+headers:
+  Accept: application/json
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Đăng xuất thành công (HTTP 200)", function () {
+          pm.response.to.have.status(200);
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+      });
+    language: text/javascript
+order: 8000

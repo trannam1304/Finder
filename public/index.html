@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="assets/css/map.css">
   <link rel="stylesheet" href="assets/css/brutal.css">
   <link rel="stylesheet" href="assets/css/itinerary.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body class="page-map">
   <div class="app" id="app">
@@ -101,9 +102,8 @@
         <a href="about.html" class="btn btn--ghost btn--sm" id="btn-about-nav" title="Giới thiệu" style="text-decoration:none">
           <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> Giới thiệu
         </a>
-        <a href="admin/login.php" class="btn btn--primary btn--sm" id="btn-login-nav" title="Đăng nhập quản trị" style="text-decoration:none">
-          Quản trị
-        </a>
+        <a href="admin/login.php" class="btn btn--ghost btn--sm" id="btn-login-nav" title="Đăng nhập quản trị" style="text-decoration:none" title="Dành cho Quản trị viên">Quản trị</a>
+        <div id="user-nav-container" class="user-nav"></div>
         <button class="theme-toggle" id="btn-theme" aria-label="Đổi giao diện sáng/tối" title="Đổi giao diện">
           <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20.5 15.2A8.6 8.6 0 0 1 8.8 3.5 8.7 8.7 0 1 0 20.5 15.2Z"/></svg>
         </button>
@@ -330,5 +330,6 @@
 
   <!-- App JS (ES modules) -->
   <script type="module" src="assets/js/main.js"></script>
+  <script type="module" src="assets/js/auth.js"></script>
 </body>
 </html>

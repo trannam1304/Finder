@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/geocode.php?q=Nguy%E1%BB%85n+H%E1%BB%AFu+Th%E1%BB%8D+Qu%E1%BA%ADn+7"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  q: Nguyễn Hữu Thọ Quận 7
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+    language: text/javascript
+order: 9000

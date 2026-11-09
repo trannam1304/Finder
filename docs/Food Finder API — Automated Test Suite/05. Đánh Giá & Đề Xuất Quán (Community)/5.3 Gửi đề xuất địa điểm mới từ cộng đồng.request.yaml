@@ -1,0 +1,31 @@
+$kind: http-request
+url: "{{baseUrl}}/api/suggest.php"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "name": "Quán Ăn Thử Nghiệm Postman",
+        "place_type": "food",
+        "category_id": 1,
+        "address": "123 Đường Số 7, Phường Tân Phong, Quận 7",
+        "phone": "0901234567",
+        "latitude": 10.7326,
+        "longitude": 106.6996,
+        "price_min": 30000,
+        "price_max": 60000,
+        "note": "Đề xuất tự động từ Postman collection"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Gửi đề xuất thành công (HTTP 200 hoặc 201)", function () {
+          pm.expect([200, 201]).to.include(pm.response.code);
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+      });
+    language: text/javascript
+order: 3000

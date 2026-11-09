@@ -1,0 +1,45 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/register.php"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+        "username": "{{test_username}}",
+        "email": "{{test_email}}",
+        "password": "{{test_password}}",
+        "full_name": "Thành Viên Postman"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if (!pm.environment.get('test_username')) {
+          var ts = Date.now();
+          pm.environment.set('test_username', 'user_pm_' + ts);
+          pm.environment.set('test_email', 'user_pm_' + ts + '@example.com');
+          pm.environment.set('test_password', 'SecurePass@123');
+      }
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("Status code là 201 Created", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test("Trả về success true và thông tin user", function () {
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+          pm.expect(json.data.user.id).to.be.a("number");
+          pm.expect(json.data.user.username).to.eql(pm.environment.get("test_username"));
+          pm.environment.set("current_user_id", json.data.user.id);
+          if (json.data.access_token) {
+              pm.environment.set("access_token", json.data.access_token);
+          }
+      });
+      pm.test("Server cấp Access và Refresh Token trong Cookie", function () {
+          pm.expect(pm.cookies.has("access_token") || pm.response.text.includes("access_token")).to.be.true;
+      });
+    language: text/javascript
+order: 1000

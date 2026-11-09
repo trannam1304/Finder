@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/user_itineraries.php?id=itin_test_pm"
+method: DELETE
+headers:
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+queryParams:
+  id: itin_test_pm
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Xóa lộ trình thành công", function () {
+          pm.response.to.have.status(200);
+          var json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+      });
+    language: text/javascript
+order: 6000
