@@ -69,11 +69,11 @@ export function showRandomCard(restaurant, { onReroll, onClose, getDirectionsUrl
 
   if (labelEl) {
     if (placeType === 'tourism') {
-      labelEl.textContent = '🏛️ Tham quan ở đây đi';
+      labelEl.innerHTML = `${icon('tourism', 'ui-icon--sm')} <span>Tham quan ở đây đi</span>`;
     } else if (placeType === 'entertainment') {
-      labelEl.textContent = '🎡 Đi chơi ở đây đi';
+      labelEl.innerHTML = `${icon('entertainment', 'ui-icon--sm')} <span>Đi chơi ở đây đi</span>`;
     } else {
-      labelEl.textContent = '🍜 Ăn ở đây đi';
+      labelEl.innerHTML = `${icon('food', 'ui-icon--sm')} <span>Ăn ở đây đi</span>`;
     }
   }
 

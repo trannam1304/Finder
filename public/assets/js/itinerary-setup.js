@@ -156,6 +156,7 @@ export function activateItineraryMode(itineraryData, userPos) {
   const sidebarItinWrap = document.getElementById('sidebar-itinerary-view');
   const sheetListWrap = document.getElementById('sheet-list-wrap');
   const sheetItinWrap = document.getElementById('sheet-itinerary-view');
+  const sheetHeader = document.querySelector('.sheet__header');
 
   if (sidebarListWrap && sidebarItinWrap) {
     sidebarListWrap.style.display = 'none';
@@ -166,14 +167,17 @@ export function activateItineraryMode(itineraryData, userPos) {
   if (sheetListWrap && sheetItinWrap) {
     sheetListWrap.style.display = 'none';
     sheetItinWrap.style.display = 'block';
+    if (sheetHeader) sheetHeader.style.display = 'none';
     displayItineraryTimeline(sheetItinWrap, itineraryData, userPos, showToastFn);
   }
 
-  // Tự động mở sheet trên mobile lên nấc half để nhìn rõ lộ trình
-  if (window.innerWidth < 768) {
-    const sheet = document.getElementById('sheet');
-    if (sheet) {
-      sheet.className = 'sheet sheet--half';
+  // Đánh dấu sheet ở chế độ lộ trình và mở nấc half trên mobile
+  const sheet = document.getElementById('sheet');
+  if (sheet) {
+    sheet.classList.add('sheet--itinerary-mode');
+    if (window.innerWidth < 768) {
+      sheet.classList.remove('sheet--peek', 'sheet--full');
+      sheet.classList.add('sheet--half');
     }
   }
 }
@@ -186,6 +190,12 @@ export function deactivateItineraryMode() {
   const sidebarItinWrap = document.getElementById('sidebar-itinerary-view');
   const sheetListWrap = document.getElementById('sheet-list-wrap');
   const sheetItinWrap = document.getElementById('sheet-itinerary-view');
+  const sheetHeader = document.querySelector('.sheet__header');
+  const sheet = document.getElementById('sheet');
+
+  if (sheet) {
+    sheet.classList.remove('sheet--itinerary-mode');
+  }
 
   if (sidebarListWrap && sidebarItinWrap) {
     sidebarListWrap.style.display = '';
@@ -195,6 +205,7 @@ export function deactivateItineraryMode() {
   if (sheetListWrap && sheetItinWrap) {
     sheetListWrap.style.display = '';
     sheetItinWrap.style.display = 'none';
+    if (sheetHeader) sheetHeader.style.display = '';
   }
 }
 

@@ -171,8 +171,8 @@ export function getPlaceTypeInfo(placeType = 'food') {
       return {
         key: 'tourism',
         label: 'Du lịch',
-        fullLabel: '🏛️ Du lịch & Tham quan',
-        emoji: '🏛️',
+        fullLabel: 'Du lịch & Tham quan',
+        emoji: '',
         badgeClass: 'badge--tourism',
         markerClass: 'marker-pin--tourism',
       };
@@ -180,8 +180,8 @@ export function getPlaceTypeInfo(placeType = 'food') {
       return {
         key: 'entertainment',
         label: 'Vui chơi',
-        fullLabel: '🎡 Vui chơi giải trí',
-        emoji: '🎡',
+        fullLabel: 'Vui chơi giải trí',
+        emoji: '',
         badgeClass: 'badge--entertainment',
         markerClass: 'marker-pin--entertainment',
       };
@@ -189,8 +189,8 @@ export function getPlaceTypeInfo(placeType = 'food') {
       return {
         key: 'food',
         label: 'Ẩm thực',
-        fullLabel: '🍜 Ẩm thực & Đồ uống',
-        emoji: '🍜',
+        fullLabel: 'Ẩm thực & Đồ uống',
+        emoji: '',
         badgeClass: 'badge--food',
         markerClass: 'marker-pin--food',
       };

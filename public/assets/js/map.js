@@ -4,7 +4,7 @@
 
 import { CONFIG } from './config.js';
 import { formatDistance, formatPrice, escapeText, isOpenNow, formatTime, getDirectionsUrl, getGoogleMapsPinUrl, getPlaceTypeInfo, formatTicketOrPrice, formatDuration } from './format.js';
-import { categoryIcon } from './icons.js';
+import { categoryIcon, icon } from './icons.js';
 
 let map = null;
 let tileLayer = null;
@@ -186,9 +186,9 @@ export function renderMarkers(restaurants, selectedId = null) {
       autoPanPadding: [20, 20],
     });
 
-    // Khi click marker: kích hoạt callback chọn quán
+    // Khi click marker: kích hoạt callback chọn quán (truyền cờ fromMarkerClick để cố định bản đồ)
     marker.on('click', () => {
-      if (onMarkerClick) onMarkerClick(r.id);
+      if (onMarkerClick) onMarkerClick(r.id, { fromMarkerClick: true });
     });
 
     markers.set(r.id, marker);
@@ -310,7 +310,7 @@ export function createPopupContent(restaurant) {
   if (durationText) {
     const durEl = document.createElement('span');
     durEl.className = 'popup__duration';
-    durEl.textContent = `⏱ ${durationText}`;
+    durEl.innerHTML = `${icon('timer', 'ui-icon--xs')} ${escapeText(durationText)}`;
     meta.appendChild(durEl);
   }
 
@@ -367,6 +367,7 @@ function showPopup(marker, restaurant) {
 
 /**
  * Bay tới vị trí chuẩn xác tuyệt đối ở trung tâm bản đồ nhìn thấy
+ * Luôn giữ nguyên hoặc tăng mức zoom, TUYỆT ĐỐI không tự động zoom out làm mất vị trí
  */
 export function flyTo(lat, lng, zoom, options = {}) {
   if (!map) return;
@@ -374,9 +375,14 @@ export function flyTo(lat, lng, zoom, options = {}) {
   const numLng = Number(lng);
   if (isNaN(numLat) || isNaN(numLng) || !isFinite(numLat) || !isFinite(numLng)) return;
 
-  map.flyTo([numLat, numLng], zoom || CONFIG.FOCUS_ZOOM, {
-    duration: CONFIG.FLY_DURATION,
+  const currentZoom = map.getZoom();
+  // Nếu không truyền zoom hoặc zoom nhỏ hơn hiện tại thì giữ nguyên currentZoom, không bao giờ zoom out
+  const targetZoom = zoom !== undefined ? Math.max(currentZoom, zoom) : Math.max(currentZoom, CONFIG.FOCUS_ZOOM);
+
+  map.flyTo([numLat, numLng], targetZoom, {
+    duration: options.duration || CONFIG.FLY_DURATION,
     easeLinearity: 0.25,
+    ...options,
   });
 }
 
@@ -394,10 +400,12 @@ export function highlightMarker(id, shouldOpenPopup = false) {
       }
       marker.setZIndexOffset(1000);
       if (shouldOpenPopup) {
-        if (markerGroup && typeof markerGroup.zoomToShowLayer === 'function') {
-          markerGroup.zoomToShowLayer(marker, () => marker.openPopup());
-        } else {
-          marker.openPopup();
+        if (!marker.isPopupOpen()) {
+          if (markerGroup && typeof markerGroup.zoomToShowLayer === 'function') {
+            markerGroup.zoomToShowLayer(marker, () => marker.openPopup());
+          } else {
+            marker.openPopup();
+          }
         }
       }
     } else {
