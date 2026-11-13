@@ -128,25 +128,25 @@ export async function copyItinerarySummary(itinerary, userPos) {
   const gmapsUrl = getMultiStopDirectionsUrl(userPos, stops.map(s => s.place));
 
   const durationMap = { half_day: 'Nửa ngày (~4 giờ)', full_day: 'Cả ngày (~8 giờ)', evening: 'Buổi tối (~4.5 giờ)' };
-  const vibeMap = { chill: '🌿 Chill thư thái', date: '💖 Hẹn hò lãng mạn', adventure: '⚡ Vui chơi trải nghiệm', foodie: '🍜 Ăn sập Sài Gòn' };
+  const vibeMap = { chill: 'Chill thư thái', date: 'Hẹn hò lãng mạn', adventure: 'Vui chơi trải nghiệm', foodie: 'Ăn sập Sài Gòn' };
 
-  let text = `🗺️ LỘ TRÌNH ĐI CHƠI — FOOD & TRIP FINDER\n`;
-  text += `⏱️ Thời lượng: ${durationMap[itinerary.duration] || itinerary.duration}\n`;
-  text += `🎯 Phong cách: ${vibeMap[itinerary.vibe] || itinerary.vibe}\n`;
-  text += `🚗 Tổng quãng đường: ${itinerary.total_distance_km || 0} km (${stops.length} chặng dừng)\n`;
+  let text = `LỘ TRÌNH ĐI CHƠI — FOOD & TRIP FINDER\n`;
+  text += `Thời lượng: ${durationMap[itinerary.duration] || itinerary.duration}\n`;
+  text += `Phong cách: ${vibeMap[itinerary.vibe] || itinerary.vibe}\n`;
+  text += `Tổng quãng đường: ${itinerary.total_distance_km || 0} km (${stops.length} chặng dừng)\n`;
   text += `───────────────────────\n`;
 
   stops.forEach((s, idx) => {
     const p = s.place;
     const time = s.suggested_time || s.time_slot || '';
     text += `${idx + 1}. [${time}] ${p.name}\n`;
-    text += `   📍 ${p.address}\n`;
-    if (s.leg_distance_km) text += `   🚗 Cự ly: +${s.leg_distance_km} km\n`;
-    if (s.activity_note) text += `   💡 ${s.activity_note}\n`;
+    text += `   Địa chỉ: ${p.address}\n`;
+    if (s.leg_distance_km) text += `   Cự ly: +${s.leg_distance_km} km\n`;
+    if (s.activity_note) text += `   Ghi chú: ${s.activity_note}\n`;
   });
 
   text += `───────────────────────\n`;
-  text += `👉 Mở toàn bộ đường đi trên Google Maps:\n${gmapsUrl}\n`;
+  text += `Mở toàn bộ đường đi trên Google Maps:\n${gmapsUrl}\n`;
 
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -229,7 +229,12 @@ export function displayItineraryTimeline(container, itinerary, userPos, showToas
     : (itinerary.estimated_hours || 4);
 
   const durationMap = { half_day: 'Nửa ngày', full_day: 'Cả ngày', evening: 'Buổi tối' };
-  const vibeMap = { chill: '🌿 Chill thư thái', date: '💖 Hẹn hò lãng mạn', adventure: '⚡ Vui chơi trải nghiệm', foodie: '🍜 Ăn sập Sài Gòn' };
+  const vibeMap = {
+    chill: `${icon('leaf', 'ui-icon--xs')} Chill thư thái`,
+    date: `${icon('heart', 'ui-icon--xs')} Hẹn hò lãng mạn`,
+    adventure: `${icon('zap', 'ui-icon--xs')} Vui chơi trải nghiệm`,
+    foodie: `${icon('food', 'ui-icon--xs')} Ăn sập Sài Gòn`,
+  };
 
   const gmapsAllUrl = itinerary.summary?.google_maps_url || getMultiStopDirectionsUrl(userPos, itinerary.stops.map(s => s.place));
 
@@ -239,34 +244,32 @@ export function displayItineraryTimeline(container, itinerary, userPos, showToas
       <div class="itinerary-summary-card">
         <div class="itinerary-summary__header">
           <div class="itinerary-summary__title">
-            ✨ Lộ trình ${durationMap[duration] || 'Đi chơi'}
+            ${icon('sparkles', 'ui-icon--sm')} Lộ trình ${durationMap[duration] || 'Đi chơi'}
           </div>
           <button type="button" class="btn btn--ghost btn--sm" id="btn-exit-itinerary" title="Thoát chế độ lộ trình" style="padding:4px 8px;font-size:11px">
-            ✕ Đóng
+            ${icon('close', 'ui-icon--xs')} Đóng
           </button>
         </div>
 
         <div class="itinerary-summary__stats">
-          <span class="stat-chip">📍 ${totalStops} chặng</span>
-          <span class="stat-chip">🚗 ~${totalKm} km</span>
-          <span class="stat-chip">⏱️ ~${estHours} giờ</span>
+          <span class="stat-chip">${icon('pin', 'ui-icon--xs')} ${totalStops} chặng</span>
+          <span class="stat-chip">${icon('car', 'ui-icon--xs')} ~${totalKm} km</span>
+          <span class="stat-chip">${icon('timer', 'ui-icon--xs')} ~${estHours} giờ</span>
           <span class="stat-chip">${vibeMap[vibe] || vibe}</span>
         </div>
 
         <div class="itinerary-summary__actions">
           <a class="btn btn--primary btn--sm" id="btn-open-gmaps-route" href="${gmapsAllUrl}" target="_blank" rel="noopener noreferrer" title="Mở lộ trình điều hướng nhiều chặng trên Google Maps">
-
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 5c0 2-2 4-4 4s-4-2-4-4 2-3 4-3 4 1 4 3ZM8 19c0 2-2 3-4 3s-4-1-4-3 2-4 4-4 4 2 4 4Z"/><path d="M4 15c0-7 12 2 12-6"/></svg>
-            Google Maps
+            ${icon('compass', 'ui-icon--sm')} Google Maps
           </a>
           <button type="button" class="btn btn--ghost btn--sm" id="btn-save-itin" title="Lưu vào danh sách cá nhân">
-            ${icon('star')} Lưu
+            ${icon('star', 'ui-icon--sm')} Lưu
           </button>
           <button type="button" class="btn btn--ghost btn--sm" id="btn-share-itin" title="Chia sẻ lộ trình">
-            ${icon('share')} Chia sẻ
+            ${icon('share', 'ui-icon--sm')} Chia sẻ
           </button>
           <button type="button" class="btn btn--ghost btn--sm" id="btn-copy-summary" title="Sao chép tóm tắt dạng văn bản">
-            ${icon('copy')} Tóm tắt
+            ${icon('copy', 'ui-icon--sm')} Tóm tắt
           </button>
         </div>
       </div>
@@ -327,13 +330,13 @@ export function displayItineraryTimeline(container, itinerary, userPos, showToas
     });
   });
 
-  // Gắn sự kiện click vào thẻ chặng để bay tới marker trên bản đồ
+  // Gắn sự kiện click vào thẻ chặng để bay tới marker trên bản đồ (cố định mức zoom hiện tại)
   container.querySelectorAll('.timeline-card').forEach(card => {
     card.addEventListener('click', () => {
       const lat = parseFloat(card.dataset.lat);
       const lng = parseFloat(card.dataset.lng);
       if (!isNaN(lat) && !isNaN(lng)) {
-        flyTo(lat, lng, 16);
+        flyTo(lat, lng);
       }
     });
   });
@@ -375,8 +378,8 @@ function renderTimelineItem(stop, index) {
 
       <div class="timeline-card" data-step-index="${index}" data-lat="${p.lat || 0}" data-lng="${p.lng || 0}">
         <div class="timeline-card__top">
-          <span class="timeline-time-badge">⏰ ${escapeText(timeStr)}</span>
-          <span class="timeline-leg-dist">🚗 ${legDist}</span>
+          <span class="timeline-time-badge">${icon('clock', 'ui-icon--xs')} ${escapeText(timeStr)}</span>
+          <span class="timeline-leg-dist">${icon('car', 'ui-icon--xs')} ${legDist}</span>
         </div>
 
         <div class="timeline-card__main">
@@ -388,19 +391,19 @@ function renderTimelineItem(stop, index) {
               ${costBadge}
               <span class="badge badge--duration">${durStr}</span>
             </div>
-            <div class="timeline-card__address" title="${escapeText(p.address || '')}">📍 ${escapeText(p.address || '')}</div>
+            <div class="timeline-card__address" title="${escapeText(p.address || '')}">${icon('pin', 'ui-icon--xs')} ${escapeText(p.address || '')}</div>
           </div>
         </div>
 
-        ${noteStr ? `<div class="timeline-card__note">💡 ${escapeText(noteStr)}</div>` : ''}
+        ${noteStr ? `<div class="timeline-card__note">${icon('lightbulb', 'ui-icon--xs')} ${escapeText(noteStr)}</div>` : ''}
 
         <div class="timeline-card__actions">
           <button type="button" class="btn-reroll" data-step-index="${index}" title="Đổi sang địa điểm phù hợp khác gần đây">
-            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            ${icon('refresh', 'ui-icon--xs')}
             <span>Đổi điểm khác</span>
           </button>
           <a class="btn btn--ghost btn--sm" href="${getDirectionsUrl(p)}" target="_blank" rel="noopener noreferrer" style="font-size:11px;padding:3px 8px">
-            Chỉ đường
+            ${icon('compass', 'ui-icon--xs')} Chỉ đường
           </a>
         </div>
       </div>

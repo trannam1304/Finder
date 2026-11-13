@@ -199,12 +199,12 @@ function formatSavedDate(isoString) {
 // ── Format Vibe Badge ──
 function getVibeBadge(vibe) {
   const map = {
-    foodie: { text: '🍜 Ăn sập Sài Gòn', class: 'badge--food' },
-    date: { text: '💖 Hẹn hò lãng mạn', class: 'badge--tourism' },
-    chill: { text: '🌿 Chill thư thái', class: 'badge--category' },
-    adventure: { text: '⚡ Vui chơi năng động', class: 'badge--entertainment' },
+    foodie: { text: `${icon('food', 'ui-icon--xs')} Ăn sập Sài Gòn`, class: 'badge--food' },
+    date: { text: `${icon('heart', 'ui-icon--xs')} Hẹn hò lãng mạn`, class: 'badge--tourism' },
+    chill: { text: `${icon('leaf', 'ui-icon--xs')} Chill thư thái`, class: 'badge--category' },
+    adventure: { text: `${icon('zap', 'ui-icon--xs')} Vui chơi năng động`, class: 'badge--entertainment' },
   };
-  return map[vibe] || { text: '✨ Khám phá', class: 'badge--category' };
+  return map[vibe] || { text: `${icon('sparkles', 'ui-icon--xs')} Khám phá`, class: 'badge--category' };
 }
 
 // ── Đồng bộ dữ liệu yêu thích và lộ trình từ Server về Client khi đăng nhập ──
@@ -498,7 +498,7 @@ async function initFavoritesPage() {
             <div>
               <h3 class="saved-itin-card__title">✨ ${escapeText(item.title || 'Lộ trình khám phá')}</h3>
               <div class="saved-itin-card__date">
-                <span>⏰ Đã lưu: ${escapeText(dateStr)}</span>
+                <span>${icon('clock', 'ui-icon--xs')} Đã lưu: ${escapeText(dateStr)}</span>
               </div>
             </div>
             <span class="badge ${vibeBadge.class}">${vibeBadge.text}</span>
@@ -506,9 +506,9 @@ async function initFavoritesPage() {
 
           <div class="saved-itin-card__body">
             <div class="saved-itin-card__stats">
-              <span class="stat-chip">📍 ${totalStops} chặng</span>
-              <span class="stat-chip">🚗 ~${totalKm} km</span>
-              <span class="stat-chip">⏱️ ~${estHours} giờ</span>
+              <span class="stat-chip">${icon('pin', 'ui-icon--xs')} ${totalStops} chặng</span>
+              <span class="stat-chip">${icon('car', 'ui-icon--xs')} ~${totalKm} km</span>
+              <span class="stat-chip">${icon('timer', 'ui-icon--xs')} ~${estHours} giờ</span>
             </div>
 
             <!-- Danh sách chặng tóm tắt -->
@@ -530,16 +530,16 @@ async function initFavoritesPage() {
             <!-- Hành động -->
             <div class="saved-itin-card__actions">
               <a href="index.html?saved_itin=${item.id}" class="btn btn--primary btn--sm" title="Mở và vẽ tuyến đường trên Bản đồ">
-                🗺️ Xem trên Bản đồ
+                ${icon('map', 'ui-icon--sm')} Xem trên Bản đồ
               </a>
               <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--sm" title="Mở toàn bộ lộ trình trên ứng dụng Google Maps">
-                🚗 Google Maps
+                ${icon('compass', 'ui-icon--sm')} Google Maps
               </a>
               <button type="button" class="btn btn--ghost btn--sm btn-copy-itin" data-id="${item.id}" title="Sao chép tóm tắt lộ trình">
-                📋 Sao chép
+                ${icon('copy', 'ui-icon--sm')} Sao chép
               </button>
               <button type="button" class="btn btn--ghost btn--sm btn-delete-itin" data-id="${item.id}" style="color:var(--c-primary)" title="Xóa lộ trình này">
-                🗑️ Xóa
+                ${icon('close', 'ui-icon--sm')} Xóa
               </button>
             </div>
           </div>
@@ -566,9 +566,9 @@ async function initFavoritesPage() {
         const found = savedList.find(it => it.id === id);
         if (found) {
           const lines = [
-            `✨ ${found.title || 'Lộ trình khám phá Food & Trip Finder'}`,
-            `📍 Quy mô: ${found.total_stops || found.stops?.length} chặng (~${found.total_distance_km} km)`,
-            `⏱️ Thời lượng: ~${found.total_time_minutes ? (found.total_time_minutes/60).toFixed(1) : 4} giờ`,
+            found.title || 'Lộ trình khám phá Food & Trip Finder',
+            `Quy mô: ${found.total_stops || found.stops?.length} chặng (~${found.total_distance_km} km)`,
+            `Thời lượng: ~${found.total_time_minutes ? (found.total_time_minutes/60).toFixed(1) : 4} giờ`,
             `-----------------------------`,
           ];
           (found.stops || []).forEach((st, idx) => {
@@ -577,11 +577,11 @@ async function initFavoritesPage() {
           });
           lines.push(`-----------------------------`);
           if (found.google_maps_url) {
-            lines.push(`🚗 Điều hướng Google Maps: ${found.google_maps_url}`);
+            lines.push(`Điều hướng Google Maps: ${found.google_maps_url}`);
           }
           try {
             await navigator.clipboard.writeText(lines.join('\n'));
-            alert('📋 Đã sao chép tóm tắt lộ trình vào bộ nhớ tạm!');
+            alert('Đã sao chép tóm tắt lộ trình vào bộ nhớ tạm!');
           } catch {
             alert('Không thể sao chép tự động.');
           }

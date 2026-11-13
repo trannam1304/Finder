@@ -2,7 +2,7 @@
    LIST.JS — Render danh sách quán, skeleton, empty/error state
    ============================================================ */
 
-import { formatDistance, formatPrice, isOpenNow, renderStars, getPlaceTypeInfo, formatTicketOrPrice, formatDuration } from './format.js';
+import { formatDistance, formatPrice, isOpenNow, renderStars, getPlaceTypeInfo, formatTicketOrPrice, formatDuration, escapeText } from './format.js';
 import { CONFIG } from './config.js';
 import { icon, categoryIcon } from './icons.js';
 
@@ -118,7 +118,7 @@ export function renderList(listEl, restaurants, selectedId = null) {
     if (durationText) {
       const durBadge = document.createElement('span');
       durBadge.className = 'badge badge--duration';
-      durBadge.textContent = `⏱ ${durationText}`;
+      durBadge.innerHTML = `${icon('timer', 'ui-icon--xs')} ${escapeText(durationText)}`;
       meta.appendChild(durBadge);
     }
 
@@ -171,7 +171,7 @@ function renderEmpty(listEl) {
     <div class="empty-state__title">Không có quán nào</div>
     <div class="empty-state__desc">Không có quán nào trong bán kính này. Nới bán kính hoặc quay về khu vực trải nghiệm.</div>
     <button class="btn btn--primary btn--sm" type="button" data-action="reset-location" style="margin-top:12px;cursor:pointer">
-      📍 Về ĐH Tôn Đức Thắng (Quận 7)
+      ${icon('pin', 'ui-icon--xs')} Về ĐH Tôn Đức Thắng (Quận 7)
     </button>
   `;
   const resetBtn = div.querySelector('[data-action="reset-location"]');

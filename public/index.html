@@ -52,10 +52,10 @@
       <div class="header__filters" id="header-filters">
         <!-- Level-1 Place Type Tabs (Task FE-01) -->
         <div class="place-type-tabs place-type-tabs--compact" role="tablist" aria-label="Loại hình địa điểm">
-          <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true">Tất cả</button>
-          <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
-          <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
-          <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false">🎡 Vui chơi giải trí</button>
+          <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg> Tất cả</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 11h16a1 1 0 0 1 1 1c0 5-4 9-9 9s-9-4-9-9a1 1 0 0 1 1-1Z"/><path d="M7 11V4M12 11V3M17 11V5"/><path d="M2 21h20"/></svg> Ẩm thực</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M2 10h20L12 3 2 10ZM12 14v3"/></svg> Du lịch</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5V1M12 23v-2.5M3.5 12H1M23 12h-2.5M6 6l-1.8-1.8M19.8 19.8 18 18M6 18l-1.8 1.8M19.8 4.2 18 6"/><path d="M8 22h8"/></svg> Vui chơi</button>
         </div>
         <!-- Radius selector -->
         <select class="radius-select" id="filter-radius" aria-label="Bán kính tìm kiếm">
@@ -68,7 +68,7 @@
           <option value="15">15 km</option>
         </select>
         <button class="chip" type="button" id="btn-recenter-tdtu" title="Xem các địa điểm quanh ĐH Tôn Đức Thắng (Quận 7)">
-          📍 ĐH Tôn Đức Thắng (Q.7)
+          <svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.5"/></svg> ĐH Tôn Đức Thắng (Q.7)
         </button>
         <!-- Category chips rendered by JS -->
         <div id="category-chips" role="group" aria-label="Lọc theo danh mục"></div>
@@ -88,7 +88,8 @@
         <!-- FE-04: Nút Lập Lộ Trình Đi Chơi -->
         <button type="button" class="btn btn--itinerary btn--sm" id="btn-open-itinerary" title="Tự động đề xuất lịch trình đi chơi quanh bạn">
           <span class="itinerary-pulse" aria-hidden="true"></span>
-          <span>🗺️ Lộ trình</span>
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15M15 6v15"/></svg>
+          <span>Lộ trình</span>
         </button>
         <a href="explore.html" class="btn btn--ghost btn--sm" id="btn-explore" title="Xem danh sách dạng lưới" style="text-decoration:none">
           <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M8 12h8M8 16h5"/></svg> Khám phá
@@ -122,10 +123,10 @@
           </div>
           <!-- Level-1 Place Type Tabs in Sidebar -->
           <div class="place-type-tabs place-type-tabs--sidebar" role="tablist" aria-label="Lọc nhanh theo nhóm">
-            <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true">Tất cả</button>
-            <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
-            <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
-            <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false">🎡 Vui chơi</button>
+            <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg> Tất cả</button>
+            <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 11h16a1 1 0 0 1 1 1c0 5-4 9-9 9s-9-4-9-9a1 1 0 0 1 1-1Z"/><path d="M7 11V4M12 11V3M17 11V5"/><path d="M2 21h20"/></svg> Ẩm thực</button>
+            <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M2 10h20L12 3 2 10ZM12 14v3"/></svg> Du lịch</button>
+            <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5V1M12 23v-2.5M3.5 12H1M23 12h-2.5M6 6l-1.8-1.8M19.8 19.8 18 18M6 18l-1.8 1.8M19.8 4.2 18 6"/><path d="M8 22h8"/></svg> Vui chơi</button>
           </div>
           <div class="sidebar__search">
             <svg class="sidebar__search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -163,10 +164,10 @@
         </div>
         <!-- Level-1 Place Type Tabs in Mobile Sheet -->
         <div class="place-type-tabs place-type-tabs--sidebar" role="tablist" aria-label="Lọc nhanh theo nhóm">
-          <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true">Tất cả</button>
-          <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false">🍜 Ẩm thực</button>
-          <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false">🏛️ Du lịch</button>
-          <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false">🎡 Vui chơi</button>
+          <button class="place-type-tab place-type-tab--active" type="button" data-filter="place-type" data-value="all" role="tab" aria-selected="true"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg> Tất cả</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="food" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 11h16a1 1 0 0 1 1 1c0 5-4 9-9 9s-9-4-9-9a1 1 0 0 1 1-1Z"/><path d="M7 11V4M12 11V3M17 11V5"/><path d="M2 21h20"/></svg> Ẩm thực</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="tourism" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M5 21V10M9 21V10M15 21V10M19 21V10M2 10h20L12 3 2 10ZM12 14v3"/></svg> Du lịch</button>
+          <button class="place-type-tab" type="button" data-filter="place-type" data-value="entertainment" role="tab" aria-selected="false"><svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5V1M12 23v-2.5M3.5 12H1M23 12h-2.5M6 6l-1.8-1.8M19.8 19.8 18 18M6 18l-1.8 1.8M19.8 4.2 18 6"/><path d="M8 22h8"/></svg> Vui chơi</button>
         </div>
         <div class="sheet__search">
           <svg class="sheet__search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -262,28 +263,28 @@
             </label>
             <div class="vibe-grid">
               <div class="vibe-card is-active" data-vibe="chill">
-                <span class="vibe-card__icon">🌿</span>
+                <span class="vibe-card__icon"><svg class="ui-icon ui-icon--vibe" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 20A7 7 0 0 1 4 13C4 7 12 4 20 4c0 8-3 16-9 16Z"/><path d="M4 20c4-4 8-7 16-16"/></svg></span>
                 <div class="vibe-card__text">
                   <span class="vibe-card__name">Chill thư thái</span>
                   <span class="vibe-card__desc">Cà phê đẹp, công viên, dạo bộ</span>
                 </div>
               </div>
               <div class="vibe-card" data-vibe="date">
-                <span class="vibe-card__icon">💖</span>
+                <span class="vibe-card__icon"><svg class="ui-icon ui-icon--vibe" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572Z"/></svg></span>
                 <div class="vibe-card__text">
                   <span class="vibe-card__name">Hẹn hò lãng mạn</span>
                   <span class="vibe-card__desc">View hoàng hôn, ăn ngon, ấm cúng</span>
                 </div>
               </div>
               <div class="vibe-card" data-vibe="adventure">
-                <span class="vibe-card__icon">⚡</span>
+                <span class="vibe-card__icon"><svg class="ui-icon ui-icon--vibe" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                 <div class="vibe-card__text">
                   <span class="vibe-card__name">Vui chơi trải nghiệm</span>
                   <span class="vibe-card__desc">Bạt nhún, bowling, bảo tàng 3D</span>
                 </div>
               </div>
               <div class="vibe-card" data-vibe="foodie">
-                <span class="vibe-card__icon">🍜</span>
+                <span class="vibe-card__icon"><svg class="ui-icon ui-icon--vibe" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 11h16a1 1 0 0 1 1 1c0 5-4 9-9 9s-9-4-9-9a1 1 0 0 1 1-1Z"/><path d="M7 11V4M12 11V3M17 11V5"/><path d="M2 21h20"/></svg></span>
                 <div class="vibe-card__text">
                   <span class="vibe-card__name">Ăn sập Sài Gòn</span>
                   <span class="vibe-card__desc">Tour món ngon đặc sản nức tiếng</span>
@@ -309,7 +310,8 @@
 
         <div class="itinerary-modal__footer">
           <button type="button" class="btn--generate-itinerary" id="btn-submit-itinerary">
-            <span>🚀 Tạo lộ trình ngay</span>
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="m9 12 2.5-2.5M14 7l2.5-2.5"/></svg>
+            <span>Tạo lộ trình ngay</span>
           </button>
         </div>
       </div>

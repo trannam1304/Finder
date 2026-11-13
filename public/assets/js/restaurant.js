@@ -90,7 +90,7 @@ document.getElementById('hero-badges').innerHTML = `
     <span class="badge__dot" aria-hidden="true"></span>${open ? 'Đang mở' : 'Đã đóng'}
   </span>
   <span class="badge badge--category">${categoryIcon(r.category)}<span>${esc(r.category.name)}</span></span>
-  ${durationText ? `<span class="badge badge--duration">⏱ ${esc(durationText)}</span>` : ''}
+  ${durationText ? `<span class="badge badge--duration">${icon('timer', 'ui-icon--xs')} ${esc(durationText)}</span>` : ''}
   <span class="badge" style="background:var(--c-surface);color:var(--c-ink-soft)">
     ${priceLabel(r.price_level)}
   </span>

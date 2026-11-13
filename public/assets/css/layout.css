@@ -269,7 +269,7 @@ body.page-map {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 900;
+  z-index: 1050;
   background: var(--c-surface);
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   box-shadow: var(--sh-3);
@@ -606,12 +606,16 @@ body.page-map {
     display: flex;
   }
 
+  .leaflet-bottom {
+    z-index: 800 !important;
+  }
+
   .header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 1200;
     background: rgba(255, 255, 255, .88);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

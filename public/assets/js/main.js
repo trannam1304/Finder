@@ -138,16 +138,20 @@ async function loadRestaurants() {
 }
 
 // ══════════════ SELECT RESTAURANT ══════════════
-function selectRestaurant(restaurant) {
+function selectRestaurant(restaurant, options = {}) {
   state.selectedId = restaurant.id;
 
   // Highlight row in lists
   highlightRow(sidebarList, restaurant.id);
   highlightRow(sheetList, restaurant.id);
 
-  // Highlight marker and fly to with popup
-  highlightMarker(restaurant.id, true);
-  flyTo(restaurant.lat, restaurant.lng);
+  // Nếu click trực tiếp từ marker thì giữ nguyên góc nhìn bản đồ (không flyTo gây zoom out/mất popup)
+  if (options.fromMarkerClick) {
+    highlightMarker(restaurant.id, false);
+  } else {
+    highlightMarker(restaurant.id, true);
+    flyTo(restaurant.lat, restaurant.lng);
+  }
 
   // On mobile, go to peek to see map
   if (window.innerWidth < 768) {
@@ -222,9 +226,9 @@ async function bootstrap() {
     lng: CONFIG.FALLBACK_LNG,
     zoom: CONFIG.DEFAULT_ZOOM,
     isDark: dark,
-    onMarkerSelect: (id) => {
+    onMarkerSelect: (id, options = {}) => {
       const r = state.results.find(r => String(r.id) === String(id));
-      if (r) selectRestaurant(r);
+      if (r) selectRestaurant(r, options);
     },
     onUserPositionChange: (lat, lng) => {
       state.user.lat = lat;

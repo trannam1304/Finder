@@ -63,13 +63,14 @@ $loginEmailResult = auth_login_user($pdo, $testEmail, $testPass);
 assert_test("Đăng nhập bằng Email đúng", !empty($loginEmailResult['access_token']) && $loginEmailResult['user']['id'] === $newUserId);
 
 // 4. Kiểm tra Đăng nhập thất bại (sai mật khẩu)
-$cmdFail = sprintf('php -r "require \'app/bootstrap.php\'; auth_login_user(db(), \'%s\', \'WrongPass\');"', $testUsername);
+$phpBin = defined('PHP_BINARY') && file_exists(PHP_BINARY) ? escapeshellarg(PHP_BINARY) : 'php';
+$cmdFail = sprintf('%s -r "require \'app/bootstrap.php\'; auth_login_user(db(), \'%s\', \'WrongPass\');"', $phpBin, $testUsername);
 $output = shell_exec($cmdFail . ' 2>&1');
 $failOk = str_contains((string)$output, 'INVALID_CREDENTIALS');
 assert_test("Chặn đăng nhập khi sai mật khẩu (trả về INVALID_CREDENTIALS)", $failOk);
 
 // 5. Kiểm tra Chặn trùng Username & Email
-$cmdDup = sprintf('php -r "require \'app/bootstrap.php\'; auth_register_user(db(), \'%s\', \'other@example.com\', \'Pass123456\', \'Trùng user\');"', $testUsername);
+$cmdDup = sprintf('%s -r "require \'app/bootstrap.php\'; auth_register_user(db(), \'%s\', \'other@example.com\', \'Pass123456\', \'Trùng user\');"', $phpBin, $testUsername);
 $outputDup = shell_exec($cmdDup . ' 2>&1');
 $dupOk = str_contains((string)$outputDup, 'USERNAME_EXISTS');
 assert_test("Chặn đăng ký trùng Username (trả về USERNAME_EXISTS)", $dupOk);

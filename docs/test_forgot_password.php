@@ -33,8 +33,10 @@ $reg = auth_register_user($pdo, $testUser, $testEmail, $oldPass, 'Nguyễn Kiể
 $userId = (int) $reg['user']['id'];
 assert_test("Khởi tạo tài khoản kiểm thử thành công", $userId > 0);
 
+$phpBin = defined('PHP_BINARY') && file_exists(PHP_BINARY) ? escapeshellarg(PHP_BINARY) : 'php';
+
 // 2. Kiểm tra yêu cầu OTP cho tài khoản không tồn tại
-$cmdNoUser = 'php -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'non_existent_999@test.com\']; require \'public/api/auth/forgot_password.php\';" 2>&1';
+$cmdNoUser = $phpBin . ' -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'non_existent_999@test.com\']; require \'public/api/auth/forgot_password.php\';" 2>&1';
 $outputNoUser = shell_exec($cmdNoUser);
 assert_test("Từ chối khi không tìm thấy tài khoản (USER_NOT_FOUND)", str_contains((string)$outputNoUser, 'USER_NOT_FOUND'));
 
@@ -52,17 +54,17 @@ $otpCode = $code;
 assert_test("Tạo mã OTP 6 số thành công trong database", strlen($otpCode) === 6);
 
 // 4. Kiểm tra từ chối mã OTP sai
-$cmdWrongCode = sprintf('php -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'%s\', \'reset_code\'=>\'000000\', \'new_password\'=>\'%s\']; require \'public/api/auth/reset_password.php\';" 2>&1', $testEmail, $newPass);
+$cmdWrongCode = sprintf('%s -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'%s\', \'reset_code\'=>\'000000\', \'new_password\'=>\'%s\']; require \'public/api/auth/reset_password.php\';" 2>&1', $phpBin, $testEmail, $newPass);
 $outputWrongCode = shell_exec($cmdWrongCode);
 assert_test("Từ chối khi nhập mã OTP sai (INVALID_RESET_CODE)", str_contains((string)$outputWrongCode, 'INVALID_RESET_CODE'));
 
 // 5. Kiểm tra từ chối mật khẩu quá ngắn
-$cmdShortPass = sprintf('php -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'%s\', \'reset_code\'=>\'%s\', \'new_password\'=>\'123\']; require \'public/api/auth/reset_password.php\';" 2>&1', $testEmail, $otpCode);
+$cmdShortPass = sprintf('%s -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'%s\', \'reset_code\'=>\'%s\', \'new_password\'=>\'123\']; require \'public/api/auth/reset_password.php\';" 2>&1', $phpBin, $testEmail, $otpCode);
 $outputShortPass = shell_exec($cmdShortPass);
 assert_test("Từ chối khi mật khẩu mới ngắn hơn 6 ký tự (INVALID_PASSWORD)", str_contains((string)$outputShortPass, 'INVALID_PASSWORD'));
 
 // 6. Thực hiện Đặt lại mật khẩu thành công bằng mã OTP đúng
-$cmdSuccess = sprintf('php -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'%s\', \'reset_code\'=>\'%s\', \'new_password\'=>\'%s\']; require \'public/api/auth/reset_password.php\';" 2>&1', $testEmail, $otpCode, $newPass);
+$cmdSuccess = sprintf('%s -r "$_SERVER[\'REQUEST_METHOD\']=\'POST\'; require \'app/bootstrap.php\'; $_POST=[\'identifier\'=>\'%s\', \'reset_code\'=>\'%s\', \'new_password\'=>\'%s\']; require \'public/api/auth/reset_password.php\';" 2>&1', $phpBin, $testEmail, $otpCode, $newPass);
 $outputSuccess = shell_exec($cmdSuccess);
 assert_test("Đặt lại mật khẩu thành công và tự động cấp JWT token mới", str_contains((string)$outputSuccess, '"success":true') && str_contains((string)$outputSuccess, 'access_token'));
 
@@ -77,7 +79,7 @@ $outputReuse = shell_exec($cmdSuccess);
 assert_test("Chặn dùng lại mã OTP đã qua sử dụng", str_contains((string)$outputReuse, 'INVALID_RESET_CODE'));
 
 // 8. Đăng nhập bằng mật khẩu cũ -> Phải thất bại
-$cmdOldLogin = sprintf('php -r "require \'app/bootstrap.php\'; auth_login_user(db(), \'%s\', \'%s\');" 2>&1', $testUser, $oldPass);
+$cmdOldLogin = sprintf('%s -r "require \'app/bootstrap.php\'; auth_login_user(db(), \'%s\', \'%s\');" 2>&1', $phpBin, $testUser, $oldPass);
 $outputOldLogin = shell_exec($cmdOldLogin);
 assert_test("Mật khẩu cũ không còn sử dụng được", str_contains((string)$outputOldLogin, 'INVALID_CREDENTIALS'));
 

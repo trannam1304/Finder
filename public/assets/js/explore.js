@@ -145,7 +145,7 @@ function renderCard(r) {
       <div class="resto-card__body">
         <div class="resto-card__name">${escapeText(r.name)}</div>
         <div class="resto-card__address">${icon('pin')}<span>${escapeText(r.address)}</span></div>
-        ${durationText ? `<div style="margin-bottom:var(--sp-2)"><span class="badge badge--duration">⏱ ${escapeText(durationText)}</span></div>` : ''}
+        ${durationText ? `<div style="margin-bottom:var(--sp-2)"><span class="badge badge--duration">${icon('timer', 'ui-icon--xs')} ${escapeText(durationText)}</span></div>` : ''}
         <div class="resto-card__footer">
           <span class="stars" aria-label="Đánh giá ${r.rating}">
             <span class="stars__group">${renderStars(r.rating)}</span>
