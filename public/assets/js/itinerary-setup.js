@@ -13,6 +13,7 @@ const formState = {
   duration: 'half_day',
   vibe: 'chill',
   radius: 8.0,
+  customStartTime: null,
 };
 
 /**
@@ -96,6 +97,41 @@ export function initItinerarySetup(state, showToast) {
     });
   });
 
+  // ── Xử lý chọn Thời gian xuất phát (Start Time) theo thời gian thực ──
+  const btnStartNow = backdrop.querySelector('#btn-start-now');
+  const clockBadge = backdrop.querySelector('#start-time-now-clock');
+  const customTimeInput = backdrop.querySelector('#input-start-time');
+
+  const updateRealTimeClock = () => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    if (clockBadge) clockBadge.textContent = `${hh}:${mm}`;
+    if (!formState.customStartTime && customTimeInput) {
+      customTimeInput.value = `${hh}:${mm}`;
+    }
+  };
+
+  updateRealTimeClock();
+  setInterval(updateRealTimeClock, 20000);
+
+  if (btnStartNow) {
+    btnStartNow.addEventListener('click', () => {
+      formState.customStartTime = null;
+      btnStartNow.classList.add('is-active');
+      updateRealTimeClock();
+    });
+  }
+
+  if (customTimeInput) {
+    customTimeInput.addEventListener('input', () => {
+      if (customTimeInput.value) {
+        formState.customStartTime = customTimeInput.value;
+        if (btnStartNow) btnStartNow.classList.remove('is-active');
+      }
+    });
+  }
+
   // ── Submit tạo lộ trình ──
   if (btnSubmit) {
     btnSubmit.addEventListener('click', async () => {
@@ -122,12 +158,19 @@ async function handleGenerateItinerary(submitBtn, closeModal) {
     const lat = appState?.user?.lat || 10.7326;
     const lng = appState?.user?.lng || 106.6996;
 
+    // Lấy thời gian xuất phát theo thời gian thực (start_time)
+    const now = new Date();
+    const currentH = String(now.getHours()).padStart(2, '0');
+    const currentM = String(now.getMinutes()).padStart(2, '0');
+    const effectiveStartTime = formState.customStartTime || `${currentH}:${currentM}`;
+
     const res = await fetchItinerary({
       lat,
       lng,
       duration: formState.duration,
       vibe: formState.vibe,
       radius: formState.radius,
+      start_time: effectiveStartTime,
     });
 
     if (res.success && res.data && res.data.stops && res.data.stops.length > 0) {

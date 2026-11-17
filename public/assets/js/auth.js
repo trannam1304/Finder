@@ -76,6 +76,26 @@ class AuthManager {
   }
 
   /**
+   * Helper phân tích phản hồi JSON an toàn, tránh lỗi Unexpected end of JSON input
+   */
+  async _parseResponse(res, fallbackMessage = 'Yêu cầu không thành công') {
+    let json = null;
+    try {
+      json = await res.json();
+    } catch {
+      json = null;
+    }
+
+    if (!res.ok || !json?.success) {
+      const msg = json?.error?.message || (res.status === 404 || res.status === 405
+        ? `Lỗi ${res.status}: Endpoint API chưa sẵn sàng hoặc chưa được cấu hình routing trên máy chủ.`
+        : `Lỗi máy chủ (${res.status}): ${fallbackMessage}`);
+      throw new Error(msg);
+    }
+    return json;
+  }
+
+  /**
    * Đăng nhập thành viên
    */
   async login(identifier, password) {
@@ -90,10 +110,7 @@ class AuthManager {
         body: JSON.stringify({ identifier, password }),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error?.message || 'Đăng nhập không thành công');
-      }
+      const json = await this._parseResponse(res, 'Tên đăng nhập hoặc mật khẩu không chính xác');
 
       this.currentUser = json.data.user;
       this.updateHeaderUI();
@@ -120,10 +137,7 @@ class AuthManager {
         body: JSON.stringify({ username, email, password, full_name }),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error?.message || 'Đăng ký không thành công');
-      }
+      const json = await this._parseResponse(res, 'Đăng ký tài khoản không thành công');
 
       this.currentUser = json.data.user;
       this.updateHeaderUI();
@@ -150,10 +164,7 @@ class AuthManager {
         body: JSON.stringify({ identifier }),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error?.message || 'Không thể tạo mã xác nhận');
-      }
+      const json = await this._parseResponse(res, 'Không thể tạo mã xác nhận');
 
       return { success: true, data: json.data, meta: json.meta };
     } catch (error) {
@@ -176,10 +187,7 @@ class AuthManager {
         body: JSON.stringify({ identifier, reset_code, new_password }),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error?.message || 'Không thể đặt lại mật khẩu');
-      }
+      const json = await this._parseResponse(res, 'Không thể đặt lại mật khẩu');
 
       this.currentUser = json.data.user;
       this.updateHeaderUI();

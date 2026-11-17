@@ -451,6 +451,82 @@
   box-shadow: 3px 3px 0 var(--c-primary, #D22B1F);
 }
 
+/* Bộ chọn thời gian xuất phát theo thời gian thực */
+.start-time-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.start-time-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 2px solid var(--c-border-strong, #15201B);
+  border-radius: var(--r-md, 8px);
+  background: var(--c-surface, #FFFFFF);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--c-border-strong, #15201B);
+  transition: all 140ms ease;
+  user-select: none;
+}
+
+.start-time-btn:hover {
+  background: var(--c-surface-sunk, #F1F4F2);
+}
+
+.start-time-btn.is-active {
+  background: var(--c-ink, #15201B);
+  color: #FFFFFF;
+  box-shadow: 3px 3px 0 var(--c-primary, #D22B1F);
+}
+
+.start-time-btn__clock {
+  background: var(--c-accent, #F2B01B);
+  color: #15201B;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.start-time-btn.is-active .start-time-btn__clock {
+  background: #FFFFFF;
+  color: #15201B;
+}
+
+.start-time-custom-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.start-time-input {
+  padding: 8px 10px;
+  border: 2px solid var(--c-border-strong, #15201B);
+  border-radius: var(--r-md, 8px);
+  background: var(--c-surface, #FFFFFF);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-ink, #15201B);
+  box-shadow: 2px 2px 0 var(--c-border-strong, #15201B);
+  cursor: pointer;
+  outline: none;
+  transition: all 140ms ease;
+}
+
+.start-time-input:focus {
+  border-color: var(--c-primary, #D22B1F);
+  box-shadow: 3px 3px 0 var(--c-primary, #D22B1F);
+}
+
 /* Modal footer */
 .itinerary-modal__footer {
   padding: var(--sp-4, 16px) var(--sp-5, 20px) var(--sp-5, 20px);

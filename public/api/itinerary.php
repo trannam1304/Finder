@@ -12,9 +12,18 @@ api_guard(function (): void {
     $duration = optional_enum($_GET, 'duration', 'half_day', ['half_day', 'full_day', 'evening']);
     $vibe = optional_enum($_GET, 'vibe', 'chill', ['chill', 'adventure', 'foodie', 'date']);
     $radius = optional_float($_GET, 'radius', 8.0, 1.0, 25.0);
+    $startTime = optional_text($_GET, 'start_time', 10);
 
     $pdo = db();
-    $result = generate_itinerary($pdo, $lat, $lng, $duration, $vibe, $radius);
+    $result = generate_itinerary(
+        $pdo,
+        $lat,
+        $lng,
+        $duration,
+        $vibe,
+        $radius,
+        !empty($startTime) ? $startTime : null
+    );
 
     // Ghi log vào bảng itinerary_logs phục vụ thống kê Dashboard Admin
     try {
