@@ -1,47 +1,47 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/*.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.9.0",
       "includeFiles": "{app/**,public/**}"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:match*",
-      "destination": "/api/index.php"
+      "src": "^/api/(.*)$",
+      "dest": "/api/index.php"
     },
     {
-      "source": "/admin/assets/:match*",
-      "destination": "/public/admin/assets/:match*"
+      "src": "^/admin/assets/(.*)$",
+      "dest": "/public/admin/assets/$1"
     },
     {
-      "source": "/admin/:match*",
-      "destination": "/api/index.php"
+      "src": "^/admin(.*)$",
+      "dest": "/api/index.php"
     },
     {
-      "source": "/assets/:match*",
-      "destination": "/public/assets/:match*"
+      "src": "^/assets/(.*)$",
+      "dest": "/public/assets/$1"
     },
     {
-      "source": "/uploads/:match*",
-      "destination": "/public/uploads/:match*"
+      "src": "^/uploads/(.*)$",
+      "dest": "/public/uploads/$1"
     },
     {
-      "source": "/favicon.svg",
-      "destination": "/public/favicon.svg"
+      "src": "^/favicon\\.svg$",
+      "dest": "/public/favicon.svg"
     },
     {
-      "source": "/",
-      "destination": "/public/index.html"
+      "src": "^/$",
+      "dest": "/public/index.html"
     },
     {
-      "source": "/:page.html",
-      "destination": "/public/:page.html"
+      "src": "^/([^/]+\\.html)$",
+      "dest": "/public/$1"
     },
     {
-      "source": "/:page",
-      "destination": "/public/:page.html"
+      "src": "^/([^/]+)$",
+      "dest": "/public/$1.html"
     }
   ]
 }
