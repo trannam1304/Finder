@@ -306,6 +306,24 @@
               <button type="button" class="radius-pill" data-radius="12">12 km</button>
             </div>
           </div>
+
+          <!-- 4. Thời gian xuất phát -->
+          <div class="itinerary-field">
+            <label class="itinerary-field__label">
+              <span>4. Thời gian xuất phát</span>
+              <span class="itinerary-field__hint">Theo thời gian thực</span>
+            </label>
+            <div class="start-time-selector">
+              <button type="button" class="start-time-btn is-active" id="btn-start-now" data-mode="now">
+                <span class="start-time-btn__icon">⏱️</span>
+                <span class="start-time-btn__text">Đi ngay bây giờ</span>
+                <span class="start-time-btn__clock" id="start-time-now-clock">--:--</span>
+              </button>
+              <div class="start-time-custom-wrap">
+                <input type="time" class="start-time-input" id="input-start-time" title="Hoặc chọn giờ tùy chỉnh">
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="itinerary-modal__footer">

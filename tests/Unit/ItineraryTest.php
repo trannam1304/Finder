@@ -56,4 +56,22 @@ class ItineraryTest extends TestCase
         $this->assertStringContainsString('destination=10.750000,106.710000', $url);
         $this->assertStringContainsString('waypoints=10.740000%2C106.705000', $url);
     }
+
+    public function testDynamicRealTimeTimelineCalculation(): void
+    {
+        require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
+        $pdo = db();
+        $result = generate_itinerary($pdo, 10.7326, 106.6996, 'half_day', 'chill', 8.0, '09:30');
+        $this->assertArrayHasKey('stops', $result);
+        $this->assertTrue(count($result['stops']) > 0);
+
+        $firstStop = $result['stops'][0];
+        $this->assertArrayHasKey('time_slot', $firstStop);
+        $this->assertTrue(str_starts_with($firstStop['time_slot'], '09:30'), 'Chặng 1 phải bắt đầu chính xác từ thời gian thực 09:30');
+
+        if (count($result['stops']) > 1) {
+            $secondStop = $result['stops'][1];
+            $this->assertTrue((bool) preg_match('/^[0-2][0-9]:[0-5][0-9] - [0-2][0-9]:[0-5][0-9]$/', $secondStop['time_slot']));
+        }
+    }
 }

@@ -131,10 +131,30 @@ function mockRestaurants({ lat, lng, radius = 3, type = 'all', category_id, pric
   };
 }
 
-function mockItinerary({ lat, lng, duration = 'half_day', vibe = 'chill', radius = 8 } = {}) {
+function mockItinerary({ lat, lng, duration = 'half_day', vibe = 'chill', radius = 8, start_time = null } = {}) {
   const cLat = Number(lat) || CONFIG.FALLBACK_LAT;
   const cLng = Number(lng) || CONFIG.FALLBACK_LNG;
   const maxRadiusKm = Math.max(1, Number(radius) || 8);
+
+  // Tính thời gian bắt đầu timeline theo thời gian thực (start_time hoặc giờ hiện tại)
+  let startMinutes = null;
+  if (start_time && /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/.test(String(start_time).trim())) {
+    const [hh, mm] = String(start_time).trim().split(':').map(Number);
+    startMinutes = hh * 60 + mm;
+  } else {
+    const now = new Date();
+    const nowH = now.getHours();
+    const nowM = now.getMinutes();
+    const roundedM = Math.ceil(nowM / 5) * 5;
+    startMinutes = (roundedM >= 60 ? (nowH + 1) % 24 : nowH) * 60 + (roundedM % 60);
+  }
+
+  // Nếu chọn buổi tối vào ban ngày và không chỉ định giờ: mặc định bắt đầu lúc 17:30
+  if (duration === 'evening' && !start_time && startMinutes < (16 * 60 + 30)) {
+    startMinutes = 17 * 60 + 30;
+  }
+
+  let timelinePointer = startMinutes;
 
   // Ma tran chang dung dong bo 100% voi backend PHP itinerary_template
   const getSlots = (dur, vb) => {
@@ -272,11 +292,25 @@ function mockItinerary({ lat, lng, duration = 'half_day', vibe = 'chill', radius
       curLat = chosen.place.lat;
       curLng = chosen.place.lng;
 
+      // Tính toán timeline thực tế động theo thời gian thực
+      const durMin = chosen.place.estimated_duration > 0 ? chosen.place.estimated_duration : 60;
+      const travelMin = Math.max(3, Math.round((legDist / 25.0) * 60));
+      const sStart = timelinePointer;
+      const sEnd = sStart + durMin;
+      const formatTime = (totalM) => {
+        const hh = String(Math.floor(totalM / 60) % 24).padStart(2, '0');
+        const mm = String(totalM % 60).padStart(2, '0');
+        return `${hh}:${mm}`;
+      };
+      const dynamicTimeSlot = `${formatTime(sStart)} - ${formatTime(sEnd)}`;
+      timelinePointer = sEnd + travelMin;
+
       stops.push({
         step: i + 1,
         step_order: i + 1,
-        time_slot: slot.time,
-        suggested_time: slot.time,
+        time_slot: dynamicTimeSlot,
+        suggested_time: dynamicTimeSlot,
+        duration_minutes: durMin,
         action_title: slot.note,
         activity_note: slot.note,
         distance_from_prev_km: legDist,

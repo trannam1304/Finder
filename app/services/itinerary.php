@@ -792,9 +792,10 @@ function build_google_maps_directions_url(float $startLat, float $startLng, arra
 /**
  * Thuật toán chính: Đề xuất lộ trình thông minh nhận thức không gian (Spatial-Aware Itinerary Generator).
  *
- * Kiểm soát tuyệt đối 2 tham số:
+ * Kiểm soát:
  * 1. Phong cách trải nghiệm (Experience Style / Vibe)
  * 2. Bán kính di chuyển tối đa giữa bất kỳ 2 điểm liên tiếp nào (R_max)
+ * 3. Timeline động thích ứng theo Thời gian thực (Real-time Timeline Dynamic Scheduling)
  */
 function generate_itinerary(
     PDO $pdo,
@@ -802,7 +803,8 @@ function generate_itinerary(
     float $userLng,
     string $duration = 'half_day',
     string $vibe = 'chill',
-    float $maxRadiusKm = 8.0
+    float $maxRadiusKm = 8.0,
+    ?string $startTime = null
 ): array {
     $validDurations = ['half_day', 'full_day', 'evening'];
     if (!in_array($duration, $validDurations, true)) {
@@ -816,6 +818,32 @@ function generate_itinerary(
 
     // Đảm bảo bán kính tối thiểu hợp lý (1.0km đến 25.0km)
     $maxRadiusKm = max(1.0, min(25.0, $maxRadiusKm));
+
+    // Xác định thời điểm bắt đầu theo thời gian thực (tính bằng số phút từ 00:00)
+    $startMinutes = null;
+    if (!empty($startTime) && preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/', trim($startTime), $matches)) {
+        $startMinutes = ((int) $matches[1] * 60) + (int) $matches[2];
+    } else {
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+        $nowH = (int) date('H');
+        $nowM = (int) date('i');
+        // Làm tròn lên mốc 5 phút gần nhất (ví dụ 09:32 -> 09:35)
+        $roundedM = (int) (ceil($nowM / 5) * 5);
+        if ($roundedM >= 60) {
+            $nowH = ($nowH + 1) % 24;
+            $roundedM = 0;
+        }
+        $startMinutes = ($nowH * 60) + $roundedM;
+    }
+
+    // Ngoại lệ hợp lý cho "Buổi tối" (evening):
+    // Nếu người dùng chọn 'evening' vào ban ngày (trước 16:30) mà không truyền giờ bắt đầu cụ thể,
+    // mặc định xuất phát vào giờ tối chuẩn (17:30 = 1050 phút)
+    if ($duration === 'evening' && empty($startTime) && $startMinutes < (16 * 60 + 30)) {
+        $startMinutes = 17 * 60 + 30; // 17:30
+    }
+
+    $currentTimelinePointer = $startMinutes;
 
     $template = itinerary_template($duration, $vibe);
     $meta = itinerary_meta($duration, $vibe);
@@ -853,7 +881,22 @@ function generate_itinerary(
 
             // Tính thời gian di chuyển (trung bình 25km/h trong đô thị + 3 phút chờ đèn đỏ)
             $travelMinutes = max(3, (int) round(($legDist / 25.0) * 60));
-            $durationMinutes = $candidate['estimated_duration'] > 0 ? $candidate['estimated_duration'] : 60;
+            $durationMinutes = $candidate['estimated_duration'] > 0 ? (int) $candidate['estimated_duration'] : 60;
+
+            // Tính toán timeline thực tế động theo thời gian thực (nối tiếp từng chặng)
+            $slotStartMin = $currentTimelinePointer;
+            $slotEndMin = $slotStartMin + $durationMinutes;
+
+            $timeSlotFormatted = sprintf(
+                '%02d:%02d - %02d:%02d',
+                (int) floor($slotStartMin / 60) % 24,
+                $slotStartMin % 60,
+                (int) floor($slotEndMin / 60) % 24,
+                $slotEndMin % 60
+            );
+
+            // Cập nhật con trỏ timeline cho chặng tiếp theo (giờ kết thúc chặng này + thời gian di chuyển)
+            $currentTimelinePointer = $slotEndMin + $travelMinutes;
 
             $totalDistanceKm += $legDist;
             $totalMinutes += ($travelMinutes + $durationMinutes);
@@ -862,7 +905,8 @@ function generate_itinerary(
             $stops[] = [
                 'step' => $slot['step'],
                 'action_title' => $slot['title'],
-                'time_slot' => $slot['time_slot'],
+                'time_slot' => $timeSlotFormatted,
+                'duration_minutes' => $durationMinutes,
                 'vibe_intent' => $slot['vibe_intent'] ?? '',
                 'activity_note' => $slot['activity_note'] ?? '',
                 'travel_time_minutes' => $travelMinutes,
