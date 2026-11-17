@@ -52,12 +52,10 @@
                             "script": {
                                 "type": "text/javascript",
                                 "exec": [
-                                    "if (!pm.environment.get('test_username')) {",
-                                    "    var ts = Date.now();",
-                                    "    pm.environment.set('test_username', 'user_pm_' + ts);",
-                                    "    pm.environment.set('test_email', 'user_pm_' + ts + '@example.com');",
-                                    "    pm.environment.set('test_password', 'SecurePass@123');",
-                                    "}"
+                                    "var ts = Date.now();",
+                                    "pm.environment.set('test_username', 'user_pm_' + ts);",
+                                    "pm.environment.set('test_email', 'user_pm_' + ts + '@example.com');",
+                                    "pm.environment.set('test_password', 'SecurePass@123');"
                                 ]
                             }
                         },
@@ -1628,7 +1626,8 @@
                                     "    var json = pm.response.json();",
                                     "    pm.expect(json.success).to.be.true;",
                                     "    pm.expect(json.data.reviews).to.be.an(\"array\");",
-                                    "    pm.expect(json.data.avg_rating).to.be.a(\"number\");",
+                                    "    var avg = json.data.avg_rating !== undefined ? json.data.avg_rating : (json.data.summary ? json.data.summary.average_rating : undefined);",
+                                    "    pm.expect(avg).to.be.a(\"number\");",
                                     "});"
                                 ]
                             }

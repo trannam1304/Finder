@@ -30,8 +30,9 @@
   color: var(--c-ink, #181818);
   box-shadow: 2px 2px 0 var(--c-border, #181818);
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
   border-radius: var(--r-md, 0);
+  user-select: none;
 }
 
 .user-profile-btn:hover {
@@ -40,7 +41,10 @@
   box-shadow: 3px 3px 0 var(--c-border, #181818);
 }
 
-.user-profile-btn:active {
+.user-profile-btn:active,
+.user-profile-btn[aria-expanded="true"],
+.user-profile-btn.is-open {
+  background: var(--c-surface-sunk, #eadfca);
   transform: translate(1px, 1px);
   box-shadow: 1px 1px 0 var(--c-border, #181818);
 }
@@ -66,21 +70,57 @@
   white-space: nowrap;
 }
 
+/* ── Icon mũi tên v trong nút User & hiệu ứng xoay 180 độ ── */
+.user-arrow-icon,
+.user-profile-btn > svg {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center;
+}
+
+.user-profile-btn[aria-expanded="true"] .user-arrow-icon,
+.user-profile-btn[aria-expanded="true"] > svg,
+.user-profile-btn.is-open .user-arrow-icon,
+.user-dropdown-wrapper.is-open .user-arrow-icon {
+  transform: rotate(180deg);
+}
+
+/* ── Wrapper của User Dropdown ── */
+.user-dropdown-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
 /* ── Dropdown Menu User ── */
 .user-dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   width: 240px;
+  max-width: calc(100vw - 24px);
   background: var(--c-surface, #fffdf7);
   border: 2.5px solid var(--c-border, #181818);
   box-shadow: 4px 4px 0 var(--c-border, #181818);
   z-index: 9999;
-  display: flex;
+  display: none; /* Mặc định ẩn khi mới tải trang */
   flex-direction: column;
   padding: 8px 0;
   border-radius: var(--r-md, 0);
-  animation: userMenuPop 0.12s ease-out;
+  animation: userMenuPop 0.15s ease-out;
+}
+
+/* Hiển thị menu khi mở */
+.user-dropdown-menu.is-open,
+.user-dropdown-menu:not([hidden]) {
+  display: flex;
+}
+
+/* Đảm bảo ẩn tuyệt đối khi có thuộc tính hidden */
+.user-dropdown-menu[hidden] {
+  display: none !important;
 }
 
 @keyframes userMenuPop {

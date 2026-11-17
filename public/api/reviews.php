@@ -73,6 +73,9 @@ api_guard(function (): void {
                 'total_reviews' => $count,
                 'distribution' => $dist,
             ],
+            'avg_rating' => $avg,
+            'rating_distribution' => $dist,
+            'total_reviews' => $count,
             'reviews' => $formattedReviews,
         ]);
         return;
