@@ -77,14 +77,27 @@ php -S localhost:8000 -t public
 
 ## 🧪 Kiểm thử Tự động (Testing Suite)
 
-### 1. Kiểm thử toàn bộ Endpoint HTTP bằng CLI (24 Test Cases)
-Chạy script kiểm thử hồi quy tích hợp:
+### 1. Kiểm thử Unit & Integration Tests (27 Test Cases — Mới)
+Chạy bộ kiểm thử đơn vị độc lập (không phụ thuộc thư viện ngoài):
+```powershell
+php tests/run.php
+```
+*Bao phủ 6 nhóm kiểm thử cốt lõi:*
+- **Validation & Helpers**: Kiểm tra ép kiểu, khoảng giá trị lat/lng, radius, enum và cắt chuỗi an toàn.
+- **Geo & Bounding Box**: Kiểm tra tính toán phạm vi tọa độ và logic mở cửa `is_open_now` (bao gồm quán mở qua đêm).
+- **JWT & Tokens**: Kiểm tra mã hóa RFC 7515 Base64URL, ký HMAC-SHA256, từ chối token hết hạn hoặc giả mạo.
+- **Security & Cryptography**: Kiểm tra băm mật khẩu Bcrypt, so sánh chuỗi kháng Timing Attack (`hash_equals`), sinh OTP 6 số ngẫu nhiên.
+- **Itinerary Algorithms**: Kiểm tra sinh cấu trúc chặng lộ trình theo 4 phong cách và tạo URL Google Maps Multi-waypoint.
+- **Integration TiDB Cloud & Auth**: Kiểm tra chu trình tạo user, xoay vòng Refresh Token (Token Rotation) trên Cloud.
+
+### 2. Kiểm thử toàn bộ Endpoint HTTP bằng CLI (24 Test Cases)
+Chạy script kiểm thử hồi quy tích hợp toàn bộ các trang và API:
 ```powershell
 php docs/test_all_http_endpoints.php
 ```
 *Kết quả: 24/24 PASS (Trang giao diện, REST API, tìm kiếm, lộ trình, đánh giá, bảo mật session).*
 
-### 2. Kiểm thử API bằng Postman (28 Test Cases)
+### 3. Kiểm thử API bằng Postman (28 Test Cases)
 Thư viện Postman hoàn chỉnh có sẵn trong thư mục dự án:
 - Collection: [Food_Finder_API.postman_collection.json](file:///d:/Finder/Food_Finder_API.postman_collection.json)
 - Environment: [Food_Finder_Environment.postman_environment.json](file:///d:/Finder/Food_Finder_Environment.postman_environment.json)

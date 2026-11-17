@@ -246,7 +246,7 @@ admin_header('Duyệt đề xuất địa điểm');
               <?php if ($item['status'] !== 'approved'): ?>
                 <!-- Nút Duyệt -->
                 <form method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn duyệt và xuất bản địa điểm này lên hệ thống?');">
-                  <?= csrf_field() ?>
+                  <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                   <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
                   <input type="hidden" name="action" value="approve">
                   <button type="submit" class="btn btn--sm" style="background:#16a34a;color:#fff;border-color:#181818;" title="Duyệt & Xuất bản">
@@ -258,7 +258,7 @@ admin_header('Duyệt đề xuất địa điểm');
               <?php if ($item['status'] === 'pending'): ?>
                 <!-- Nút Từ chối -->
                 <form method="POST" style="display:inline;" onsubmit="return confirm('Từ chối đề xuất này?');">
-                  <?= csrf_field() ?>
+                  <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                   <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
                   <input type="hidden" name="action" value="reject">
                   <button type="submit" class="btn btn--ghost btn--sm" title="Từ chối đề xuất">
@@ -269,7 +269,7 @@ admin_header('Duyệt đề xuất địa điểm');
 
               <!-- Nút Xóa -->
               <form method="POST" style="display:inline;" onsubmit="return confirm('Xóa vĩnh viễn đề xuất này?');">
-                <?= csrf_field() ?>
+                <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                 <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
                 <input type="hidden" name="action" value="delete">
                 <button type="submit" class="btn btn--ghost btn--sm" style="color:#e11d48;" title="Xóa đề xuất">

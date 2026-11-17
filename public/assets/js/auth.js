@@ -251,7 +251,7 @@ class AuthManager {
           <button type="button" class="user-profile-btn" id="btn-user-toggle-menu" aria-expanded="false" title="Menu thành viên">
             <span class="user-avatar-badge">${initial}</span>
             <span class="user-name-text">${this.escapeHtml(this.currentUser.full_name || this.currentUser.username)}</span>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="user-arrow-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
@@ -276,34 +276,19 @@ class AuthManager {
         </div>
       `;
 
-      // Gắn sự kiện mở dropdown
-      const btnToggle = container.querySelector('#btn-user-toggle-menu');
-      const menu = container.querySelector('#user-menu-dropdown');
-      const btnLogout = container.querySelector('#btn-auth-logout');
-
-      if (btnToggle && menu) {
-        btnToggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isHidden = menu.hidden;
-          menu.hidden = !isHidden;
-          btnToggle.setAttribute('aria-expanded', String(isHidden));
-        });
-
-        document.addEventListener('click', (e) => {
-          if (!container.contains(e.target)) {
-            menu.hidden = true;
-            btnToggle.setAttribute('aria-expanded', 'false');
-          }
-        });
-      }
-
-      if (btnLogout) {
-        btnLogout.addEventListener('click', async () => {
-          await this.logout();
-          window.location.reload();
-        });
-      }
+      // Gắn và thiết lập tương tác đóng/mở dropdown
+      this.setupUserDropdown(container);
     } else {
+      // Dọn dẹp listener tài liệu nếu chuyển sang chế độ khách
+      if (this._onDocClick) {
+        document.removeEventListener('click', this._onDocClick);
+        this._onDocClick = null;
+      }
+      if (this._onDocKeydown) {
+        document.removeEventListener('keydown', this._onDocKeydown);
+        this._onDocKeydown = null;
+      }
+
       // Khách vãng lai: Hiển thị nút Đăng nhập / Đăng ký
       container.innerHTML = `
         <div class="user-nav__guest-group">
@@ -315,6 +300,89 @@ class AuthManager {
           </a>
         </div>
       `;
+    }
+  }
+
+  /**
+   * Thiết lập dropdown tương tác cho User Header:
+   * - Mặc định: Ẩn (đóng) khi mới tải trang.
+   * - Khi click vào nút user: Đảo trạng thái (toggle mở/đóng), xoay icon mũi tên v 180 độ.
+   * - Khi click ra ngoài (Click outside): Tự động đóng dropdown menu lại.
+   */
+  setupUserDropdown(container) {
+    const wrapper = container.querySelector('.user-dropdown-wrapper');
+    const btnToggle = container.querySelector('#btn-user-toggle-menu');
+    const menu = container.querySelector('#user-menu-dropdown');
+    const btnLogout = container.querySelector('#btn-auth-logout');
+
+    if (!btnToggle || !menu) return;
+
+    // 1. Mặc định: Menu được ẩn và nút ở trạng thái đóng
+    menu.hidden = true;
+    menu.classList.remove('is-open');
+    btnToggle.setAttribute('aria-expanded', 'false');
+    btnToggle.classList.remove('is-open');
+    wrapper?.classList.remove('is-open');
+
+    const closeDropdown = () => {
+      menu.hidden = true;
+      menu.classList.remove('is-open');
+      btnToggle.setAttribute('aria-expanded', 'false');
+      btnToggle.classList.remove('is-open');
+      wrapper?.classList.remove('is-open');
+    };
+
+    const openDropdown = () => {
+      menu.hidden = false;
+      menu.classList.add('is-open');
+      btnToggle.setAttribute('aria-expanded', 'true');
+      btnToggle.classList.add('is-open');
+      wrapper?.classList.add('is-open');
+    };
+
+    // 2. Toggle khi click vào nút user: mở nếu đang đóng, đóng nếu đang mở
+    const handleToggleClick = (e) => {
+      e.stopPropagation();
+      const isOpen = btnToggle.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        closeDropdown();
+      } else {
+        openDropdown();
+      }
+    };
+
+    btnToggle.addEventListener('click', handleToggleClick);
+
+    // 3. Click outside: Tự động đóng dropdown menu khi click ra ngoài
+    if (this._onDocClick) {
+      document.removeEventListener('click', this._onDocClick);
+    }
+    this._onDocClick = (e) => {
+      if (wrapper && !wrapper.contains(e.target)) {
+        closeDropdown();
+      }
+    };
+    document.addEventListener('click', this._onDocClick);
+
+    // Bổ sung: Bấm phím Escape để đóng dropdown
+    if (this._onDocKeydown) {
+      document.removeEventListener('keydown', this._onDocKeydown);
+    }
+    this._onDocKeydown = (e) => {
+      if (e.key === 'Escape') {
+        closeDropdown();
+      }
+    };
+    document.addEventListener('keydown', this._onDocKeydown);
+
+    // Xử lý nút Đăng xuất
+    if (btnLogout) {
+      btnLogout.addEventListener('click', async (e) => {
+        e.preventDefault();
+        closeDropdown();
+        await this.logout();
+        window.location.reload();
+      });
     }
   }
 
