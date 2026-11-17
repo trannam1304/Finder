@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /* Cấu hình kết nối hệ thống (TiDB Cloud Serverless) */
-const APP_ENV = 'production';
+const APP_ENV = 'development'; // Tạm thời chuyển sang development để xem chi tiết lỗi trên Vercel
 
 if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com');
 if (!defined('DB_PORT')) define('DB_PORT', (int)(getenv('DB_PORT') ?: 4000));

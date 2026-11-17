@@ -3,10 +3,15 @@ declare(strict_types=1);
 
 function json_headers(): void
 {
-    // Xóa sạch output buffer để loại bỏ bất kỳ warnings/deprecations nào PHP đã in ra
-    // Điều này ngăn PHP warnings (ví dụ: PDO SSL deprecated trên PHP 8.4+) phá vỡ JSON response
-    while (ob_get_level() > 0) {
+    // Xóa sạch output buffer của chính ứng dụng (do bootstrap.php khởi tạo)
+    // để loại bỏ PHP warnings/deprecated notices trước khi gửi JSON headers.
+    // Chỉ xóa các buffer do chính app tạo ra — không đụng đến buffer hệ thống ngoài cùng (level 0).
+    while (ob_get_level() > 1) {
         ob_end_clean();
+    }
+    // Nếu còn đúng 1 buffer (có thể do Vercel runtime), flush/clean nội dung đã tích lũy
+    if (ob_get_level() === 1) {
+        ob_clean(); // Chỉ xóa nội dung, giữ buffer
     }
 
     header('Content-Type: application/json; charset=utf-8');
@@ -39,7 +44,12 @@ function api_guard(callable $handler): void
     } catch (InvalidArgumentException $e) {
         json_error('INVALID_PARAM', $e->getMessage(), 400);
     } catch (Throwable $e) {
-        error_log($e->getMessage());
-        json_error('SERVER_ERROR', 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.', 500);
+        $msg = $e->getMessage();
+        error_log('[api_guard] ' . get_class($e) . ': ' . $msg . ' in ' . $e->getFile() . ':' . $e->getLine());
+        // Trên môi trường production, ẩn chi tiết lỗi nội bộ
+        $displayMsg = (defined('APP_ENV') && APP_ENV === 'production')
+            ? 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.'
+            : $msg;
+        json_error('SERVER_ERROR', $displayMsg, 500);
     }
 }
