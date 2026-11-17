@@ -13,16 +13,37 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     exit;
 }
 
-// 2. Xác định route cần gọi
-$route = $_GET['__route'] ?? null;
-$adminRoute = $_GET['__admin_route'] ?? null;
-unset($_GET['__route'], $_GET['__admin_route']);
+// 2. Lấy URI gốc từ các biến môi trường Vercel / PHP
+$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+
+// Nếu REQUEST_URI bị đổi thành /api/index.php hoặc /api, lấy từ các header chuyển tiếp của Vercel
+if ($uri === '/api/index.php' || $uri === '/api' || $uri === '/api/') {
+    if (!empty($_SERVER['HTTP_X_MATCHED_PATH'])) {
+        $uri = parse_url($_SERVER['HTTP_X_MATCHED_PATH'], PHP_URL_PATH) ?? $uri;
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_URI'])) {
+        $uri = parse_url($_SERVER['HTTP_X_FORWARDED_URI'], PHP_URL_PATH) ?? $uri;
+    }
+}
+if (str_starts_with($uri, '/api/index.php/')) {
+    $uri = '/api/' . substr($uri, 15);
+}
+
+// Hỗ trợ cả param query fallback nếu có
+if (!empty($_GET['__route'])) {
+    $uri = '/api/' . ltrim((string) $_GET['__route'], '/');
+    unset($_GET['__route']);
+}
+if (!empty($_GET['__admin_route'])) {
+    $uri = '/admin/' . ltrim((string) $_GET['__admin_route'], '/');
+    unset($_GET['__admin_route']);
+}
 
 $rootDir = dirname(__DIR__);
 
 // 3. Phục vụ các endpoint REST API trong public/api/
-if ($route !== null && $route !== '') {
-    $sub = preg_replace('/[^a-zA-Z0-9_\-\.\/]/', '', (string) $route);
+if (str_starts_with($uri, '/api/')) {
+    $sub = substr($uri, 5); // Bỏ tiền tố '/api/'
+    $sub = preg_replace('/[^a-zA-Z0-9_\-\.\/]/', '', $sub);
     $sub = ltrim($sub, '/');
     $target = $rootDir . '/public/api/' . $sub;
     if (is_file($target)) {
@@ -35,49 +56,7 @@ if ($route !== null && $route !== '') {
     }
 }
 
-// 4. Phục vụ các endpoint admin trong public/admin/
-if ($adminRoute !== null && $adminRoute !== '') {
-    $sub = preg_replace('/[^a-zA-Z0-9_\-\.\/]/', '', (string) $adminRoute);
-    $sub = ltrim($sub, '/');
-    if ($sub === '' || $sub === 'index') {
-        $sub = 'index.php';
-    }
-    $target = $rootDir . '/public/admin/' . $sub;
-    if (is_file($target)) {
-        require $target;
-        exit;
-    }
-    if (is_file($target . '.php')) {
-        require $target . '.php';
-        exit;
-    }
-}
-
-// 5. Fallback qua REQUEST_URI (cho môi trường dev cục bộ hoặc rewrite trực tiếp)
-$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
-
-// Nếu REQUEST_URI bị trỏ vào /api/index.php, fallback sang HTTP_X_MATCHED_PATH
-if (($uri === '/api/index.php' || $uri === '/api' || $uri === '/api/') && !empty($_SERVER['HTTP_X_MATCHED_PATH'])) {
-    $uri = parse_url($_SERVER['HTTP_X_MATCHED_PATH'], PHP_URL_PATH) ?? $uri;
-}
-if (str_starts_with($uri, '/api/index.php/')) {
-    $uri = '/api/' . substr($uri, 15);
-}
-
-if (str_starts_with($uri, '/api/')) {
-    $sub = substr($uri, 5); // Bỏ tiền tố '/api/'
-    $sub = preg_replace('/[^a-zA-Z0-9_\-\.\/]/', '', $sub);
-    $target = $rootDir . '/public/api/' . ltrim($sub, '/');
-    if (is_file($target)) {
-        require $target;
-        exit;
-    }
-    if (is_file($target . '.php')) {
-        require $target . '.php';
-        exit;
-    }
-}
-
+// 4. Phục vụ các endpoint backend trong public/admin/
 if (str_starts_with($uri, '/admin')) {
     $sub = substr($uri, 6); // Bỏ tiền tố '/admin'
     if ($sub === '' || $sub === '/') {
@@ -95,15 +74,14 @@ if (str_starts_with($uri, '/admin')) {
     }
 }
 
-// 6. Endpoint không tồn tại
-$displayPath = $route ? ('/api/' . $route) : ($adminRoute ? ('/admin/' . $adminRoute) : $uri);
+// 5. Endpoint không tồn tại
 http_response_code(404);
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
     'success' => false,
     'error' => [
         'code' => 'NOT_FOUND',
-        'message' => 'Endpoint không tồn tại: ' . ($displayPath ?: '/'),
+        'message' => 'Endpoint không tồn tại: ' . ($uri ?: '/'),
     ],
-    'requested_path' => $displayPath
+    'requested_path' => $uri
 ], JSON_UNESCAPED_UNICODE);

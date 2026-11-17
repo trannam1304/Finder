@@ -80,16 +80,27 @@ class AuthManager {
    */
   async _parseResponse(res, fallbackMessage = 'Yêu cầu không thành công') {
     let json = null;
+    let rawText = '';
     try {
-      json = await res.json();
+      rawText = await res.text();
+      json = JSON.parse(rawText);
     } catch {
       json = null;
     }
 
     if (!res.ok || !json?.success) {
-      const msg = json?.error?.message || (res.status === 404 || res.status === 405
-        ? `Lỗi ${res.status}: Endpoint API chưa sẵn sàng hoặc chưa được cấu hình routing trên máy chủ.`
-        : `Lỗi máy chủ (${res.status}): ${fallbackMessage}`);
+      let msg = json?.error?.message || json?.message;
+      if (!msg) {
+        if (res.status === 404 || res.status === 405) {
+          msg = `Lỗi ${res.status}: Endpoint API chưa sẵn sàng hoặc chưa được cấu hình routing trên máy chủ.`;
+        } else if (rawText && !rawText.trim().startsWith('<') && rawText.length < 200) {
+          msg = `Lỗi máy chủ (${res.status}): ${rawText.trim()}`;
+        } else if (rawText && rawText.trim().startsWith('<')) {
+          msg = `Lỗi máy chủ (${res.status}): Phản hồi trả về HTML thay vì dữ liệu JSON API.`;
+        } else {
+          msg = `Lỗi máy chủ (${res.status}): ${fallbackMessage}`;
+        }
+      }
       throw new Error(msg);
     }
     return json;
