@@ -8,6 +8,18 @@ if (!defined('PUBLIC_ROOT')) {
     define('PUBLIC_ROOT', dirname(__DIR__) . '/public');
 }
 
+// Bắt đầu output buffering để ngăn PHP warnings/deprecations phá vỡ JSON response headers
+// Đặc biệt quan trọng trên PHP 8.4+ (Vercel) khi PDO SSL constants deprecated gây ra output sớm
+if (!ob_get_level()) {
+    ob_start();
+}
+
+// Tắt hiển thị lỗi ra output (vẫn log vào error_log)
+// Điều này đảm bảo warnings không làm hỏng JSON response
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+error_reporting(E_ALL);
+
 // Core Infrastructure
 // 1. Cấu hình hệ thống (Luôn nạp trước)
 $configFile = __DIR__ . '/config.php';

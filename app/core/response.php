@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 function json_headers(): void
 {
+    // Xóa sạch output buffer để loại bỏ bất kỳ warnings/deprecations nào PHP đã in ra
+    // Điều này ngăn PHP warnings (ví dụ: PDO SSL deprecated trên PHP 8.4+) phá vỡ JSON response
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
     header('Content-Type: application/json; charset=utf-8');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: strict-origin-when-cross-origin');

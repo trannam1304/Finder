@@ -3,8 +3,20 @@ declare(strict_types=1);
 
 // Entry point router cho Vercel Serverless Functions
 
+// Tắt display_errors ngay đầu tiên để PHP warnings không làm hỏng JSON response
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+
+// Bắt đầu output buffering để bắt mọi warnings nếu display_errors chưa tắt kịp
+if (!ob_get_level()) {
+    ob_start();
+}
+
 // 1. Xử lý CORS Preflight (OPTIONS request)
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
+    // Xóa buffer trước khi gửi headers
+    while (ob_get_level() > 0) ob_end_clean();
     http_response_code(204);
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -75,6 +87,8 @@ if (str_starts_with($uri, '/admin')) {
 }
 
 // 5. Endpoint không tồn tại
+// Xóa buffer trước khi gửi JSON
+while (ob_get_level() > 0) ob_end_clean();
 http_response_code(404);
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
